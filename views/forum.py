@@ -351,7 +351,7 @@ def admin_board_form(board_id=None):
     return render_template('forum/admin_board_form.html', board=board_item if board_id else None)
 
 
-@admin_bp.route('/board/status/<int:board_id>')
+@admin_bp.route('/board/status/<int:board_id>', methods=['POST'])
 @admin_required
 def toggle_board_status(board_id):
     board_item = db.session.get(ForumBoard, board_id)
@@ -379,8 +379,8 @@ def admin_comment_list():
     return render_template('forum/admin_comment_list.html', comments=comments)
 
 
-@admin_bp.route('/post/status/<int:post_id>')
-@admin_bp.route('/post_delete/<int:post_id>')
+@admin_bp.route('/post/status/<int:post_id>', methods=['POST'])
+@admin_bp.route('/post_delete/<int:post_id>', methods=['POST'])
 @admin_required
 def toggle_post_status(post_id):
     post = db.session.get(ForumPost, post_id)
@@ -392,8 +392,8 @@ def toggle_post_status(post_id):
     return redirect(url_for('admin_forum.admin_post_list'))
 
 
-@admin_bp.route('/post/top/<int:post_id>')
-@admin_bp.route('/post_top/<int:post_id>')
+@admin_bp.route('/post/top/<int:post_id>', methods=['POST'])
+@admin_bp.route('/post_top/<int:post_id>', methods=['POST'])
 @admin_required
 def toggle_post_top(post_id):
     post = db.session.get(ForumPost, post_id)
@@ -405,8 +405,8 @@ def toggle_post_top(post_id):
     return redirect(url_for('admin_forum.admin_post_list'))
 
 
-@admin_bp.route('/comment/status/<int:comment_id>')
-@admin_bp.route('/comment_delete/<int:comment_id>')
+@admin_bp.route('/comment/status/<int:comment_id>', methods=['POST'])
+@admin_bp.route('/comment_delete/<int:comment_id>', methods=['POST'])
 @admin_required
 def toggle_comment_status(comment_id):
     comment = db.session.get(ForumComment, comment_id)

@@ -27,6 +27,12 @@ def _active_categories():
     ).scalars().all()
 
 
+def _append_missing_by_id(items, current_item, id_attr):
+    if current_item is not None and all(getattr(item, id_attr) != getattr(current_item, id_attr) for item in items):
+        return [current_item, *items]
+    return items
+
+
 def _save_work_from_request(
     work,
     categories,
@@ -195,7 +201,7 @@ def photographer_form(work_id=None):
     return render_template('work/form.html', work=work if work_id else None, categories=categories)
 
 
-@bp.route('/status/<int:work_id>')
+@bp.route('/status/<int:work_id>', methods=['POST'])
 @user_required
 def toggle_my_work_status(work_id):
     photographer = _approved_current_photographer()
@@ -298,7 +304,19 @@ def admin_list():
 @admin_bp.route('/edit/<int:work_id>', methods=['GET', 'POST'])
 @admin_required
 def admin_form(work_id=None):
-    work = db.session.get(PhotoWork, work_id) if work_id else PhotoWork(status=1, audit_status=PhotoWork.AUDIT_APPROVED)
+    work = (
+        db.session.execute(
+            select(PhotoWork)
+            .options(
+                joinedload(PhotoWork.photographer).joinedload(Photographer.user),
+                joinedload(PhotoWork.category),
+                selectinload(PhotoWork.images),
+            )
+            .where(PhotoWork.work_id == work_id)
+        ).scalar_one_or_none()
+        if work_id
+        else PhotoWork(status=1, audit_status=PhotoWork.AUDIT_APPROVED)
+    )
     if work is None:
         flash('作品不存在。', 'error')
         return redirect(url_for('admin_work.admin_list'))
@@ -310,6 +328,8 @@ def admin_form(work_id=None):
         .order_by(Photographer.photographer_id.desc())
     ).scalars().all()
     categories = _active_categories()
+    photographers = _append_missing_by_id(photographers, getattr(work, 'photographer', None), 'photographer_id')
+    categories = _append_missing_by_id(categories, getattr(work, 'category', None), 'category_id')
 
     if request.method == 'POST':
         work.photographer_id = request.form.get('photographer_id', type=int)
@@ -348,16 +368,21 @@ def audit(work_id):
     return jsonify({'success': True})
 
 
-@admin_bp.route('/delete/<int:work_id>')
+@admin_bp.route('/delete/<int:work_id>', methods=['POST'])
+@admin_bp.route('/status/<int:work_id>', methods=['POST'])
 @admin_required
-def delete(work_id):
+def toggle_status(work_id):
     work = db.session.get(PhotoWork, work_id)
     if work is not None:
-        work.status = 0
+        work.status = 0 if work.status == 1 else 1
         db.session.commit()
-        log_admin_action('作品下架', f'下架作品：{work.title}')
-        flash('作品已下架。', 'success')
+        action = '下架' if work.status == 0 else '恢复'
+        log_admin_action('作品状态', f'{action}作品：{work.title}')
+        flash(f'作品已{action}。', 'success')
     return redirect(url_for('admin_work.admin_list'))
+
+
+delete = toggle_status
 
 
 @admin_bp.route('/comment_list')
@@ -381,7 +406,7 @@ def comment_list():
     return render_template('work/admin_comment_list.html', comments=comments)
 
 
-@admin_bp.route('/comment/status/<int:comment_id>')
+@admin_bp.route('/comment/status/<int:comment_id>', methods=['POST'])
 @admin_required
 def toggle_comment_status(comment_id):
     comment = db.session.get(WorkComment, comment_id)

@@ -32,9 +32,12 @@
                     <td>{% if board.status == 1 %}启用{% else %}禁用{% endif %}</td>
                     <td>
                         <a href="/admin/forum/board/edit/{{ board.board_id }}" class="btn btn-sm btn-primary">编辑</a>
-                        <a href="/admin/forum/board/status/{{ board.board_id }}" class="btn btn-sm btn-secondary">
-                            {% if board.status == 1 %}禁用{% else %}启用{% endif %}
-                        </a>
+                        <form method="POST" action="/admin/forum/board/status/{{ board.board_id }}" class="d-inline">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <button type="submit" class="btn btn-sm btn-secondary">
+                                {% if board.status == 1 %}禁用{% else %}启用{% endif %}
+                            </button>
+                        </form>
                     </td>
                 </tr>
             {% endfor %}

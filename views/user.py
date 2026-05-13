@@ -158,7 +158,7 @@ def detail(user_id):
     )
 
 
-@admin_bp.route('/status/<int:user_id>')
+@admin_bp.route('/status/<int:user_id>', methods=['POST'])
 @admin_required
 def toggle_status(user_id):
     user = db.session.get(User, user_id)

@@ -25,12 +25,16 @@
                     <td>{{ announcement.create_time.strftime('%Y-%m-%d') }}</td>
                     <td>
                         <a href="/admin/announcement/edit/{{ announcement.announcement_id }}" class="btn btn-sm btn-primary">编辑</a>
-                        <a href="/admin/announcement/status/{{ announcement.announcement_id }}" class="btn btn-sm btn-secondary">
-                            {% if announcement.status == 1 %}下架{% else %}发布{% endif %}
-                        </a>
-                        <a href="/admin/announcement/delete/{{ announcement.announcement_id }}"
-                           class="btn btn-sm btn-danger"
-                           onclick="return confirm('确定删除该公告吗？')">删除</a>
+                        <form method="POST" action="/admin/announcement/status/{{ announcement.announcement_id }}" class="d-inline">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <button type="submit" class="btn btn-sm btn-secondary">
+                                {% if announcement.status == 1 %}下架{% else %}发布{% endif %}
+                            </button>
+                        </form>
+                        <form method="POST" action="/admin/announcement/delete/{{ announcement.announcement_id }}" class="d-inline" onsubmit="return confirm('确定删除该公告吗？')">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <button type="submit" class="btn btn-sm btn-danger">删除</button>
+                        </form>
                     </td>
                 </tr>
             {% endfor %}

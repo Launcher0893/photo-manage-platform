@@ -29,10 +29,16 @@
                     <td>{% if carousel.status == 1 %}启用{% else %}禁用{% endif %}</td>
                     <td>
                         <a href="/admin/carousel/edit/{{ carousel.carousel_id }}" class="btn btn-sm btn-primary">编辑</a>
-                        <a href="/admin/carousel/status/{{ carousel.carousel_id }}" class="btn btn-sm btn-secondary">
-                            {% if carousel.status == 1 %}禁用{% else %}启用{% endif %}
-                        </a>
-                        <a href="/admin/carousel/delete/{{ carousel.carousel_id }}" class="btn btn-sm btn-danger">删除</a>
+                        <form method="POST" action="/admin/carousel/status/{{ carousel.carousel_id }}" class="d-inline">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <button type="submit" class="btn btn-sm btn-secondary">
+                                {% if carousel.status == 1 %}禁用{% else %}启用{% endif %}
+                            </button>
+                        </form>
+                        <form method="POST" action="/admin/carousel/delete/{{ carousel.carousel_id }}" class="d-inline" onsubmit="return confirm('确定删除该轮播图吗？')">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <button type="submit" class="btn btn-sm btn-danger">删除</button>
+                        </form>
                     </td>
                 </tr>
             {% endfor %}

@@ -58,7 +58,12 @@
                             <button class="btn btn-sm btn-success audit-btn" data-work-id="{{ work.work_id }}" data-status="1">通过</button>
                             <button class="btn btn-sm btn-danger audit-btn" data-work-id="{{ work.work_id }}" data-status="2">拒绝</button>
                         {% endif %}
-                        <a href="/admin/work/delete/{{ work.work_id }}" class="btn btn-sm btn-warning">下架</a>
+                        <form method="POST" action="/admin/work/status/{{ work.work_id }}" class="d-inline">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <button type="submit" class="btn btn-sm btn-warning">
+                                {% if work.status == 1 %}下架{% else %}恢复{% endif %}
+                            </button>
+                        </form>
                     </td>
                 </tr>
             {% endfor %}

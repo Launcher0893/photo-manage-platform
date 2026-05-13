@@ -55,7 +55,7 @@ def form(category_id=None):
     return render_template('category/form.html', category=category if category_id else None)
 
 
-@bp.route('/status/<int:category_id>')
+@bp.route('/status/<int:category_id>', methods=['POST'])
 @admin_required
 def toggle_status(category_id):
     category = db.session.get(Category, category_id)

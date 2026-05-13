@@ -89,7 +89,7 @@ def admin_form(announcement_id=None):
     return render_template('announcement/admin_form.html', announcement=announcement if announcement_id else None)
 
 
-@admin_bp.route('/status/<int:announcement_id>')
+@admin_bp.route('/status/<int:announcement_id>', methods=['POST'])
 @admin_required
 def toggle_status(announcement_id):
     announcement = db.session.get(Announcement, announcement_id)
@@ -101,7 +101,7 @@ def toggle_status(announcement_id):
     return redirect(url_for('admin_announcement.admin_list'))
 
 
-@admin_bp.route('/delete/<int:announcement_id>')
+@admin_bp.route('/delete/<int:announcement_id>', methods=['POST'])
 @admin_required
 def delete(announcement_id):
     announcement = db.session.get(Announcement, announcement_id)

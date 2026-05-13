@@ -63,7 +63,7 @@ def form(carousel_id=None):
     return render_template('carousel/form.html', carousel=carousel if carousel_id else None)
 
 
-@bp.route('/status/<int:carousel_id>')
+@bp.route('/status/<int:carousel_id>', methods=['POST'])
 @admin_required
 def toggle_status(carousel_id):
     carousel = db.session.get(Carousel, carousel_id)
@@ -77,7 +77,7 @@ def toggle_status(carousel_id):
     return redirect(url_for('carousel.list_page'))
 
 
-@bp.route('/delete/<int:carousel_id>')
+@bp.route('/delete/<int:carousel_id>', methods=['POST'])
 @admin_required
 def delete(carousel_id):
     carousel = db.session.get(Carousel, carousel_id)

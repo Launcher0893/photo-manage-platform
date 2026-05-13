@@ -36,9 +36,12 @@
                             <a href="/work/detail/{{ work.work_id }}" class="btn btn-sm btn-info">查看</a>
                         {% endif %}
                         <a href="/work/edit/{{ work.work_id }}" class="btn btn-sm btn-primary">编辑</a>
-                        <a href="/work/status/{{ work.work_id }}" class="btn btn-sm btn-secondary">
-                            {% if work.status == 1 %}下架{% else %}恢复{% endif %}
-                        </a>
+                        <form method="POST" action="/work/status/{{ work.work_id }}" class="d-inline">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <button type="submit" class="btn btn-sm btn-secondary">
+                                {% if work.status == 1 %}下架{% else %}恢复{% endif %}
+                            </button>
+                        </form>
                     </td>
                 </tr>
             {% else %}

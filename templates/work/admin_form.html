@@ -17,7 +17,7 @@
                     <select name="photographer_id" class="form-control" required>
                         {% for photographer in photographers %}
                             <option value="{{ photographer.photographer_id }}" {% if work and work.photographer_id == photographer.photographer_id %}selected{% endif %}>
-                                {{ photographer.user.nickname }}
+                                {{ photographer.user.nickname if photographer.user else '未知摄影师' }}{% if photographer.cert_status != 1 %}（当前绑定，未通过审核）{% endif %}
                             </option>
                         {% endfor %}
                     </select>
@@ -27,7 +27,7 @@
                     <select name="category_id" class="form-control" required>
                         {% for category in categories %}
                             <option value="{{ category.category_id }}" {% if work and work.category_id == category.category_id %}selected{% endif %}>
-                                {{ category.category_name }}
+                                {{ category.category_name }}{% if category.status != 1 %}（当前绑定，已禁用）{% endif %}
                             </option>
                         {% endfor %}
                     </select>
@@ -51,8 +51,24 @@
                         <small class="form-text text-muted">当前封面：{{ work.cover_url }}</small>
                     {% endif %}
                 </div>
+                {% if work and work.images %}
+                    <div class="mb-3">
+                        <label>已有组图</label>
+                        <div class="row">
+                            {% for image in work.images|sort(attribute='sort') %}
+                                <div class="col-md-4 mb-3">
+                                    <img src="{{ image.image_url }}" class="img-fluid rounded mb-2" alt="{{ work.title }}">
+                                    <div class="form-check">
+                                        <input type="checkbox" name="delete_image_ids" value="{{ image.image_id }}" class="form-check-input" id="delete-image-{{ image.image_id }}">
+                                        <label class="form-check-label" for="delete-image-{{ image.image_id }}">删除此图</label>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                {% endif %}
                 <div class="mb-3">
-                    <label>作品组图</label>
+                    <label>{{ work and '追加组图' or '作品组图' }}</label>
                     <input type="file" name="work_images" class="form-control" accept="image/*" multiple>
                 </div>
                 <button type="submit" class="btn btn-primary">{{ work and '保存修改' or '新增作品' }}</button>

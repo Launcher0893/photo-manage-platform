@@ -43,9 +43,12 @@
                     <td>{{ user.create_time.strftime('%Y-%m-%d') }}</td>
                     <td>
                         <a href="/admin/user/detail/{{ user.user_id }}" class="btn btn-sm btn-primary">详情</a>
-                        <a href="/admin/user/status/{{ user.user_id }}" class="btn btn-sm btn-secondary">
-                            {% if user.status == 1 %}禁用{% else %}启用{% endif %}
-                        </a>
+                        <form method="POST" action="/admin/user/status/{{ user.user_id }}" class="d-inline">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <button type="submit" class="btn btn-sm btn-secondary">
+                                {% if user.status == 1 %}禁用{% else %}启用{% endif %}
+                            </button>
+                        </form>
                     </td>
                 </tr>
             {% endfor %}

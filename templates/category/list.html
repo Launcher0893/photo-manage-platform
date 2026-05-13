@@ -29,9 +29,12 @@
                     <td>{% if category.status == 1 %}启用{% else %}禁用{% endif %}</td>
                     <td>
                         <a href="/admin/category/edit/{{ category.category_id }}" class="btn btn-sm btn-primary">编辑</a>
-                        <a href="/admin/category/status/{{ category.category_id }}" class="btn btn-sm btn-secondary">
-                            {% if category.status == 1 %}禁用{% else %}启用{% endif %}
-                        </a>
+                        <form method="POST" action="/admin/category/status/{{ category.category_id }}" class="d-inline">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <button type="submit" class="btn btn-sm btn-secondary">
+                                {% if category.status == 1 %}禁用{% else %}启用{% endif %}
+                            </button>
+                        </form>
                     </td>
                 </tr>
             {% endfor %}

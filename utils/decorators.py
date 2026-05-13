@@ -1,7 +1,7 @@
 from functools import wraps
 
-from flask import abort, redirect, url_for
-from flask_login import current_user
+from flask import abort, flash, redirect, url_for
+from flask_login import current_user, logout_user
 
 
 def admin_required(view_func):
@@ -11,6 +11,10 @@ def admin_required(view_func):
             return redirect(url_for('auth.login'))
         if not getattr(current_user, 'is_admin', False):
             abort(403)
+        if getattr(current_user, 'status', 0) != 1:
+            logout_user()
+            flash('账号已被禁用，请联系管理员。', 'error')
+            return redirect(url_for('auth.login'))
         return view_func(*args, **kwargs)
 
     return wrapper
@@ -23,6 +27,10 @@ def user_required(view_func):
             return redirect(url_for('auth.login'))
         if getattr(current_user, 'is_admin', False):
             abort(403)
+        if getattr(current_user, 'status', 0) != 1:
+            logout_user()
+            flash('账号已被禁用，请联系管理员。', 'error')
+            return redirect(url_for('auth.login'))
         return view_func(*args, **kwargs)
 
     return wrapper

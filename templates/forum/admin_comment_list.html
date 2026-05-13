@@ -36,7 +36,12 @@
                     <td>{% if comment.status == 1 %}正常{% else %}删除{% endif %}</td>
                     <td>{{ comment.create_time.strftime('%Y-%m-%d') }}</td>
                     <td>
-                        <a href="/admin/forum/comment_delete/{{ comment.comment_id }}" class="btn btn-sm btn-danger">删除</a>
+                        <form method="POST" action="/admin/forum/comment_delete/{{ comment.comment_id }}" class="d-inline">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <button type="submit" class="btn btn-sm btn-danger">
+                                {% if comment.status == 1 %}删除{% else %}恢复{% endif %}
+                            </button>
+                        </form>
                     </td>
                 </tr>
             {% endfor %}

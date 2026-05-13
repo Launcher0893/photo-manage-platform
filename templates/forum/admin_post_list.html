@@ -42,10 +42,18 @@
                     <td>{% if post.is_top == 1 %}是{% else %}否{% endif %}</td>
                         <td>{% if post.status == 1 %}正常{% else %}删除{% endif %}</td>
                         <td>
-                        <a href="/admin/forum/post_top/{{ post.post_id }}" class="btn btn-sm btn-info">
-                            {% if post.is_top == 1 %}取消置顶{% else %}置顶{% endif %}
-                        </a>
-                        <a href="/admin/forum/post_delete/{{ post.post_id }}" class="btn btn-sm btn-danger">删除</a>
+                        <form method="POST" action="/admin/forum/post_top/{{ post.post_id }}" class="d-inline">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <button type="submit" class="btn btn-sm btn-info">
+                                {% if post.is_top == 1 %}取消置顶{% else %}置顶{% endif %}
+                            </button>
+                        </form>
+                        <form method="POST" action="/admin/forum/post_delete/{{ post.post_id }}" class="d-inline">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <button type="submit" class="btn btn-sm btn-danger">
+                                {% if post.status == 1 %}删除{% else %}恢复{% endif %}
+                            </button>
+                        </form>
                     </td>
                 </tr>
             {% endfor %}

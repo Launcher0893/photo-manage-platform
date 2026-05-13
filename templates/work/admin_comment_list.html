@@ -44,9 +44,12 @@
                     <td>{% if comment.status == 1 %}正常{% else %}隐藏{% endif %}</td>
                     <td>{{ comment.create_time.strftime('%Y-%m-%d') }}</td>
                     <td>
-                        <a href="/admin/work/comment/status/{{ comment.comment_id }}" class="btn btn-sm btn-secondary">
-                            {% if comment.status == 1 %}隐藏{% else %}恢复{% endif %}
-                        </a>
+                        <form method="POST" action="/admin/work/comment/status/{{ comment.comment_id }}" class="d-inline">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <button type="submit" class="btn btn-sm btn-secondary">
+                                {% if comment.status == 1 %}隐藏{% else %}恢复{% endif %}
+                            </button>
+                        </form>
                     </td>
                 </tr>
             {% endfor %}
