@@ -124,6 +124,16 @@ python app.py
 
 ## 常用验证
 
+编码与模板检查：
+
+```powershell
+python -c "from pathlib import Path; files=list(Path('templates').rglob('*.html'))+[Path('README.md'),Path('HANDOFF.md'),Path('photo_manage_platform.sql')]; [p.read_text(encoding='utf-8') for p in files]; print('utf-8 ok', len(files))"
+python -c "from pathlib import Path; from jinja2 import Environment, FileSystemLoader; env=Environment(loader=FileSystemLoader('templates')); [env.parse(p.read_text(encoding='utf-8')) for p in Path('templates').rglob('*.html')]; print('jinja syntax ok')"
+python -c "from pathlib import Path; from app import app; [app.jinja_env.get_template(p.relative_to('templates').as_posix()) for p in Path('templates').rglob('*.html')]; print('flask jinja load/compile ok')"
+```
+
+如果终端输出出现类似 `鎽勫奖`、`歿{...}`、`?/a>` 的乱码，先按 UTF-8 读取文件或通过浏览器响应确认。当前已验证文件本身不是乱码损坏，不要因此直接改文件编码或全量替换模板文案。
+
 ```powershell
 python -m compileall app.py views models utils
 python -c "import app; print('import ok')"

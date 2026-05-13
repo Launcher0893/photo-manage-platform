@@ -124,7 +124,8 @@ python app.py
 
 ## 后续建议
 
-- 模板中仍有部分历史中文乱码，后续如果修 UI 文案，应逐个模板检查，不要盲目全量替换。
+- 编码/模板结论：`HANDOFF.md`、`README.md`、`templates/**/*.html` 和 `photo_manage_platform.sql` 已按 UTF-8 正常解码；此前看到的 `鎽勫奖`、`歿{...}`、`?/a>` 等主要是终端或工具输出链路的显示乱码，不是文件内容损坏。
+- 已验证 38 个模板 Jinja 语法解析通过，Flask loader 加载/编译通过；如果后续终端再次显示乱码，应优先用 Python UTF-8 读取或浏览器响应验证，不要直接改文件编码或盲目全量替换文案。
 - 可复现数据库以 `photo_manage_platform.sql` 为准；其中已包含基础演示数据、MD5 演示账号和 3 条轮播测试图。
 - OSS AccessKey 已改为环境变量读取，不要重新硬编码到 `config.py` 或其他仓库文件。
 - 如果运行时报 `No module named 'flask_wtf'`，在项目虚拟环境执行 `python -m pip install -r requirements.txt`。
