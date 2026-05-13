@@ -6,7 +6,7 @@ from sqlalchemy.orm import joinedload, selectinload
 from db import db
 from models import ForumBoard, ForumComment, ForumPost, ForumPostImage
 from utils.decorators import admin_required, user_required
-from utils.file_upload import save_image
+from utils.file_upload import save_image_result
 
 
 bp = Blueprint('forum', __name__, url_prefix='/forum')
@@ -93,13 +93,20 @@ def post_add(board_id):
 
         for sort, image_file in enumerate(request.files.getlist('post_images'), start=1):
             try:
-                image_url = save_image(image_file, 'forum')
+                image_upload = save_image_result(image_file, 'forum')
             except ValueError as exc:
                 db.session.rollback()
                 flash(str(exc), 'error')
                 return render_template('forum/post_add.html', board=board_item)
-            if image_url:
-                db.session.add(ForumPostImage(post_id=post.post_id, image_url=image_url, sort=sort))
+            if image_upload:
+                db.session.add(
+                    ForumPostImage(
+                        post_id=post.post_id,
+                        image_url=image_upload.url,
+                        oss_object_name=image_upload.oss_object_name,
+                        sort=sort,
+                    )
+                )
 
         db.session.commit()
         flash('帖子已发布。', 'success')

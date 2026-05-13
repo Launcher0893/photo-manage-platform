@@ -6,7 +6,7 @@ from sqlalchemy.orm import joinedload, selectinload
 from db import db
 from models import Category, PhotoWork, PhotoWorkImage, Photographer, WorkComment, WorkLike
 from utils.decorators import admin_required
-from utils.file_upload import save_image
+from utils.file_upload import delete_uploaded_file, save_image_result
 
 
 bp = Blueprint('work', __name__, url_prefix='/work')
@@ -148,6 +148,7 @@ def admin_form(work_id=None):
     ).scalars().all()
 
     if request.method == 'POST':
+        old_cover_url = None
         work.title = request.form.get('title', '').strip()
         work.photographer_id = request.form.get('photographer_id', type=int)
         work.category_id = request.form.get('category_id', type=int)
@@ -159,9 +160,10 @@ def admin_form(work_id=None):
             return render_template('work/admin_form.html', work=work, photographers=photographers, categories=categories)
 
         try:
-            cover_url = save_image(request.files.get('cover_file'), 'works')
-            if cover_url:
-                work.cover_url = cover_url
+            cover_upload = save_image_result(request.files.get('cover_file'), 'works')
+            if cover_upload:
+                old_cover_url = work.cover_url
+                work.cover_url = cover_upload.url
         except ValueError as exc:
             flash(str(exc), 'error')
             return render_template('work/admin_form.html', work=work, photographers=photographers, categories=categories)
@@ -171,16 +173,24 @@ def admin_form(work_id=None):
 
         for sort, image_file in enumerate(request.files.getlist('work_images'), start=1):
             try:
-                image_url = save_image(image_file, 'works')
+                image_upload = save_image_result(image_file, 'works')
             except ValueError as exc:
                 db.session.rollback()
                 flash(str(exc), 'error')
                 return render_template('work/admin_form.html', work=work, photographers=photographers, categories=categories)
-            if image_url:
-                db.session.add(PhotoWorkImage(work_id=work.work_id, image_url=image_url, sort=sort))
+            if image_upload:
+                db.session.add(
+                    PhotoWorkImage(
+                        work_id=work.work_id,
+                        image_url=image_upload.url,
+                        oss_object_name=image_upload.oss_object_name,
+                        sort=sort,
+                    )
+                )
 
         work.update_hot_score()
         db.session.commit()
+        delete_uploaded_file(old_cover_url)
         flash('作品已保存。', 'success')
         return redirect(url_for('admin_work.admin_list'))
 

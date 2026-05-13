@@ -6,7 +6,7 @@ from sqlalchemy.orm import joinedload
 from db import db
 from models import ForumPost, User
 from utils.decorators import admin_required, user_required
-from utils.file_upload import save_image
+from utils.file_upload import delete_uploaded_file, save_image
 
 
 bp = Blueprint('user', __name__, url_prefix='/user')
@@ -29,17 +29,20 @@ def profile():
 @user_required
 def edit_profile():
     if request.method == 'POST':
+        old_avatar_url = None
         current_user.nickname = request.form.get('nickname', '').strip() or current_user.username
         current_user.email = request.form.get('email', '').strip() or None
         current_user.phone = request.form.get('phone', '').strip() or None
         try:
             avatar_url = save_image(request.files.get('avatar_file'), 'avatars')
             if avatar_url:
+                old_avatar_url = current_user.avatar_url
                 current_user.avatar_url = avatar_url
         except ValueError as exc:
             flash(str(exc), 'error')
             return render_template('user/edit_profile.html')
         db.session.commit()
+        delete_uploaded_file(old_avatar_url)
         flash('个人资料已更新。', 'success')
         return redirect(url_for('user.profile'))
     return render_template('user/edit_profile.html')

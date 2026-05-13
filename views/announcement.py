@@ -5,7 +5,7 @@ from sqlalchemy import select
 from db import db
 from models import Announcement
 from utils.decorators import admin_required
-from utils.file_upload import save_image
+from utils.file_upload import delete_uploaded_file, save_image
 
 
 bp = Blueprint('announcement', __name__, url_prefix='/announcement')
@@ -60,6 +60,7 @@ def admin_form(announcement_id=None):
         return redirect(url_for('admin_announcement.admin_list'))
 
     if request.method == 'POST':
+        old_cover_url = None
         announcement.title = request.form.get('title', '').strip()
         announcement.content = request.form.get('content', '').strip()
         if not announcement.title or not announcement.content:
@@ -69,6 +70,7 @@ def admin_form(announcement_id=None):
         try:
             cover_url = save_image(request.files.get('cover_file'), 'announcements')
             if cover_url:
+                old_cover_url = announcement.cover_url
                 announcement.cover_url = cover_url
         except ValueError as exc:
             flash(str(exc), 'error')
@@ -78,6 +80,7 @@ def admin_form(announcement_id=None):
             announcement.admin_id = current_user.admin_id
         db.session.add(announcement)
         db.session.commit()
+        delete_uploaded_file(old_cover_url)
         flash('公告已保存。', 'success')
         return redirect(url_for('admin_announcement.admin_list'))
 

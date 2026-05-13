@@ -4,7 +4,7 @@ from sqlalchemy import select
 from db import db
 from models import Carousel
 from utils.decorators import admin_required
-from utils.file_upload import save_image
+from utils.file_upload import delete_uploaded_file, save_image
 
 
 bp = Blueprint('carousel', __name__, url_prefix='/admin/carousel')
@@ -29,6 +29,8 @@ def form(carousel_id=None):
         return redirect(url_for('carousel.list_page'))
 
     if request.method == 'POST':
+        old_image_url = carousel.image_url
+        should_delete_old_image = False
         carousel.title = request.form.get('title', '').strip() or None
         carousel.image_url = request.form.get('image_url', '').strip()
         carousel.link_type = request.form.get('link_type', '').strip() or None
@@ -40,6 +42,7 @@ def form(carousel_id=None):
             image_url = save_image(request.files.get('image_file'), 'carousels')
             if image_url:
                 carousel.image_url = image_url
+                should_delete_old_image = True
         except ValueError as exc:
             flash(str(exc), 'error')
             return render_template('carousel/form.html', carousel=carousel)
@@ -50,6 +53,8 @@ def form(carousel_id=None):
 
         db.session.add(carousel)
         db.session.commit()
+        if should_delete_old_image:
+            delete_uploaded_file(old_image_url)
         flash('轮播图已保存。', 'success')
         return redirect(url_for('carousel.list_page'))
 
@@ -74,7 +79,11 @@ def toggle_status(carousel_id):
 def delete(carousel_id):
     carousel = db.session.get(Carousel, carousel_id)
     if carousel is not None:
+        delete_ok = delete_uploaded_file(carousel.image_url)
         db.session.delete(carousel)
         db.session.commit()
-        flash('轮播图已删除。', 'success')
+        if delete_ok:
+            flash('轮播图已删除。', 'success')
+        else:
+            flash('轮播图已删除，但图片文件删除失败。', 'error')
     return redirect(url_for('carousel.list_page'))
