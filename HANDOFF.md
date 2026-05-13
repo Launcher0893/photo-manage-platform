@@ -21,6 +21,7 @@
 - Flask
 - SQLAlchemy
 - Flask-Login
+- Flask-WTF
 - MySQL
 - Bootstrap
 - 阿里云 OSS
@@ -36,7 +37,14 @@
   - 管理员登录后进入 `/admin/dashboard/`。
   - 旧 `/auth/admin_login` 保留兼容，访问会重定向到 `/auth/login`。
 - 管理员登录态访问首页 `/` 或登录页 `/auth/login` 会自动跳转后台控制台，避免显示成普通用户界面。
+- 登录表单使用 POST 提交，GET `/auth/login` 只用于渲染页面。
+- 项目已启用 Flask-WTF CSRF 防护：
+  - `app.py` 初始化 `CSRFProtect`。
+  - 基础模板提供 `csrf-token` meta。
+  - 常规 POST 表单已加入 `csrf_token`。
+  - Ajax 请求通过 `X-CSRFToken` 请求头提交。
 - 前台导航已区分普通用户和管理员：
+  - 普通用户昵称左侧有独立 `发布帖子` 入口 `/forum/post_add`。
   - 普通用户显示用户中心和退出。
   - 管理员显示后台控制台和退出。
 - 密码方案仍是 MD5。
@@ -54,6 +62,14 @@
   - OSS 成功后保留本地副本。
   - OSS 上传失败会删除本次新保存的本地文件并中止保存。
 - 轮播图后台上传已接入首页展示。
+- `photo_manage_platform.sql` 已恢复 3 条真实 OSS 轮播测试图数据：`test`、`test2`、`test3`。
+- 论坛用户发帖已调整：
+  - 独立发帖入口为 `/forum/post_add`。
+  - 板块内发帖入口 `/forum/post_add/<board_id>` 保留，会默认选中当前板块。
+  - 发帖表单使用板块下拉菜单，不再输入板块名。
+  - 用户可通过 `/forum/post_edit/<post_id>` 编辑自己的帖子。
+  - 编辑时支持修改标题、内容、所属板块，追加新图片，并删除旧图片。
+  - 帖子详情页和个人中心会给作者显示编辑入口。
 
 ## OSS 配置与行为
 
@@ -97,6 +113,7 @@ python app.py
 - `config.py`：数据库、Flask、OSS 配置。
 - `db.py`：SQLAlchemy 实例。
 - `views/auth.py`：统一登录、注册、登出、用户加载。
+- `views/forum.py`：论坛板块、帖子列表、发帖、帖子编辑、帖子详情和评论。
 - `utils/encryption.py`：MD5 和旧明文兼容。
 - `utils/decorators.py`：普通用户/管理员权限装饰器。
 - `utils/file_upload.py`：统一图片上传入口，本地 + OSS。
@@ -107,6 +124,7 @@ python app.py
 ## 后续建议
 
 - 模板中仍有部分历史中文乱码，后续如果修 UI 文案，应逐个模板检查，不要盲目全量替换。
-- 如果要交付可复现数据库，应补充初始化数据脚本，并确保密码为 MD5。
+- 可复现数据库以 `photo_manage_platform.sql` 为准；其中已包含基础演示数据、MD5 演示账号和 3 条轮播测试图。
 - OSS AccessKey 已改为环境变量读取，不要重新硬编码到 `config.py` 或其他仓库文件。
+- 如果运行时报 `No module named 'flask_wtf'`，在项目虚拟环境执行 `python -m pip install -r requirements.txt`。
 - 每次修改后至少运行编译、导入和核心路由检查。

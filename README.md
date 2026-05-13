@@ -8,14 +8,22 @@
 - 默认数据库：本机 MySQL `photo_manage_platform`
 - 默认连接串在 `config.py` 中，可通过环境变量 `DATABASE_URL` 覆盖
 - 首次运行前需要先导入 `photo_manage_platform.sql`
-- 本项目使用 Flask、SQLAlchemy、Flask-Login、MySQL、Bootstrap
+- 本项目使用 Flask、SQLAlchemy、Flask-Login、Flask-WTF、MySQL、Bootstrap
 - `photo_manage_platform.sql` 已包含基础演示数据，导入后可直接使用下方账号登录
+- `photo_manage_platform.sql` 已包含 3 张 OSS 轮播测试图数据，重导数据库后首页轮播不会丢失
 
 启动：
 
 ```powershell
 cd "D:\Program Files\Code\PyCharm\photo-manage-platform"
+python -m pip install -r requirements.txt
 python app.py
+```
+
+导入数据库示例：
+
+```powershell
+& 'C:\Program Files\MySQL\MySQL Server 8.0\bin\mysql.exe' -uroot -p你的密码 --default-character-set=utf8mb4 photo_manage_platform --execute="source D:/Program Files/Code/PyCharm/photo-manage-platform/photo_manage_platform.sql"
 ```
 
 ## 登录入口
@@ -77,6 +85,16 @@ python app.py
 - 新增入口：`/admin/carousel/add`
 - 首页 `/` 已展示启用状态的轮播图
 - 只展示 `status == 1` 的轮播图
+- 当前 SQL 内置 3 条轮播测试图：`test`、`test2`、`test3`
+
+## 论坛发帖
+
+- 普通用户登录后，导航栏昵称左侧有独立的 `发布帖子` 入口：`/forum/post_add`
+- 也可以在某个板块帖子列表中进入 `/forum/post_add/<board_id>`，会默认选中当前板块
+- 发帖表单通过下拉菜单选择板块，不再手动输入板块名
+- 用户可编辑自己发布的帖子：`/forum/post_edit/<post_id>`
+- 编辑帖子时可修改标题、内容、所属板块，可追加新图片，也可删除旧图片
+- 帖子详情页和个人中心会给帖子作者显示编辑入口
 
 ## 后台功能入口
 
@@ -96,6 +114,9 @@ python app.py
 ## 演示与安全说明
 
 - SQL 演示账号密码均为 `123456`，密码以 MD5 写入。
+- 登录表单使用 POST 提交；直接 GET `/auth/login` 只渲染登录页，不提交账号密码。
+- 项目已启用 Flask-WTF CSRF 防护，所有 POST 表单需要 `csrf_token`，Ajax 请求通过 `X-CSRFToken` 请求头提交。
+- 如果运行时报 `No module named 'flask_wtf'`，请在项目虚拟环境执行 `python -m pip install -r requirements.txt`。
 - 演示图片使用占位 URL；正式演示可在后台上传真实图片，数据库会保存 OSS URL。
 - 不要提交 `environment.md`、`.env` 或任何含有 OSS AccessKey 的文件。
 - 如密钥曾经暴露到不可信环境，应在阿里云控制台禁用或轮换。
