@@ -175,6 +175,26 @@ CREATE TABLE `forum_post`  (
 -- ----------------------------
 
 -- ----------------------------
+-- Table structure for forum_post_like
+-- ----------------------------
+DROP TABLE IF EXISTS `forum_post_like`;
+CREATE TABLE `forum_post_like`  (
+  `like_id` int(11) NOT NULL AUTO_INCREMENT COMMENT '点赞ID',
+  `post_id` int(11) NOT NULL COMMENT '帖子ID',
+  `user_id` int(11) NOT NULL COMMENT '用户ID',
+  `create_time` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '点赞时间',
+  PRIMARY KEY (`like_id`) USING BTREE,
+  UNIQUE INDEX `uk_forum_post_user`(`post_id` ASC, `user_id` ASC) USING BTREE,
+  INDEX `fk_forum_post_like_user`(`user_id` ASC) USING BTREE,
+  CONSTRAINT `fk_forum_post_like_post` FOREIGN KEY (`post_id`) REFERENCES `forum_post` (`post_id`) ON DELETE CASCADE ON UPDATE RESTRICT,
+  CONSTRAINT `fk_forum_post_like_user` FOREIGN KEY (`user_id`) REFERENCES `user` (`user_id`) ON DELETE CASCADE ON UPDATE RESTRICT
+) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '帖子点赞表' ROW_FORMAT = Dynamic;
+
+-- ----------------------------
+-- Records of forum_post_like
+-- ----------------------------
+
+-- ----------------------------
 -- Table structure for forum_post_image
 -- ----------------------------
 DROP TABLE IF EXISTS `forum_post_image`;
@@ -429,8 +449,12 @@ INSERT INTO `work_comment` (`comment_id`, `work_id`, `user_id`, `content`, `audi
 (3, 2, 4, '街头氛围很自然。', 1, 1, '2026-05-12 13:20:00', '2026-05-12 13:20:00');
 
 INSERT INTO `forum_post` (`post_id`, `board_id`, `user_id`, `title`, `content`, `view_count`, `like_count`, `comment_count`, `is_top`, `status`, `create_time`, `update_time`) VALUES
-(1, 1, 1, '第一次夜景人像拍摄心得', '分享一次夜景人像拍摄的参数设置和现场沟通经验。', 56, 0, 2, 1, 1, '2026-05-11 19:00:00', '2026-05-11 19:00:00'),
-(2, 2, 2, '人像布光笔记', '整理几种常见人像布光方式，适合室内小空间练习。', 42, 0, 1, 0, 1, '2026-05-12 20:00:00', '2026-05-12 20:00:00');
+(1, 1, 1, '第一次夜景人像拍摄心得', '分享一次夜景人像拍摄的参数设置和现场沟通经验。', 56, 1, 2, 1, 1, '2026-05-11 19:00:00', '2026-05-11 19:00:00'),
+(2, 2, 2, '人像布光笔记', '整理几种常见人像布光方式，适合室内小空间练习。', 42, 1, 1, 0, 1, '2026-05-12 20:00:00', '2026-05-12 20:00:00');
+
+INSERT INTO `forum_post_like` (`like_id`, `post_id`, `user_id`, `create_time`) VALUES
+(1, 1, 2, '2026-05-12 21:10:00'),
+(2, 2, 1, '2026-05-12 21:20:00');
 
 INSERT INTO `forum_post_image` (`image_id`, `post_id`, `image_url`, `oss_object_name`, `sort`, `create_time`) VALUES
 (1, 1, 'https://via.placeholder.com/900x600?text=Forum+Post+1', NULL, 1, '2026-05-11 19:00:00'),

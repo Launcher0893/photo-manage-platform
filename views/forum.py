@@ -1,11 +1,11 @@
-from flask import Blueprint, abort, flash, redirect, render_template, request, url_for
+from flask import Blueprint, abort, flash, jsonify, redirect, render_template, request, url_for
 from flask_login import current_user
 from sqlalchemy import func, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import joinedload, selectinload
 
 from db import db
-from models import ForumBoard, ForumComment, ForumPost, ForumPostImage
+from models import ForumBoard, ForumComment, ForumPost, ForumPostImage, ForumPostLike
 from utils.decorators import admin_required, user_required
 from utils.file_upload import delete_uploaded_file, save_image_result
 from utils.logger import log_admin_action
@@ -29,18 +29,32 @@ def board():
 @bp.route('/post_list/<int:board_id>')
 def post_list(board_id):
     page = request.args.get('page', default=1, type=int)
+    keyword = request.args.get('keyword', '').strip()
+    sort_by = request.args.get('sort_by', 'hot').strip().lower()
     board_item = db.session.get(ForumBoard, board_id)
     if board_item is None or board_item.status != 1:
         abort(404)
 
+    hot_score = (
+        func.coalesce(ForumPost.view_count, 0)
+        + func.coalesce(ForumPost.like_count, 0) * 3
+        + func.coalesce(ForumPost.comment_count, 0) * 2
+    )
     stmt = (
         select(ForumPost)
         .options(joinedload(ForumPost.user))
         .where(ForumPost.board_id == board_id, ForumPost.status == 1)
-        .order_by(ForumPost.is_top.desc(), ForumPost.create_time.desc(), ForumPost.post_id.desc())
     )
+    if keyword:
+        stmt = stmt.where(ForumPost.title.like(f'%{keyword}%'))
+    if sort_by == 'new':
+        stmt = stmt.order_by(ForumPost.is_top.desc(), ForumPost.create_time.desc(), ForumPost.post_id.desc())
+    else:
+        sort_by = 'hot'
+        stmt = stmt.order_by(ForumPost.is_top.desc(), hot_score.desc(), ForumPost.create_time.desc(), ForumPost.post_id.desc())
+
     posts = db.paginate(stmt, page=page, per_page=10, error_out=False)
-    return render_template('forum/post_list.html', board=board_item, posts=posts)
+    return render_template('forum/post_list.html', board=board_item, posts=posts, keyword=keyword, sort_by=sort_by)
 
 
 @bp.route('/post_detail/<int:post_id>')
@@ -66,7 +80,51 @@ def post_detail(post_id):
         .where(ForumComment.post_id == post_id, ForumComment.status == 1)
         .order_by(ForumComment.create_time.asc(), ForumComment.comment_id.asc())
     ).scalars().all()
-    return render_template('forum/post_detail.html', post=post, comments=comments)
+    is_liked = False
+    if current_user.is_authenticated and not getattr(current_user, 'is_admin', False):
+        is_liked = db.session.execute(
+            select(ForumPostLike).where(
+                ForumPostLike.post_id == post_id,
+                ForumPostLike.user_id == current_user.user_id,
+            )
+        ).scalar_one_or_none() is not None
+    return render_template('forum/post_detail.html', post=post, comments=comments, is_liked=is_liked)
+
+
+@bp.route('/post_like/<int:post_id>', methods=['POST'])
+def post_like(post_id):
+    if not current_user.is_authenticated or getattr(current_user, 'is_admin', False):
+        return jsonify({'success': False, 'message': '请先使用用户账号登录。'}), 401
+
+    post = db.session.execute(
+        select(ForumPost).where(
+            ForumPost.post_id == post_id,
+            ForumPost.status == 1,
+        )
+    ).scalar_one_or_none()
+    if post is None:
+        return jsonify({'success': False, 'message': '帖子不存在。'}), 404
+
+    like = db.session.execute(
+        select(ForumPostLike).where(
+            ForumPostLike.post_id == post_id,
+            ForumPostLike.user_id == current_user.user_id,
+        )
+    ).scalar_one_or_none()
+    if like is None:
+        db.session.add(ForumPostLike(post_id=post_id, user_id=current_user.user_id))
+        liked = True
+    else:
+        db.session.delete(like)
+        liked = False
+
+    db.session.flush()
+    post.like_count = db.session.scalar(
+        select(func.count(ForumPostLike.like_id)).where(ForumPostLike.post_id == post_id)
+    ) or 0
+    db.session.commit()
+
+    return jsonify({'success': True, 'liked': liked, 'count': post.like_count, 'message': '操作成功。'})
 
 
 def _active_boards():

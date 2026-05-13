@@ -25,8 +25,15 @@ class ForumPost(db.Model):
     create_time = db.Column(db.DateTime, default=datetime.now)
     update_time = db.Column(db.DateTime, default=datetime.now, onupdate=datetime.now)
     
+    user = db.relationship('User', back_populates='forum_posts')
     images = db.relationship('ForumPostImage', backref='forum_post', lazy=True, passive_deletes='all')
     comments = db.relationship('ForumComment', backref='forum_post', lazy=True, passive_deletes='all')
+    likes = db.relationship(
+        'ForumPostLike',
+        back_populates='forum_post',
+        lazy=True,
+        passive_deletes='all',
+    )
     
     def __repr__(self):
         return f'<ForumPost {self.title}>'

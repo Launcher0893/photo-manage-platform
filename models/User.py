@@ -37,8 +37,19 @@ class User(db.Model, UserMixin):
         lazy=True,
         passive_deletes='all',
     )
-    forum_posts = db.relationship('ForumPost', backref='user', lazy=True, passive_deletes='all')
+    forum_posts = db.relationship(
+        'ForumPost',
+        back_populates='user',
+        lazy=True,
+        passive_deletes='all',
+    )
     forum_comments = db.relationship('ForumComment', backref='user', lazy=True, passive_deletes='all')
+    forum_post_likes = db.relationship(
+        'ForumPostLike',
+        back_populates='user',
+        lazy=True,
+        passive_deletes='all',
+    )
     
     ROLE_NORMAL = 1
     ROLE_PHOTOGRAPHER = 2

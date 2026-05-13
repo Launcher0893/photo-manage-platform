@@ -6,6 +6,7 @@ from .ForumBoard import ForumBoard
 from .ForumComment import ForumComment
 from .ForumPost import ForumPost
 from .ForumPostImage import ForumPostImage
+from .ForumPostLike import ForumPostLike
 from .PhotoWork import PhotoWork
 from .PhotoWorkImage import PhotoWorkImage
 from .Photographer import Photographer
@@ -24,6 +25,7 @@ __all__ = [
     'ForumComment',
     'ForumPost',
     'ForumPostImage',
+    'ForumPostLike',
     'PhotoWork',
     'PhotoWorkImage',
     'Photographer',
