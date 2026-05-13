@@ -271,6 +271,7 @@ def admin_list():
     title = request.args.get('title', '').strip()
     audit_status = request.args.get('audit_status', type=int)
     status = request.args.get('status', type=int)
+    is_featured = request.args.get('is_featured', type=int)
 
     stmt = (
         select(PhotoWork)
@@ -286,6 +287,8 @@ def admin_list():
         stmt = stmt.where(PhotoWork.audit_status == audit_status)
     if status in (0, 1):
         stmt = stmt.where(PhotoWork.status == status)
+    if is_featured in (0, 1):
+        stmt = stmt.where(PhotoWork.is_featured == is_featured)
 
     works = db.paginate(stmt, page=page, per_page=10, error_out=False)
     return render_template('work/admin_list.html', works=works)
@@ -310,6 +313,7 @@ def admin_form(work_id=None):
 
     if request.method == 'POST':
         work.photographer_id = request.form.get('photographer_id', type=int)
+        work.is_featured = 1 if request.form.get('is_featured') == '1' else 0
         response = _save_work_from_request(
             work,
             categories,

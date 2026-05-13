@@ -40,6 +40,10 @@
                     <label>描述</label>
                     <textarea name="description" class="form-control" rows="5">{{ work.description if work else '' }}</textarea>
                 </div>
+                <div class="mb-3 form-check">
+                    <input type="checkbox" name="is_featured" value="1" class="form-check-input" id="is-featured" {% if work and work.is_featured == 1 %}checked{% endif %}>
+                    <label class="form-check-label" for="is-featured">设为首页精选</label>
+                </div>
                 <div class="mb-3">
                     <label>封面图</label>
                     <input type="file" name="cover_file" class="form-control" accept="image/*">

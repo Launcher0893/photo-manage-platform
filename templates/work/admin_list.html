@@ -20,6 +20,11 @@
                 <option value="1" {% if request.args.get('status') == '1' %}selected{% endif %}>上架</option>
                 <option value="0" {% if request.args.get('status') == '0' %}selected{% endif %}>下架</option>
             </select>
+            <select name="is_featured" class="form-control mr-2">
+                <option value="">全部精选状态</option>
+                <option value="1" {% if request.args.get('is_featured') == '1' %}selected{% endif %}>精选</option>
+                <option value="0" {% if request.args.get('is_featured') == '0' %}selected{% endif %}>非精选</option>
+            </select>
             <button type="submit" class="btn btn-primary">筛选</button>
         </form>
     </div>
@@ -31,6 +36,7 @@
                 <th>摄影师</th>
                 <th>分类</th>
                 <th>审核状态</th>
+                <th>精选</th>
                 <th>状态</th>
                 <th>操作</th>
             </tr>
@@ -44,6 +50,7 @@
                     <td>
                         {% if work.audit_status == 0 %}待审核{% elif work.audit_status == 1 %}已通过{% else %}已拒绝{% endif %}
                     </td>
+                    <td>{% if work.is_featured == 1 %}是{% else %}否{% endif %}</td>
                     <td>{% if work.status == 1 %}上架{% else %}下架{% endif %}</td>
                     <td>
                         <a href="/admin/work/edit/{{ work.work_id }}" class="btn btn-sm btn-primary">编辑</a>

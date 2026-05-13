@@ -87,6 +87,12 @@ python app.py
 - 只展示 `status == 1` 的轮播图
 - 当前 SQL 内置 3 条轮播测试图：`test`、`test2`、`test3`
 
+## 首页精选作品
+
+- 首页精选作品来自 `photo_work.is_featured = 1` 且审核通过、上架的作品。
+- 精选状态由管理员在 `/admin/work/add` 和 `/admin/work/edit/<work_id>` 中维护。
+- 摄影师前台发布或编辑自己的作品时不能设置首页精选。
+
 ## 论坛发帖
 
 - 普通用户登录后，导航栏昵称左侧有独立的 `发布帖子` 入口：`/forum/post_add`
