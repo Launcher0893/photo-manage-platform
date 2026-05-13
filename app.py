@@ -1,5 +1,6 @@
-from flask import Flask, redirect, render_template, url_for
+from flask import Flask, jsonify, redirect, render_template, request, url_for
 from flask_login import LoginManager, current_user
+from flask_wtf.csrf import CSRFError, CSRFProtect
 from sqlalchemy import select
 from sqlalchemy.orm import joinedload
 
@@ -28,6 +29,8 @@ from views.work import bp as work_bp
 app = Flask(__name__)
 app.config.from_object(Config)
 db.init_app(app)
+csrf = CSRFProtect()
+csrf.init_app(app)
 
 login_manager = LoginManager()
 login_manager.init_app(app)
@@ -37,6 +40,14 @@ login_manager.login_view = 'auth.login'
 @login_manager.user_loader
 def user_loader(user_id):
     return load_user(user_id)
+
+
+@app.errorhandler(CSRFError)
+def handle_csrf_error(error):
+    message = 'CSRF 校验失败，请刷新页面后重试。'
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest' or request.accept_mimetypes.best == 'application/json':
+        return jsonify({'success': False, 'message': message}), 400
+    return message, 400
 
 
 app.register_blueprint(auth_bp)

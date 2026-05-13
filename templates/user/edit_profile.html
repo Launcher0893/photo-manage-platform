@@ -7,6 +7,7 @@
         <div class="col-md-6">
             <h2>编辑资料</h2>
             <form method="POST" enctype="multipart/form-data">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <div class="mb-3">
                     <label>昵称</label>
                     <input type="text" name="nickname" class="form-control" value="{{ current_user.nickname or '' }}">

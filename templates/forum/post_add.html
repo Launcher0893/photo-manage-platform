@@ -7,6 +7,7 @@
         <div class="col-md-8">
             <h2>发布帖子</h2>
             <form method="POST" enctype="multipart/form-data">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <input type="hidden" name="board_id" value="{{ board.board_id if board else request.view_args.get('board_id', '') }}">
                 {% if board %}
                     <div class="mb-3">

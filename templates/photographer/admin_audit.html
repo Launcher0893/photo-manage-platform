@@ -15,6 +15,7 @@
                 <p><strong>当前状态：</strong>{% if photographer.cert_status == 0 %}待审核{% elif photographer.cert_status == 1 %}已通过{% else %}已拒绝{% endif %}</p>
             </div>
             <form method="POST">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <div class="mb-3">
                     <label>审核结果</label>
                     <select name="cert_status" class="form-control" required>

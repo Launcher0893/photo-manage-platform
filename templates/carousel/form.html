@@ -7,6 +7,7 @@
         <div class="col-md-8">
             <h2>{{ carousel and '编辑轮播图' or '新增轮播图' }}</h2>
             <form method="POST" enctype="multipart/form-data">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <div class="mb-3">
                     <label>标题</label>
                     <input type="text" name="title" class="form-control" value="{{ carousel.title if carousel else '' }}">

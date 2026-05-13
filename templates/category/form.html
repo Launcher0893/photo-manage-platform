@@ -7,6 +7,7 @@
         <div class="col-md-6">
             <h2>{{ category and '编辑分类' or '新增分类' }}</h2>
             <form method="POST">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <div class="mb-3">
                     <label>分类名称</label>
                     <input type="text" name="category_name" class="form-control" required value="{{ category.category_name if category else '' }}">

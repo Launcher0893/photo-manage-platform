@@ -7,6 +7,7 @@
         <div class="col-md-8">
             <h2>{{ announcement and '编辑公告' or '发布公告' }}</h2>
             <form method="POST" enctype="multipart/form-data">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <div class="mb-3">
                     <label>标题</label>
                     <input type="text" name="title" class="form-control" required value="{{ announcement.title if announcement else '' }}">
