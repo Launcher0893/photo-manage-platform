@@ -20,6 +20,9 @@ class WorkComment(db.Model):
     status = db.Column(db.SmallInteger, default=1)
     create_time = db.Column(db.DateTime, default=datetime.now)
     update_time = db.Column(db.DateTime, default=datetime.now, onupdate=datetime.now)
+
+    photo_work = db.relationship('PhotoWork', back_populates='comments')
+    user = db.relationship('User', back_populates='work_comments')
     
     def __repr__(self):
         return f'<WorkComment {self.comment_id}>'

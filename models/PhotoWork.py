@@ -28,10 +28,22 @@ class PhotoWork(db.Model):
     status = db.Column(db.SmallInteger, default=1)
     create_time = db.Column(db.DateTime, default=datetime.now)
     update_time = db.Column(db.DateTime, default=datetime.now, onupdate=datetime.now)
-    
+
+    photographer = db.relationship('Photographer', back_populates='works')
+    category = db.relationship('Category', back_populates='works')
     images = db.relationship('PhotoWorkImage', backref='photo_work', lazy=True, passive_deletes='all')
-    likes = db.relationship('WorkLike', backref='photo_work', lazy=True, passive_deletes='all')
-    comments = db.relationship('WorkComment', backref='photo_work', lazy=True, passive_deletes='all')
+    likes = db.relationship(
+        'WorkLike',
+        back_populates='photo_work',
+        lazy=True,
+        passive_deletes='all',
+    )
+    comments = db.relationship(
+        'WorkComment',
+        back_populates='photo_work',
+        lazy=True,
+        passive_deletes='all',
+    )
     
     AUDIT_PENDING = 0
     AUDIT_APPROVED = 1
@@ -41,4 +53,8 @@ class PhotoWork(db.Model):
         return f'<PhotoWork {self.title}>'
     
     def update_hot_score(self):
-        self.hot_score = self.view_count + self.like_count * 3 + self.comment_count * 2
+        self.hot_score = (
+            (self.view_count or 0)
+            + (self.like_count or 0) * 3
+            + (self.comment_count or 0) * 2
+        )

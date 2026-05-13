@@ -24,7 +24,13 @@ class Photographer(db.Model):
     create_time = db.Column(db.DateTime, default=datetime.now)
     update_time = db.Column(db.DateTime, default=datetime.now, onupdate=datetime.now)
     
-    works = db.relationship('PhotoWork', backref='photographer', lazy=True, passive_deletes='all')
+    user = db.relationship('User', back_populates='photographer')
+    works = db.relationship(
+        'PhotoWork',
+        back_populates='photographer',
+        lazy=True,
+        passive_deletes='all',
+    )
     
     STATUS_PENDING = 0
     STATUS_APPROVED = 1

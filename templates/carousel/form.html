@@ -6,14 +6,18 @@
     <div class="row justify-content-center">
         <div class="col-md-8">
             <h2>{{ carousel and '编辑轮播图' or '新增轮播图' }}</h2>
-            <form method="POST">
+            <form method="POST" enctype="multipart/form-data">
                 <div class="mb-3">
                     <label>标题</label>
                     <input type="text" name="title" class="form-control" value="{{ carousel.title if carousel else '' }}">
                 </div>
                 <div class="mb-3">
                     <label>图片URL</label>
-                    <input type="text" name="image_url" class="form-control" required value="{{ carousel.image_url if carousel else '' }}">
+                    <input type="text" name="image_url" class="form-control" value="{{ carousel.image_url if carousel else '' }}">
+                </div>
+                <div class="mb-3">
+                    <label>上传图片</label>
+                    <input type="file" name="image_file" class="form-control" accept="image/*">
                 </div>
                 <div class="mb-3">
                     <label>跳转类型</label>

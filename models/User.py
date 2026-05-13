@@ -1,7 +1,10 @@
-from db import db
 from datetime import datetime
+from flask_login import UserMixin
 
-class User(db.Model):
+from db import db
+
+
+class User(db.Model, UserMixin):
     __tablename__ = 'user'
     
     user_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
@@ -16,26 +19,38 @@ class User(db.Model):
     create_time = db.Column(db.DateTime, default=datetime.now)
     update_time = db.Column(db.DateTime, default=datetime.now, onupdate=datetime.now)
     
-    photographer = db.relationship('Photographer', backref='user', uselist=False, passive_deletes='all')
-    work_likes = db.relationship('WorkLike', backref='user', lazy=True, passive_deletes='all')
-    work_comments = db.relationship('WorkComment', backref='user', lazy=True, passive_deletes='all')
+    photographer = db.relationship(
+        'Photographer',
+        back_populates='user',
+        uselist=False,
+        passive_deletes='all',
+    )
+    work_likes = db.relationship(
+        'WorkLike',
+        back_populates='user',
+        lazy=True,
+        passive_deletes='all',
+    )
+    work_comments = db.relationship(
+        'WorkComment',
+        back_populates='user',
+        lazy=True,
+        passive_deletes='all',
+    )
     forum_posts = db.relationship('ForumPost', backref='user', lazy=True, passive_deletes='all')
     forum_comments = db.relationship('ForumComment', backref='user', lazy=True, passive_deletes='all')
     
     ROLE_NORMAL = 1
     ROLE_PHOTOGRAPHER = 2
     
+    is_admin = False
+
+    @property
     def is_active(self):
         return self.status == 1
     
     def get_id(self):
-        return str(self.user_id)
-    
-    def is_authenticated(self):
-        return True
-    
-    def is_anonymous(self):
-        return False
+        return f'user:{self.user_id}'
     
     def __repr__(self):
         return f'<User {self.username}>'

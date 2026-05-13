@@ -11,7 +11,12 @@ class Category(db.Model):
     create_time = db.Column(db.DateTime, default=datetime.now)
     update_time = db.Column(db.DateTime, default=datetime.now, onupdate=datetime.now)
     
-    works = db.relationship('PhotoWork', backref='category', lazy=True, passive_deletes='all')
+    works = db.relationship(
+        'PhotoWork',
+        back_populates='category',
+        lazy=True,
+        passive_deletes='all',
+    )
     
     def __repr__(self):
         return f'<Category {self.category_name}>'

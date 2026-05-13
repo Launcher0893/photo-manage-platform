@@ -7,7 +7,7 @@
 当前有两个容易混淆的目录：
 
 - `D:\Program Files\Code\PyCharm\photo_manage_platform`：早期规划文档目录，主要存放需求、设计计划、Git 协作文档和本交接文档。
-- `D:\Program Files\Code\PyCharm\photo-manage-platfrom`：当前真正的 Flask 项目目录，注意目录名拼写是 `platfrom`，不是 `platform`。后续实现应优先在这个目录下进行。
+- `D:\Program Files\Code\PyCharm\photo-manage-platform`：当前真正的 Flask 项目目录，后续实现应优先在这个目录下进行。
 
 项目技术栈：
 
