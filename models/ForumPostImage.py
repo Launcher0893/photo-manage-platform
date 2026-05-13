@@ -1,3 +1,19 @@
-# 论坛帖子图片模型文件。
-# 后续用于描述 forum_post_image 帖子图片表，包括所属帖子、图片 OSS 地址、OSS 对象名、排序值和创建时间等字段。
-# 该模型主要服务于用户发帖图片上传和帖子详情页图片展示。
+from db import db
+from datetime import datetime
+
+class ForumPostImage(db.Model):
+    __tablename__ = 'forum_post_image'
+    
+    image_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    post_id = db.Column(
+        db.Integer,
+        db.ForeignKey('forum_post.post_id', ondelete='CASCADE'),
+        nullable=False
+    )
+    image_url = db.Column(db.String(255), nullable=False)
+    oss_object_name = db.Column(db.String(255))
+    sort = db.Column(db.Integer, default=0)
+    create_time = db.Column(db.DateTime, default=datetime.now)
+    
+    def __repr__(self):
+        return f'<ForumPostImage {self.image_url}>'

@@ -1,3 +1,18 @@
-# 首页轮播图模型文件。
-# 后续用于描述 carousel 轮播图表，包括轮播标题、图片地址、跳转类型、跳转目标、排序值和启用状态等字段。
-# 该模型主要服务于用户端首页轮播图展示和后台轮播图管理。
+from db import db
+from datetime import datetime
+
+class Carousel(db.Model):
+    __tablename__ = 'carousel'
+    
+    carousel_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    title = db.Column(db.String(100))
+    image_url = db.Column(db.String(255), nullable=False)
+    link_type = db.Column(db.String(30))
+    link_id = db.Column(db.Integer)
+    link_url = db.Column(db.String(255))
+    sort = db.Column(db.Integer, default=0)
+    status = db.Column(db.SmallInteger, default=1)
+    create_time = db.Column(db.DateTime, default=datetime.now)
+    
+    def __repr__(self):
+        return f'<Carousel {self.title}>'

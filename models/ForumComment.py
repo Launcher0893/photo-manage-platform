@@ -1,3 +1,23 @@
-# 论坛评论模型文件。
-# 后续用于描述 forum_comment 帖子评论表，包括所属帖子、评论用户、评论内容、状态和创建时间等字段。
-# 该模型主要服务于帖子详情页评论展示和后台评论管理。
+from db import db
+from datetime import datetime
+
+class ForumComment(db.Model):
+    __tablename__ = 'forum_comment'
+    
+    comment_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    post_id = db.Column(
+        db.Integer,
+        db.ForeignKey('forum_post.post_id', ondelete='CASCADE'),
+        nullable=False
+    )
+    user_id = db.Column(
+        db.Integer,
+        db.ForeignKey('user.user_id', ondelete='CASCADE'),
+        nullable=False
+    )
+    content = db.Column(db.Text, nullable=False)
+    status = db.Column(db.SmallInteger, default=1)
+    create_time = db.Column(db.DateTime, default=datetime.now)
+    
+    def __repr__(self):
+        return f'<ForumComment {self.comment_id}>'

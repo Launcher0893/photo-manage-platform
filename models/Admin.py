@@ -1,3 +1,33 @@
-# 管理员模型文件。
-# 后续用于描述 admin 管理员表，包括管理员账号、密码、姓名、角色、状态、创建时间和更新时间等字段。
-# 该模型主要服务于管理员独立登录、后台权限控制和系统操作日志关联。
+from db import db
+from datetime import datetime
+
+class Admin(db.Model):
+    __tablename__ = 'admin'
+    
+    admin_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    admin_account = db.Column(db.String(50), unique=True, nullable=False)
+    admin_password = db.Column(db.String(100), nullable=False)
+    admin_name = db.Column(db.String(30), nullable=False)
+    role_id = db.Column(
+        db.Integer,
+        db.ForeignKey('role.role_id', ondelete='RESTRICT'),
+        nullable=True
+    )
+    status = db.Column(db.SmallInteger, default=1)
+    create_time = db.Column(db.DateTime, default=datetime.now)
+    update_time = db.Column(db.DateTime, default=datetime.now, onupdate=datetime.now)
+    
+    def is_active(self):
+        return self.status == 1
+    
+    def get_id(self):
+        return str(self.admin_id)
+    
+    def is_authenticated(self):
+        return True
+    
+    def is_anonymous(self):
+        return False
+    
+    def __repr__(self):
+        return f'<Admin {self.admin_name}>'

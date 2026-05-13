@@ -1,3 +1,17 @@
-# 作品分类模型文件。
-# 后续用于描述 category 作品分类表，包括分类名称、排序值、启用状态、创建时间和更新时间等字段。
-# 该模型主要服务于作品分类筛选、分类统计图表和后台分类管理。
+from db import db
+from datetime import datetime
+
+class Category(db.Model):
+    __tablename__ = 'category'
+    
+    category_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    category_name = db.Column(db.String(50), unique=True, nullable=False)
+    sort = db.Column(db.Integer, default=0)
+    status = db.Column(db.SmallInteger, default=1)
+    create_time = db.Column(db.DateTime, default=datetime.now)
+    update_time = db.Column(db.DateTime, default=datetime.now, onupdate=datetime.now)
+    
+    works = db.relationship('PhotoWork', backref='category', lazy=True, passive_deletes='all')
+    
+    def __repr__(self):
+        return f'<Category {self.category_name}>'

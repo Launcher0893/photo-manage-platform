@@ -1,3 +1,17 @@
-# 论坛板块模型文件。
-# 后续用于描述 forum_board 论坛板块表，包括板块名称、板块说明、排序值、启用状态和创建时间等字段。
-# 该模型主要服务于论坛板块展示、发帖时选择板块和后台板块管理。
+from db import db
+from datetime import datetime
+
+class ForumBoard(db.Model):
+    __tablename__ = 'forum_board'
+    
+    board_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    board_name = db.Column(db.String(50), unique=True, nullable=False)
+    description = db.Column(db.String(255))
+    sort = db.Column(db.Integer, default=0)
+    status = db.Column(db.SmallInteger, default=1)
+    create_time = db.Column(db.DateTime, default=datetime.now)
+    
+    posts = db.relationship('ForumPost', backref='forum_board', lazy=True, passive_deletes='all')
+    
+    def __repr__(self):
+        return f'<ForumBoard {self.board_name}>'

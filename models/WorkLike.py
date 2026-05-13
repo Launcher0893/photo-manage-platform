@@ -1,3 +1,25 @@
-# 作品点赞模型文件。
-# 后续用于描述 work_like 作品点赞表，包括所属作品、点赞用户和点赞时间等字段。
-# 该模型主要服务于作品点赞功能，并通过作品和用户的唯一关系避免重复点赞。
+from db import db
+from datetime import datetime
+
+class WorkLike(db.Model):
+    __tablename__ = 'work_like'
+    
+    like_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    work_id = db.Column(
+        db.Integer,
+        db.ForeignKey('photo_work.work_id', ondelete='CASCADE'),
+        nullable=False
+    )
+    user_id = db.Column(
+        db.Integer,
+        db.ForeignKey('user.user_id', ondelete='CASCADE'),
+        nullable=False
+    )
+    create_time = db.Column(db.DateTime, default=datetime.now)
+    
+    __table_args__ = (
+        db.UniqueConstraint('work_id', 'user_id', name='uk_work_user'),
+    )
+    
+    def __repr__(self):
+        return f'<WorkLike {self.work_id}-{self.user_id}>'
