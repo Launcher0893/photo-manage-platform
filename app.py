@@ -1,5 +1,5 @@
-from flask import Flask, render_template
-from flask_login import LoginManager
+from flask import Flask, redirect, render_template, url_for
+from flask_login import LoginManager, current_user
 from sqlalchemy import select
 from sqlalchemy.orm import joinedload
 
@@ -57,6 +57,9 @@ app.register_blueprint(api_bp)
 
 @app.route('/')
 def index():
+    if current_user.is_authenticated and getattr(current_user, 'is_admin', False):
+        return redirect(url_for('dashboard.index'))
+
     work_user_load = joinedload(PhotoWork.photographer).joinedload(Photographer.user)
 
     carousels = db.session.execute(

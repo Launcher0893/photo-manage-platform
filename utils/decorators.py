@@ -8,7 +8,7 @@ def admin_required(view_func):
     @wraps(view_func)
     def wrapper(*args, **kwargs):
         if not current_user.is_authenticated:
-            return redirect(url_for('auth.admin_login'))
+            return redirect(url_for('auth.login'))
         if not getattr(current_user, 'is_admin', False):
             abort(403)
         return view_func(*args, **kwargs)

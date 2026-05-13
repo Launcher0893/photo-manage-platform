@@ -30,27 +30,49 @@ def load_user(user_id: str):
 
 @bp.route('/login', methods=['GET', 'POST'])
 def login():
+    if current_user.is_authenticated:
+        if getattr(current_user, 'is_admin', False):
+            return redirect(url_for('dashboard.index'))
+        return redirect(url_for('index'))
+
     if request.method == 'POST':
         username = request.form.get('username', '').strip()
         password = request.form.get('password', '')
+
         user = db.session.execute(
             select(User).where(User.username == username)
         ).scalar_one_or_none()
+        if user is not None and verify_password(user.password, password):
+            if user.status != 1:
+                flash('该账号已被禁用。', 'error')
+                return render_template('login.html')
 
-        if user is None or not verify_password(user.password, password):
-            flash('用户名或密码错误。', 'error')
-            return render_template('login.html')
-        if user.status != 1:
-            flash('该账号已被禁用。', 'error')
-            return render_template('login.html')
+            if password_needs_upgrade(user.password, password):
+                user.password = md5_encrypt(password)
+                db.session.commit()
 
-        if password_needs_upgrade(user.password, password):
-            user.password = md5_encrypt(password)
-            db.session.commit()
+            login_user(user)
+            flash('登录成功。', 'success')
+            return redirect(url_for('index'))
 
-        login_user(user)
-        flash('登录成功。', 'success')
-        return redirect(url_for('index'))
+        admin = db.session.execute(
+            select(Admin).where(Admin.admin_account == username)
+        ).scalar_one_or_none()
+        if admin is not None and verify_password(admin.admin_password, password):
+            if admin.status != 1:
+                flash('该管理员账号已被禁用。', 'error')
+                return render_template('login.html')
+
+            if password_needs_upgrade(admin.admin_password, password):
+                admin.admin_password = md5_encrypt(password)
+                db.session.commit()
+
+            login_user(admin)
+            flash('管理员登录成功。', 'success')
+            return redirect(url_for('dashboard.index'))
+
+        flash('账号或密码错误。', 'error')
+        return render_template('login.html')
 
     return render_template('login.html')
 
@@ -112,37 +134,12 @@ def register():
 
 @bp.route('/admin_login', methods=['GET', 'POST'])
 def admin_login():
-    if request.method == 'POST':
-        admin_account = request.form.get('admin_account', '').strip()
-        admin_password = request.form.get('admin_password', '')
-        admin = db.session.execute(
-            select(Admin).where(Admin.admin_account == admin_account)
-        ).scalar_one_or_none()
-
-        if admin is None or not verify_password(admin.admin_password, admin_password):
-            flash('管理员账号或密码错误。', 'error')
-            return render_template('admin_login.html')
-        if admin.status != 1:
-            flash('该管理员账号已被禁用。', 'error')
-            return render_template('admin_login.html')
-
-        if password_needs_upgrade(admin.admin_password, admin_password):
-            admin.admin_password = md5_encrypt(admin_password)
-            db.session.commit()
-
-        login_user(admin)
-        flash('管理员登录成功。', 'success')
-        return redirect(url_for('dashboard.index'))
-
-    return render_template('admin_login.html')
+    return redirect(url_for('auth.login'))
 
 
 @bp.route('/logout')
 @login_required
 def logout():
-    is_admin = getattr(current_user, 'is_admin', False)
     logout_user()
     flash('已退出登录。', 'success')
-    if is_admin:
-        return redirect(url_for('auth.admin_login'))
-    return redirect(url_for('index'))
+    return redirect(url_for('auth.login'))
