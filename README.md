@@ -123,7 +123,7 @@ python app.py
 - 论坛帖子管理：`/admin/forum/post_list`
 - 论坛板块管理：`/admin/forum/board_list`
 - 论坛评论管理：`/admin/forum/comment_list`
-- 公告管理：`/admin/announcement/list`
+- 公告管理：`/admin/announcement/list`，支持发布、编辑、上下架和删除
 - 轮播图管理：`/admin/carousel/list`
 - 系统日志：`/admin/system/logs`
 

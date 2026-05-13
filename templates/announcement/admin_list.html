@@ -28,6 +28,9 @@
                         <a href="/admin/announcement/status/{{ announcement.announcement_id }}" class="btn btn-sm btn-secondary">
                             {% if announcement.status == 1 %}下架{% else %}发布{% endif %}
                         </a>
+                        <a href="/admin/announcement/delete/{{ announcement.announcement_id }}"
+                           class="btn btn-sm btn-danger"
+                           onclick="return confirm('确定删除该公告吗？')">删除</a>
                     </td>
                 </tr>
             {% endfor %}

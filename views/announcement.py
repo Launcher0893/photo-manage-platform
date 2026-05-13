@@ -99,3 +99,24 @@ def toggle_status(announcement_id):
         log_admin_action('公告状态', f'更新公告状态：{announcement.title}')
         flash('公告状态已更新。', 'success')
     return redirect(url_for('admin_announcement.admin_list'))
+
+
+@admin_bp.route('/delete/<int:announcement_id>')
+@admin_required
+def delete(announcement_id):
+    announcement = db.session.get(Announcement, announcement_id)
+    if announcement is None:
+        flash('公告不存在。', 'error')
+        return redirect(url_for('admin_announcement.admin_list'))
+
+    title = announcement.title
+    cover_url = announcement.cover_url
+    db.session.delete(announcement)
+    db.session.commit()
+    delete_ok = delete_uploaded_file(cover_url)
+    log_admin_action('公告删除', f'删除公告：{title}')
+    if delete_ok:
+        flash('公告已删除。', 'success')
+    else:
+        flash('公告已删除，但封面图片删除失败。', 'error')
+    return redirect(url_for('admin_announcement.admin_list'))
