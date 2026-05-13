@@ -42,6 +42,7 @@
                     <td>{% if user.status == 1 %}正常{% else %}禁用{% endif %}</td>
                     <td>{{ user.create_time.strftime('%Y-%m-%d') }}</td>
                     <td>
+                        <a href="/admin/user/detail/{{ user.user_id }}" class="btn btn-sm btn-primary">详情</a>
                         <a href="/admin/user/status/{{ user.user_id }}" class="btn btn-sm btn-secondary">
                             {% if user.status == 1 %}禁用{% else %}启用{% endif %}
                         </a>

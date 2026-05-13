@@ -5,6 +5,7 @@ from db import db
 from models import Carousel
 from utils.decorators import admin_required
 from utils.file_upload import delete_uploaded_file, save_image
+from utils.logger import log_admin_action
 
 
 bp = Blueprint('carousel', __name__, url_prefix='/admin/carousel')
@@ -55,6 +56,7 @@ def form(carousel_id=None):
         db.session.commit()
         if should_delete_old_image:
             delete_uploaded_file(old_image_url)
+        log_admin_action('轮播图保存', f'保存轮播图：{carousel.title or carousel.carousel_id}')
         flash('轮播图已保存。', 'success')
         return redirect(url_for('carousel.list_page'))
 
@@ -70,6 +72,7 @@ def toggle_status(carousel_id):
     else:
         carousel.status = 0 if carousel.status == 1 else 1
         db.session.commit()
+        log_admin_action('轮播图状态', f'更新轮播图状态：{carousel.title or carousel.carousel_id}')
         flash('轮播图状态已更新。', 'success')
     return redirect(url_for('carousel.list_page'))
 
@@ -79,10 +82,12 @@ def toggle_status(carousel_id):
 def delete(carousel_id):
     carousel = db.session.get(Carousel, carousel_id)
     if carousel is not None:
+        title = carousel.title or carousel_id
         delete_ok = delete_uploaded_file(carousel.image_url)
         db.session.delete(carousel)
         db.session.commit()
         if delete_ok:
+            log_admin_action('轮播图删除', f'删除轮播图：{title}')
             flash('轮播图已删除。', 'success')
         else:
             flash('轮播图已删除，但图片文件删除失败。', 'error')

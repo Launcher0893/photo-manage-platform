@@ -6,6 +6,7 @@ from db import db
 from models import Announcement
 from utils.decorators import admin_required
 from utils.file_upload import delete_uploaded_file, save_image
+from utils.logger import log_admin_action
 
 
 bp = Blueprint('announcement', __name__, url_prefix='/announcement')
@@ -81,6 +82,7 @@ def admin_form(announcement_id=None):
         db.session.add(announcement)
         db.session.commit()
         delete_uploaded_file(old_cover_url)
+        log_admin_action('公告保存', f'保存公告：{announcement.title}')
         flash('公告已保存。', 'success')
         return redirect(url_for('admin_announcement.admin_list'))
 
@@ -94,5 +96,6 @@ def toggle_status(announcement_id):
     if announcement is not None:
         announcement.status = 0 if announcement.status == 1 else 1
         db.session.commit()
+        log_admin_action('公告状态', f'更新公告状态：{announcement.title}')
         flash('公告状态已更新。', 'success')
     return redirect(url_for('admin_announcement.admin_list'))

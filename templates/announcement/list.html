@@ -8,6 +8,9 @@
         {% for announcement in announcements.items %}
             <div class="col-md-6 mb-4">
                 <div class="card">
+                    {% if announcement.cover_url %}
+                        <img src="{{ announcement.cover_url }}" class="card-img-top" alt="{{ announcement.title }}">
+                    {% endif %}
                     <div class="card-body">
                         <h5 class="card-title"><a href="/announcement/detail/{{ announcement.announcement_id }}">{{ announcement.title }}</a></h5>
                         <p class="card-text">{{ announcement.content[:100] }}{% if announcement.content|length > 100 %}...{% endif %}</p>

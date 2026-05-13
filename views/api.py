@@ -1,9 +1,12 @@
+from datetime import date, datetime, timedelta
+
 from flask import Blueprint, jsonify, request
 from flask_login import current_user
 from sqlalchemy import func, select
 
 from db import db
-from models import PhotoWork, WorkComment, WorkLike
+from models import Category, PhotoWork, User, WorkComment, WorkLike
+from utils.decorators import admin_required
 
 
 bp = Blueprint('api', __name__, url_prefix='/api')
@@ -88,3 +91,47 @@ def add_comment(work_id):
     db.session.commit()
 
     return jsonify({'success': True})
+
+
+@bp.route('/dashboard/trends')
+@admin_required
+def dashboard_trends():
+    today = date.today()
+    days = [today - timedelta(days=offset) for offset in range(6, -1, -1)]
+    start_dt = datetime.combine(days[0], datetime.min.time())
+
+    user_rows = db.session.execute(
+        select(func.date(User.create_time), func.count(User.user_id))
+        .where(User.create_time >= start_dt)
+        .group_by(func.date(User.create_time))
+    ).all()
+    work_rows = db.session.execute(
+        select(func.date(PhotoWork.create_time), func.count(PhotoWork.work_id))
+        .where(PhotoWork.create_time >= start_dt)
+        .group_by(func.date(PhotoWork.create_time))
+    ).all()
+
+    user_map = {str(day): count for day, count in user_rows}
+    work_map = {str(day): count for day, count in work_rows}
+    labels = [day.strftime('%m-%d') for day in days]
+    keys = [day.isoformat() for day in days]
+    return jsonify({
+        'labels': labels,
+        'users': [user_map.get(key, 0) for key in keys],
+        'works': [work_map.get(key, 0) for key in keys],
+    })
+
+
+@bp.route('/dashboard/category_stats')
+@admin_required
+def dashboard_category_stats():
+    rows = db.session.execute(
+        select(Category.category_name, func.count(PhotoWork.work_id))
+        .outerjoin(PhotoWork, PhotoWork.category_id == Category.category_id)
+        .group_by(Category.category_id, Category.category_name)
+        .order_by(Category.sort.asc(), Category.category_id.asc())
+    ).all()
+    return jsonify([
+        {'name': category_name, 'value': count}
+        for category_name, count in rows
+    ])

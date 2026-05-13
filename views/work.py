@@ -1,12 +1,13 @@
 from flask import Blueprint, abort, flash, jsonify, redirect, render_template, request, url_for
 from flask_login import current_user
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.orm import joinedload, selectinload
 
 from db import db
 from models import Category, PhotoWork, PhotoWorkImage, Photographer, WorkComment, WorkLike
 from utils.decorators import admin_required
 from utils.file_upload import delete_uploaded_file, save_image_result
+from utils.logger import log_admin_action
 
 
 bp = Blueprint('work', __name__, url_prefix='/work')
@@ -191,6 +192,7 @@ def admin_form(work_id=None):
         work.update_hot_score()
         db.session.commit()
         delete_uploaded_file(old_cover_url)
+        log_admin_action('作品保存', f'保存作品：{work.title}')
         flash('作品已保存。', 'success')
         return redirect(url_for('admin_work.admin_list'))
 
@@ -213,6 +215,7 @@ def audit(work_id):
         return jsonify({'success': False, 'message': '审核状态无效。'}), 400
     work.audit_status = audit_status
     db.session.commit()
+    log_admin_action('作品审核', f'审核作品：{work.title}')
     return jsonify({'success': True})
 
 
@@ -223,5 +226,49 @@ def delete(work_id):
     if work is not None:
         work.status = 0
         db.session.commit()
+        log_admin_action('作品下架', f'下架作品：{work.title}')
         flash('作品已下架。', 'success')
     return redirect(url_for('admin_work.admin_list'))
+
+
+@admin_bp.route('/comment_list')
+@admin_required
+def comment_list():
+    page = request.args.get('page', default=1, type=int)
+    status = request.args.get('status', type=int)
+    audit_status = request.args.get('audit_status', type=int)
+
+    stmt = (
+        select(WorkComment)
+        .options(joinedload(WorkComment.user), joinedload(WorkComment.photo_work))
+        .order_by(WorkComment.create_time.desc(), WorkComment.comment_id.desc())
+    )
+    if status in (0, 1):
+        stmt = stmt.where(WorkComment.status == status)
+    if audit_status in (0, 1, 2):
+        stmt = stmt.where(WorkComment.audit_status == audit_status)
+
+    comments = db.paginate(stmt, page=page, per_page=10, error_out=False)
+    return render_template('work/admin_comment_list.html', comments=comments)
+
+
+@admin_bp.route('/comment/status/<int:comment_id>')
+@admin_required
+def toggle_comment_status(comment_id):
+    comment = db.session.get(WorkComment, comment_id)
+    if comment is not None:
+        comment.status = 0 if comment.status == 1 else 1
+        work = db.session.get(PhotoWork, comment.work_id)
+        if work is not None:
+            work.comment_count = db.session.scalar(
+                select(func.count(WorkComment.comment_id)).where(
+                    WorkComment.work_id == work.work_id,
+                    WorkComment.status == 1,
+                    WorkComment.audit_status == 1,
+                )
+            ) or 0
+            work.update_hot_score()
+        db.session.commit()
+        log_admin_action('作品评论状态', f'更新作品评论：{comment.comment_id}')
+        flash('作品评论状态已更新。', 'success')
+    return redirect(url_for('admin_work.comment_list'))

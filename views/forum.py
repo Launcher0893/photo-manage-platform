@@ -1,12 +1,14 @@
 from flask import Blueprint, abort, flash, redirect, render_template, request, url_for
 from flask_login import current_user
 from sqlalchemy import func, select
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import joinedload, selectinload
 
 from db import db
 from models import ForumBoard, ForumComment, ForumPost, ForumPostImage
 from utils.decorators import admin_required, user_required
 from utils.file_upload import save_image_result
+from utils.logger import log_admin_action
 
 
 bp = Blueprint('forum', __name__, url_prefix='/forum')
@@ -158,6 +160,62 @@ def admin_post_list():
     return render_template('forum/admin_post_list.html', posts=posts)
 
 
+@admin_bp.route('/board_list')
+@admin_required
+def admin_board_list():
+    page = request.args.get('page', default=1, type=int)
+    board_name = request.args.get('board_name', '').strip()
+    stmt = select(ForumBoard).order_by(ForumBoard.sort.asc(), ForumBoard.board_id.asc())
+    if board_name:
+        stmt = stmt.where(ForumBoard.board_name.like(f'%{board_name}%'))
+    boards = db.paginate(stmt, page=page, per_page=10, error_out=False)
+    return render_template('forum/admin_board_list.html', boards=boards)
+
+
+@admin_bp.route('/board/add', methods=['GET', 'POST'])
+@admin_bp.route('/board/edit/<int:board_id>', methods=['GET', 'POST'])
+@admin_required
+def admin_board_form(board_id=None):
+    board_item = db.session.get(ForumBoard, board_id) if board_id else ForumBoard(status=1)
+    if board_item is None:
+        flash('论坛板块不存在。', 'error')
+        return redirect(url_for('admin_forum.admin_board_list'))
+
+    if request.method == 'POST':
+        board_item.board_name = request.form.get('board_name', '').strip()
+        board_item.description = request.form.get('description', '').strip() or None
+        board_item.sort = request.form.get('sort', type=int, default=0)
+        if not board_item.board_name:
+            flash('板块名称不能为空。', 'error')
+            return render_template('forum/admin_board_form.html', board=board_item)
+
+        db.session.add(board_item)
+        try:
+            db.session.commit()
+        except IntegrityError:
+            db.session.rollback()
+            flash('板块名称已存在。', 'error')
+            return render_template('forum/admin_board_form.html', board=board_item)
+
+        log_admin_action('论坛板块保存', f'保存论坛板块：{board_item.board_name}')
+        flash('论坛板块已保存。', 'success')
+        return redirect(url_for('admin_forum.admin_board_list'))
+
+    return render_template('forum/admin_board_form.html', board=board_item if board_id else None)
+
+
+@admin_bp.route('/board/status/<int:board_id>')
+@admin_required
+def toggle_board_status(board_id):
+    board_item = db.session.get(ForumBoard, board_id)
+    if board_item is not None:
+        board_item.status = 0 if board_item.status == 1 else 1
+        db.session.commit()
+        log_admin_action('论坛板块状态', f'更新论坛板块状态：{board_item.board_name}')
+        flash('论坛板块状态已更新。', 'success')
+    return redirect(url_for('admin_forum.admin_board_list'))
+
+
 @admin_bp.route('/comment_list')
 @admin_required
 def admin_comment_list():
@@ -182,6 +240,7 @@ def toggle_post_status(post_id):
     if post is not None:
         post.status = 0 if post.status == 1 else 1
         db.session.commit()
+        log_admin_action('帖子状态', f'更新帖子状态：{post.title}')
         flash('帖子状态已更新。', 'success')
     return redirect(url_for('admin_forum.admin_post_list'))
 
@@ -194,6 +253,7 @@ def toggle_post_top(post_id):
     if post is not None:
         post.is_top = 0 if post.is_top == 1 else 1
         db.session.commit()
+        log_admin_action('帖子置顶', f'更新帖子置顶：{post.title}')
         flash('帖子置顶状态已更新。', 'success')
     return redirect(url_for('admin_forum.admin_post_list'))
 
@@ -214,5 +274,6 @@ def toggle_comment_status(comment_id):
                 )
             ) or 0
         db.session.commit()
+        log_admin_action('论坛评论状态', f'更新论坛评论：{comment.comment_id}')
         flash('评论状态已更新。', 'success')
     return redirect(url_for('admin_forum.admin_comment_list'))

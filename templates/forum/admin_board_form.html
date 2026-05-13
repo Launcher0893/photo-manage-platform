@@ -1,0 +1,26 @@
+{% extends 'admin_base.html' %}
+
+{% block title %}{{ board and '编辑板块' or '新增板块' }}{% endblock %}
+
+{% block content %}
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <h2>{{ board and '编辑板块' or '新增板块' }}</h2>
+            <form method="POST">
+                <div class="mb-3">
+                    <label>板块名称</label>
+                    <input type="text" name="board_name" class="form-control" required value="{{ board.board_name if board else '' }}">
+                </div>
+                <div class="mb-3">
+                    <label>描述</label>
+                    <textarea name="description" class="form-control" rows="4">{{ board.description if board else '' }}</textarea>
+                </div>
+                <div class="mb-3">
+                    <label>排序</label>
+                    <input type="number" name="sort" class="form-control" value="{{ board.sort if board else 0 }}">
+                </div>
+                <button type="submit" class="btn btn-primary">{{ board and '保存修改' or '新增板块' }}</button>
+            </form>
+        </div>
+    </div>
+{% endblock %}

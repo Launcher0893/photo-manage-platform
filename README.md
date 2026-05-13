@@ -9,6 +9,7 @@
 - 默认连接串在 `config.py` 中，可通过环境变量 `DATABASE_URL` 覆盖
 - 首次运行前需要先导入 `photo_manage_platform.sql`
 - 本项目使用 Flask、SQLAlchemy、Flask-Login、MySQL、Bootstrap
+- `photo_manage_platform.sql` 已包含基础演示数据，导入后可直接使用下方账号登录
 
 启动：
 
@@ -77,10 +78,34 @@ python app.py
 - 首页 `/` 已展示启用状态的轮播图
 - 只展示 `status == 1` 的轮播图
 
+## 后台功能入口
+
+- 控制台与图表：`/admin/dashboard/`
+- 作品管理：`/admin/work/list`
+- 作品评论管理：`/admin/work/comment_list`
+- 摄影师审核：`/admin/photographer/list`
+- 分类管理：`/admin/category/list`
+- 用户管理：`/admin/user/list`
+- 论坛帖子管理：`/admin/forum/post_list`
+- 论坛板块管理：`/admin/forum/board_list`
+- 论坛评论管理：`/admin/forum/comment_list`
+- 公告管理：`/admin/announcement/list`
+- 轮播图管理：`/admin/carousel/list`
+- 系统日志：`/admin/system/logs`
+
+## 演示与安全说明
+
+- SQL 演示账号密码均为 `123456`，密码以 MD5 写入。
+- 演示图片使用占位 URL；正式演示可在后台上传真实图片，数据库会保存 OSS URL。
+- 不要提交 `environment.md`、`.env` 或任何含有 OSS AccessKey 的文件。
+- 如密钥曾经暴露到不可信环境，应在阿里云控制台禁用或轮换。
+- 后台图表默认从 CDN 加载 ECharts；如果演示环境不能联网，页面会显示表格降级数据。
+
 ## 常用验证
 
 ```powershell
 python -m compileall app.py views models utils
 python -c "import app; print('import ok')"
 python -c "from app import app; c=app.test_client(); paths=['/','/work/list','/photographer/list','/forum/board','/announcement/list','/auth/login']; print([(p,c.get(p).status_code) for p in paths])"
+python -c "from app import app; c=app.test_client(); c.post('/auth/login', data={'username':'admin','password':'123456'}); paths=['/admin/dashboard/','/admin/work/comment_list','/admin/forum/board_list','/admin/system/logs']; print([(p,c.get(p).status_code) for p in paths])"
 ```

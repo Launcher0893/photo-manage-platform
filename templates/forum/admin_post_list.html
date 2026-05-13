@@ -5,6 +5,7 @@
 {% block content %}
     <div class="mb-4">
         <h2>帖子管理</h2>
+        <a href="/admin/forum/board_list" class="btn btn-primary">板块管理</a>
         <a href="/admin/forum/comment_list" class="btn btn-secondary">评论管理</a>
         <form method="GET" class="form-inline mt-2">
             <input type="text" name="title" class="form-control mr-2" placeholder="搜索标题..." value="{{ request.args.get('title', '') }}">

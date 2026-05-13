@@ -41,6 +41,24 @@
     </div>
     
     <div class="row mb-4">
+        <div class="col-md-12 mb-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5>最近 7 天新增趋势</h5>
+                    <div id="trend-chart" style="height: 320px;"></div>
+                    <table class="table table-sm mt-3" id="trend-table">
+                        <thead>
+                            <tr>
+                                <th>日期</th>
+                                <th>新增用户</th>
+                                <th>新增作品</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
         <div class="col-md-6">
             <div class="card">
                 <div class="card-body">
@@ -71,8 +89,83 @@
                 <div class="card-body">
                     <h5>作品分类占比</h5>
                     <div id="category-chart" style="height: 300px;"></div>
+                    <table class="table table-sm mt-3" id="category-table">
+                        <thead>
+                            <tr>
+                                <th>分类</th>
+                                <th>作品数</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for category_name, work_count in category_stats %}
+                                <tr>
+                                    <td>{{ category_name }}</td>
+                                    <td>{{ work_count }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
     </div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.5.1/dist/echarts.min.js"></script>
+<script>
+$(function() {
+    $.getJSON('/api/dashboard/trends', function(data) {
+        var rows = [];
+        for (var i = 0; i < data.labels.length; i++) {
+            rows.push('<tr><td>' + data.labels[i] + '</td><td>' + data.users[i] + '</td><td>' + data.works[i] + '</td></tr>');
+        }
+        $('#trend-table tbody').html(rows.join(''));
+
+        if (window.echarts) {
+            var trendChart = echarts.init(document.getElementById('trend-chart'));
+            trendChart.setOption({
+                tooltip: { trigger: 'axis' },
+                legend: { data: ['新增用户', '新增作品'] },
+                xAxis: { type: 'category', data: data.labels },
+                yAxis: { type: 'value' },
+                series: [
+                    { name: '新增用户', type: 'line', smooth: true, data: data.users },
+                    { name: '新增作品', type: 'line', smooth: true, data: data.works }
+                ]
+            });
+            $(window).on('resize', function() {
+                trendChart.resize();
+            });
+        } else {
+            $('#trend-chart').hide();
+        }
+    });
+
+    $.getJSON('/api/dashboard/category_stats', function(data) {
+        var rows = data.map(function(item) {
+            return '<tr><td>' + item.name + '</td><td>' + item.value + '</td></tr>';
+        });
+        $('#category-table tbody').html(rows.join(''));
+
+        if (window.echarts) {
+            var categoryChart = echarts.init(document.getElementById('category-chart'));
+            categoryChart.setOption({
+                tooltip: { trigger: 'item' },
+                series: [{
+                    name: '作品分类',
+                    type: 'pie',
+                    radius: '65%',
+                    data: data
+                }]
+            });
+            $(window).on('resize', function() {
+                categoryChart.resize();
+            });
+        } else {
+            $('#category-chart').hide();
+        }
+    });
+});
+</script>
 {% endblock %}

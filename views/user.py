@@ -4,9 +4,10 @@ from sqlalchemy import select
 from sqlalchemy.orm import joinedload
 
 from db import db
-from models import ForumPost, User
+from models import ForumPost, User, WorkComment
 from utils.decorators import admin_required, user_required
 from utils.file_upload import delete_uploaded_file, save_image
+from utils.logger import log_admin_action
 
 
 bp = Blueprint('user', __name__, url_prefix='/user')
@@ -93,6 +94,42 @@ def admin_list():
     return render_template('user/admin_list.html', users=users)
 
 
+@admin_bp.route('/detail/<int:user_id>')
+@admin_required
+def detail(user_id):
+    user = db.session.execute(
+        select(User)
+        .options(joinedload(User.photographer))
+        .where(User.user_id == user_id)
+    ).scalar_one_or_none()
+    if user is None:
+        flash('用户不存在。', 'error')
+        return redirect(url_for('admin_user.admin_list'))
+
+    posts = db.session.execute(
+        select(ForumPost)
+        .options(joinedload(ForumPost.forum_board))
+        .where(ForumPost.user_id == user_id)
+        .order_by(ForumPost.create_time.desc(), ForumPost.post_id.desc())
+        .limit(10)
+    ).scalars().all()
+    comments = db.session.execute(
+        select(WorkComment)
+        .options(joinedload(WorkComment.photo_work))
+        .where(WorkComment.user_id == user_id)
+        .order_by(WorkComment.create_time.desc(), WorkComment.comment_id.desc())
+        .limit(10)
+    ).scalars().all()
+    photographer = user.photographer
+    return render_template(
+        'user/admin_detail.html',
+        user=user,
+        photographer=photographer,
+        posts=posts,
+        comments=comments,
+    )
+
+
 @admin_bp.route('/status/<int:user_id>')
 @admin_required
 def toggle_status(user_id):
@@ -100,5 +137,6 @@ def toggle_status(user_id):
     if user is not None:
         user.status = 0 if user.status == 1 else 1
         db.session.commit()
+        log_admin_action('用户状态', f'更新用户状态：{user.username}')
         flash('用户状态已更新。', 'success')
     return redirect(url_for('admin_user.admin_list'))

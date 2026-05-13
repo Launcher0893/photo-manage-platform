@@ -5,6 +5,7 @@ from sqlalchemy.exc import IntegrityError
 from db import db
 from models import Category
 from utils.decorators import admin_required
+from utils.logger import log_admin_action
 
 
 bp = Blueprint('category', __name__, url_prefix='/admin/category')
@@ -48,6 +49,7 @@ def form(category_id=None):
             return render_template('category/form.html', category=category)
 
         flash('分类已保存。', 'success')
+        log_admin_action('分类保存', f'保存分类：{category.category_name}')
         return redirect(url_for('category.list_page'))
 
     return render_template('category/form.html', category=category if category_id else None)
@@ -62,5 +64,6 @@ def toggle_status(category_id):
     else:
         category.status = 0 if category.status == 1 else 1
         db.session.commit()
+        log_admin_action('分类状态', f'更新分类状态：{category.category_name}')
         flash('分类状态已更新。', 'success')
     return redirect(url_for('category.list_page'))

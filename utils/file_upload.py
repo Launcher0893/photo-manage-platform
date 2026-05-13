@@ -36,6 +36,12 @@ def save_image_result(file: FileStorage | None, folder: str) -> UploadResult | N
         return None
     if not allowed_image(file.filename):
         raise ValueError('Only image files are allowed.')
+    max_size = int(current_app.config.get('MAX_IMAGE_SIZE', 5 * 1024 * 1024))
+    file.stream.seek(0, 2)
+    file_size = file.stream.tell()
+    file.stream.seek(0)
+    if max_size > 0 and file_size > max_size:
+        raise ValueError(f'Image file must not exceed {max_size // 1024 // 1024}MB.')
 
     original_name = secure_filename(file.filename)
     suffix = original_name.rsplit('.', 1)[1].lower()

@@ -16,6 +16,7 @@ class Config:
     )
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     JSON_AS_ASCII = False
+    MAX_IMAGE_SIZE = int(os.environ.get('MAX_IMAGE_SIZE', 5 * 1024 * 1024))
 
     OSS_ENABLED = os.environ.get('OSS_ENABLED', 'true').lower() not in ('0', 'false', 'no')
     OSS_ACCESS_KEY_ID = os.environ.get('OSS_ACCESS_KEY_ID', '')

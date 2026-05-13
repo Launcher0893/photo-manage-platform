@@ -14,6 +14,7 @@ class SystemLog(db.Model):
     operate_content = db.Column(db.String(255), nullable=False)
     ip_address = db.Column(db.String(50))
     operate_time = db.Column(db.DateTime, default=datetime.now)
+    admin = db.relationship('Admin', backref='system_logs')
     
     def __repr__(self):
         return f'<SystemLog {self.operate_type}>'

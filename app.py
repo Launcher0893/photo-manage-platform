@@ -5,7 +5,7 @@ from sqlalchemy.orm import joinedload
 
 from config import Config
 from db import db
-from models import Carousel, PhotoWork, Photographer
+from models import Announcement, Carousel, PhotoWork, Photographer
 import models  # noqa: F401
 from views.announcement import admin_bp as admin_announcement_bp
 from views.announcement import bp as announcement_bp
@@ -18,6 +18,7 @@ from views.forum import admin_bp as admin_forum_bp
 from views.forum import bp as forum_bp
 from views.photographer import admin_bp as admin_photographer_bp
 from views.photographer import bp as photographer_bp
+from views.system import bp as system_bp
 from views.user import admin_bp as admin_user_bp
 from views.user import bp as user_bp
 from views.work import admin_bp as admin_work_bp
@@ -53,6 +54,7 @@ app.register_blueprint(carousel_bp)
 app.register_blueprint(user_bp)
 app.register_blueprint(admin_user_bp)
 app.register_blueprint(api_bp)
+app.register_blueprint(system_bp)
 
 
 @app.route('/')
@@ -110,6 +112,13 @@ def index():
         .limit(6)
     ).scalars().all()
 
+    latest_announcements = db.session.execute(
+        select(Announcement)
+        .where(Announcement.status == 1)
+        .order_by(Announcement.create_time.desc(), Announcement.announcement_id.desc())
+        .limit(4)
+    ).scalars().all()
+
     return render_template(
         'index.html',
         carousels=carousels,
@@ -117,6 +126,7 @@ def index():
         hot_works=hot_works,
         recent_works=recent_works,
         photographers=photographers,
+        latest_announcements=latest_announcements,
     )
 
 

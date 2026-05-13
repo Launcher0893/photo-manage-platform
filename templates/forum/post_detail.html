@@ -12,6 +12,19 @@
     <div class="mb-4 p-4 border">
         {{ post.content }}
     </div>
+
+    {% if post.images %}
+        <div class="mb-4">
+            <h3>帖子图片</h3>
+            <div class="row">
+                {% for image in post.images|sort(attribute='sort') %}
+                    <div class="col-md-4 mb-3">
+                        <img src="{{ image.image_url }}" class="img-fluid rounded" alt="{{ post.title }}">
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    {% endif %}
     
     <div class="mb-4">
         <h3>评论区</h3>

@@ -8,6 +8,7 @@ from sqlalchemy.orm import joinedload, selectinload
 from db import db
 from models import PhotoWork, Photographer
 from utils.decorators import admin_required
+from utils.logger import log_admin_action
 
 
 bp = Blueprint('photographer', __name__, url_prefix='/photographer')
@@ -96,6 +97,7 @@ def admin_audit(photographer_id):
         if photographer.user:
             photographer.user.user_role = 2 if cert_status == Photographer.STATUS_APPROVED else photographer.user.user_role
         db.session.commit()
+        log_admin_action('摄影师审核', f'审核摄影师：{photographer.user.username if photographer.user else photographer.photographer_id}')
         flash('摄影师审核已保存。', 'success')
         return redirect(url_for('admin_photographer.admin_list'))
 

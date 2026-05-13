@@ -6,6 +6,7 @@
     <div class="mb-4">
         <h2>作品管理</h2>
         <a href="/admin/work/add" class="btn btn-primary">新增作品</a>
+        <a href="/admin/work/comment_list" class="btn btn-secondary">作品评论管理</a>
         <form method="GET" class="form-inline mt-2">
             <input type="text" name="title" class="form-control mr-2" placeholder="搜索标题..." value="{{ request.args.get('title', '') }}">
             <select name="audit_status" class="form-control mr-2">

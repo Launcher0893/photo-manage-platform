@@ -5,6 +5,9 @@
 {% block content %}
     <h2>{{ announcement.title }}</h2>
     <p class="text-muted">{{ announcement.create_time.strftime('%Y-%m-%d') }}</p>
+    {% if announcement.cover_url %}
+        <img src="{{ announcement.cover_url }}" class="img-fluid rounded mb-4" alt="{{ announcement.title }}">
+    {% endif %}
     <div class="mt-4">
         {{ announcement.content }}
     </div>

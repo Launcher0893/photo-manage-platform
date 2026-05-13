@@ -1,1 +1,56 @@
-<!-- 系统日志模板。后续用于管理员查看系统关键操作日志。 -->
+{% extends 'admin_base.html' %}
+
+{% block title %}系统日志{% endblock %}
+
+{% block content %}
+    <div class="mb-4">
+        <h2>系统日志</h2>
+        <form method="GET" class="form-inline">
+            <input type="text" name="operate_type" class="form-control mr-2" placeholder="操作类型" value="{{ request.args.get('operate_type', '') }}">
+            <button type="submit" class="btn btn-primary">筛选</button>
+        </form>
+    </div>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>管理员</th>
+                <th>操作类型</th>
+                <th>操作内容</th>
+                <th>IP</th>
+                <th>时间</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for log in logs.items %}
+                <tr>
+                    <td>{{ log.admin.admin_name if log.admin else log.admin_id }}</td>
+                    <td>{{ log.operate_type }}</td>
+                    <td>{{ log.operate_content }}</td>
+                    <td>{{ log.ip_address or '-' }}</td>
+                    <td>{{ log.operate_time.strftime('%Y-%m-%d %H:%M') if log.operate_time else '-' }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <nav aria-label="Page navigation">
+        <ul class="pagination">
+            {% if logs.has_prev %}
+                <li class="page-item"><a class="page-link" href="?page={{ logs.prev_num }}">上一页</a></li>
+            {% endif %}
+            {% for page in logs.iter_pages() %}
+                {% if page %}
+                    <li class="page-item {% if page == logs.page %}active{% endif %}">
+                        <a class="page-link" href="?page={{ page }}">{{ page }}</a>
+                    </li>
+                {% else %}
+                    <li class="page-item disabled"><span class="page-link">...</span></li>
+                {% endif %}
+            {% endfor %}
+            {% if logs.has_next %}
+                <li class="page-item"><a class="page-link" href="?page={{ logs.next_num }}">下一页</a></li>
+            {% endif %}
+        </ul>
+    </nav>
+{% endblock %}

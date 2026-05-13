@@ -375,4 +375,78 @@ CREATE TABLE `work_like`  (
 -- Records of work_like
 -- ----------------------------
 
+-- ----------------------------
+-- Demo records
+-- ----------------------------
+INSERT INTO `role` (`role_id`, `role_name`, `permissions`, `remark`, `create_time`, `update_time`) VALUES
+(1, '超级管理员', 'all', '系统默认管理员角色', '2026-05-13 10:00:00', '2026-05-13 10:00:00');
+
+INSERT INTO `admin` (`admin_id`, `admin_account`, `admin_password`, `admin_name`, `role_id`, `status`, `create_time`, `update_time`) VALUES
+(1, 'admin', 'e10adc3949ba59abbe56e057f20f883e', '系统管理员', 1, 1, '2026-05-13 10:00:00', '2026-05-13 10:00:00');
+
+INSERT INTO `user` (`user_id`, `username`, `password`, `nickname`, `email`, `phone`, `avatar_url`, `user_role`, `status`, `create_time`, `update_time`) VALUES
+(1, 'user1', 'e10adc3949ba59abbe56e057f20f883e', '晨光旅人', 'user1@example.com', '13800000001', 'https://via.placeholder.com/300x200?text=User1', 1, 1, '2026-05-07 09:00:00', '2026-05-07 09:00:00'),
+(2, 'user2', 'e10adc3949ba59abbe56e057f20f883e', '城市取景器', 'user2@example.com', '13800000002', 'https://via.placeholder.com/300x200?text=User2', 2, 1, '2026-05-08 09:00:00', '2026-05-08 09:00:00'),
+(3, 'user3', 'e10adc3949ba59abbe56e057f20f883e', '胶片观察员', 'user3@example.com', '13800000003', 'https://via.placeholder.com/300x200?text=User3', 2, 1, '2026-05-09 09:00:00', '2026-05-09 09:00:00'),
+(4, 'user_test', 'e10adc3949ba59abbe56e057f20f883e', '测试用户', 'test@example.com', '13800000004', 'https://via.placeholder.com/300x200?text=Test', 1, 1, '2026-05-10 09:00:00', '2026-05-10 09:00:00');
+
+INSERT INTO `category` (`category_id`, `category_name`, `sort`, `status`, `create_time`, `update_time`) VALUES
+(1, '人像', 1, 1, '2026-05-13 10:00:00', '2026-05-13 10:00:00'),
+(2, '街拍', 2, 1, '2026-05-13 10:00:00', '2026-05-13 10:00:00'),
+(3, '风光', 3, 1, '2026-05-13 10:00:00', '2026-05-13 10:00:00'),
+(4, '黑白光影', 4, 1, '2026-05-13 10:00:00', '2026-05-13 10:00:00');
+
+INSERT INTO `photographer` (`photographer_id`, `user_id`, `real_name`, `city`, `cert_status`, `cert_remark`, `audit_admin_id`, `audit_time`, `create_time`, `update_time`) VALUES
+(1, 2, '李明', '上海', 1, '资料完整，审核通过', 1, '2026-05-10 10:00:00', '2026-05-08 09:30:00', '2026-05-10 10:00:00'),
+(2, 3, '周然', '广州', 1, '作品风格清晰', 1, '2026-05-11 10:00:00', '2026-05-09 09:30:00', '2026-05-11 10:00:00');
+
+INSERT INTO `forum_board` (`board_id`, `board_name`, `description`, `sort`, `status`, `create_time`) VALUES
+(1, '作品交流', '发布作品并交流构图、色彩和后期思路', 1, 1, '2026-05-13 10:00:00'),
+(2, '技巧分享', '讨论器材、布光、修图和拍摄经验', 2, 1, '2026-05-13 10:00:00');
+
+INSERT INTO `photo_work` (`work_id`, `title`, `photographer_id`, `category_id`, `cover_url`, `city`, `description`, `view_count`, `like_count`, `comment_count`, `hot_score`, `audit_status`, `is_featured`, `status`, `create_time`, `update_time`) VALUES
+(1, '夜色人像', 1, 1, 'https://via.placeholder.com/900x600?text=Night+Portrait', '上海', '夜景环境下的人像摄影作品，强调城市霓虹与人物情绪。', 128, 2, 2, 138, 1, 1, 1, '2026-05-10 14:00:00', '2026-05-10 14:00:00'),
+(2, '街头光影', 1, 2, 'https://via.placeholder.com/900x600?text=Street+Light', '广州', '街头抓拍中的光影层次，记录日常场景里的瞬间。', 96, 1, 1, 101, 1, 0, 1, '2026-05-11 15:00:00', '2026-05-11 15:00:00'),
+(3, '海边清晨', 2, 3, 'https://via.placeholder.com/900x600?text=Morning+Sea', '深圳', '日出时分的海边风光，色彩柔和，层次清晰。', 88, 0, 0, 88, 1, 1, 1, '2026-05-12 08:00:00', '2026-05-12 08:00:00');
+
+INSERT INTO `photo_work_image` (`image_id`, `work_id`, `image_url`, `oss_object_name`, `sort`, `create_time`) VALUES
+(1, 1, 'https://via.placeholder.com/900x600?text=Night+Portrait+1', NULL, 1, '2026-05-10 14:00:00'),
+(2, 1, 'https://via.placeholder.com/900x600?text=Night+Portrait+2', NULL, 2, '2026-05-10 14:00:00'),
+(3, 2, 'https://via.placeholder.com/900x600?text=Street+Light+1', NULL, 1, '2026-05-11 15:00:00'),
+(4, 3, 'https://via.placeholder.com/900x600?text=Morning+Sea+1', NULL, 1, '2026-05-12 08:00:00');
+
+INSERT INTO `work_like` (`like_id`, `work_id`, `user_id`, `create_time`) VALUES
+(1, 1, 1, '2026-05-12 12:00:00'),
+(2, 1, 4, '2026-05-12 12:05:00'),
+(3, 2, 1, '2026-05-12 12:10:00');
+
+INSERT INTO `work_comment` (`comment_id`, `work_id`, `user_id`, `content`, `audit_status`, `status`, `create_time`, `update_time`) VALUES
+(1, 1, 1, '构图很稳，夜景颜色也很干净。', 1, 1, '2026-05-12 13:00:00', '2026-05-12 13:00:00'),
+(2, 1, 4, '人物和背景的层次很好。', 1, 1, '2026-05-12 13:10:00', '2026-05-12 13:10:00'),
+(3, 2, 4, '街头氛围很自然。', 1, 1, '2026-05-12 13:20:00', '2026-05-12 13:20:00');
+
+INSERT INTO `forum_post` (`post_id`, `board_id`, `user_id`, `title`, `content`, `view_count`, `like_count`, `comment_count`, `is_top`, `status`, `create_time`, `update_time`) VALUES
+(1, 1, 1, '第一次夜景人像拍摄心得', '分享一次夜景人像拍摄的参数设置和现场沟通经验。', 56, 0, 2, 1, 1, '2026-05-11 19:00:00', '2026-05-11 19:00:00'),
+(2, 2, 2, '人像布光笔记', '整理几种常见人像布光方式，适合室内小空间练习。', 42, 0, 1, 0, 1, '2026-05-12 20:00:00', '2026-05-12 20:00:00');
+
+INSERT INTO `forum_post_image` (`image_id`, `post_id`, `image_url`, `oss_object_name`, `sort`, `create_time`) VALUES
+(1, 1, 'https://via.placeholder.com/900x600?text=Forum+Post+1', NULL, 1, '2026-05-11 19:00:00'),
+(2, 2, 'https://via.placeholder.com/900x600?text=Forum+Post+2', NULL, 1, '2026-05-12 20:00:00');
+
+INSERT INTO `forum_comment` (`comment_id`, `post_id`, `user_id`, `content`, `status`, `create_time`) VALUES
+(1, 1, 2, '参数说明很清楚，学习了。', 1, '2026-05-11 20:00:00'),
+(2, 1, 4, '下次可以试试更低的机位。', 1, '2026-05-11 20:10:00'),
+(3, 2, 1, '这个布光方案很适合练习。', 1, '2026-05-12 21:00:00');
+
+INSERT INTO `announcement` (`announcement_id`, `title`, `content`, `cover_url`, `admin_id`, `status`, `create_time`, `update_time`) VALUES
+(1, '平台试运行公告', '摄影作品分享平台当前已完成基础功能接入，欢迎发布作品和参与论坛交流。', 'https://via.placeholder.com/900x360?text=Announcement', 1, 1, '2026-05-13 09:00:00', '2026-05-13 09:00:00'),
+(2, '作品征集说明', '欢迎上传街拍、人像、风光等类型作品，优秀作品将推荐到首页精选区域。', 'https://via.placeholder.com/900x360?text=Works+Wanted', 1, 1, '2026-05-12 09:00:00', '2026-05-12 09:00:00');
+
+INSERT INTO `carousel` (`carousel_id`, `title`, `image_url`, `link_type`, `link_id`, `link_url`, `sort`, `status`, `create_time`) VALUES
+(1, '精选作品：夜色人像', 'https://via.placeholder.com/1200x360?text=Night+Portrait', 'work', 1, NULL, 1, 1, '2026-05-13 10:00:00'),
+(2, '平台公告', 'https://via.placeholder.com/1200x360?text=Photo+Platform', 'announcement', 1, NULL, 2, 1, '2026-05-13 10:00:00');
+
+INSERT INTO `system_log` (`log_id`, `admin_id`, `operate_type`, `operate_content`, `ip_address`, `operate_time`) VALUES
+(1, 1, '初始化数据', '导入课程项目演示数据', '127.0.0.1', '2026-05-13 10:00:00');
+
 SET FOREIGN_KEY_CHECKS = 1;

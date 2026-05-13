@@ -21,6 +21,19 @@
         <img src="{{ work.cover_url or 'https://via.placeholder.com/800x600' }}" class="img-fluid" alt="{{ work.title }}">
     </div>
 
+    {% if work.images %}
+        <div class="mb-4">
+            <h3>作品组图</h3>
+            <div class="row">
+                {% for image in work.images|sort(attribute='sort') %}
+                    <div class="col-md-4 mb-3">
+                        <img src="{{ image.image_url }}" class="img-fluid rounded" alt="{{ work.title }}">
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    {% endif %}
+
     <div class="mb-4">
         <p>{{ work.description or '暂无描述。' }}</p>
     </div>

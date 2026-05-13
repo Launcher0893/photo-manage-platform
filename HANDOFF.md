@@ -4,14 +4,6 @@
 
 你现在接手一个 Flask 课程项目，项目是“摄影作品分享平台”。请先读取当前真实项目目录下的关键文件，不要把早期规划目录当成实现目录。
 
-真实实现目录：
-
-```text
-D:\Program Files\Code\PyCharm\photo-manage-platform
-```
-
-优先读取：
-
 - `HANDOFF.md`
 - `README.md`
 - `app.py`
