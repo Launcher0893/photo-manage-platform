@@ -2,10 +2,11 @@
 
 ## 新会话提示词
 
-你现在接手一个 Flask 课程项目，项目是“摄影作品分享平台”。请先读取当前真实项目目录下的关键文件，不要把早期规划目录当成实现目录。
+你现在接手一个 Flask 课程项目，项目是“摄影作品分享平台”，请先读取当前真实项目目录下的关键文件。
 
 - `HANDOFF.md`
 - `README.md`
+- `photography-platform-design-plan.md`
 - `app.py`
 - `config.py`
 - `db.py`
