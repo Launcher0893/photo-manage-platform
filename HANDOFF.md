@@ -65,16 +65,16 @@ D:\Program Files\Code\PyCharm\photo-manage-platform
 
 ## OSS 配置与行为
 
-配置位于 `config.py`：
+`config.py` 从环境变量读取 OSS 密钥，不再硬编码 AccessKey：
 
-```python
-OSS_ENABLED = True
-OSS_ACCESS_KEY_ID = '...'
-OSS_ACCESS_KEY_SECRET = '...'
-OSS_ENDPOINT = 'oss-cn-wuhan-lr.aliyuncs.com'
-OSS_BUCKET_NAME = 'photo-manage-oss'
-OSS_UPLOAD_PREFIX = 'photo-manage-platform'
-OSS_BUCKET_DOMAIN = 'photo-manage-oss.oss-cn-wuhan-lr.aliyuncs.com'
+```powershell
+$env:OSS_ACCESS_KEY_ID="你的 AccessKey ID"
+$env:OSS_ACCESS_KEY_SECRET="你的 AccessKey Secret"
+$env:OSS_ENDPOINT="oss-cn-wuhan-lr.aliyuncs.com"
+$env:OSS_BUCKET_NAME="photo-manage-oss"
+$env:OSS_UPLOAD_PREFIX="photo-manage-platform"
+$env:OSS_BUCKET_DOMAIN="photo-manage-oss.oss-cn-wuhan-lr.aliyuncs.com"
+python app.py
 ```
 
 当前 OSS 连通性已验证：
@@ -83,7 +83,7 @@ OSS_BUCKET_DOMAIN = 'photo-manage-oss.oss-cn-wuhan-lr.aliyuncs.com'
 - 能删除测试对象。
 - 生成 URL 格式正确。
 
-注意：AccessKey 当前为测试用途直接写在 `config.py`，不要公开提交或截图泄露。
+注意：AccessKey 不应写入仓库文件。如果环境变量变更，需要重启 Flask/PyCharm 运行进程。若旧密钥已经暴露给不可信环境，应在阿里云控制台禁用或轮换。
 
 ## 业务规则
 
@@ -116,5 +116,5 @@ OSS_BUCKET_DOMAIN = 'photo-manage-oss.oss-cn-wuhan-lr.aliyuncs.com'
 
 - 模板中仍有部分历史中文乱码，后续如果修 UI 文案，应逐个模板检查，不要盲目全量替换。
 - 如果要交付可复现数据库，应补充初始化数据脚本，并确保密码为 MD5。
-- OSS AccessKey 后续应改为环境变量，不要长期硬编码在 `config.py`。
+- OSS AccessKey 已改为环境变量读取，不要重新硬编码到 `config.py` 或其他仓库文件。
 - 每次修改后至少运行编译、导入和核心路由检查。

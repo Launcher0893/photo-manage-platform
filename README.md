@@ -54,19 +54,21 @@ user_test / 123456
 - 公告封面
 - 轮播图
 
-`config.py` 中需要配置：
+`config.py` 从环境变量读取 OSS 密钥，不要把 AccessKey 写入代码仓库。
 
-```python
-OSS_ENABLED = True
-OSS_ACCESS_KEY_ID = '...'
-OSS_ACCESS_KEY_SECRET = '...'
-OSS_ENDPOINT = 'oss-cn-wuhan-lr.aliyuncs.com'
-OSS_BUCKET_NAME = 'photo-manage-oss'
-OSS_UPLOAD_PREFIX = 'photo-manage-platform'
-OSS_BUCKET_DOMAIN = 'photo-manage-oss.oss-cn-wuhan-lr.aliyuncs.com'
+PowerShell 示例：
+
+```powershell
+$env:OSS_ACCESS_KEY_ID="你的 AccessKey ID"
+$env:OSS_ACCESS_KEY_SECRET="你的 AccessKey Secret"
+$env:OSS_ENDPOINT="oss-cn-wuhan-lr.aliyuncs.com"
+$env:OSS_BUCKET_NAME="photo-manage-oss"
+$env:OSS_UPLOAD_PREFIX="photo-manage-platform"
+$env:OSS_BUCKET_DOMAIN="photo-manage-oss.oss-cn-wuhan-lr.aliyuncs.com"
+python app.py
 ```
 
-测试环境可以临时写入 AccessKey，但不要提交到公共仓库或公开截图。
+如果修改了环境变量，需要重启 Flask/PyCharm 运行进程后才会生效。`OSS_ENDPOINT`、`OSS_BUCKET_NAME`、`OSS_BUCKET_DOMAIN` 在 `config.py` 中有默认值，真正必须提供的是 `OSS_ACCESS_KEY_ID` 和 `OSS_ACCESS_KEY_SECRET`。
 
 ## 轮播图
 
