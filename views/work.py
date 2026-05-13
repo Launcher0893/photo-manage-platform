@@ -5,13 +5,97 @@ from sqlalchemy.orm import joinedload, selectinload
 
 from db import db
 from models import Category, PhotoWork, PhotoWorkImage, Photographer, WorkComment, WorkLike
-from utils.decorators import admin_required
+from utils.decorators import admin_required, user_required
 from utils.file_upload import delete_uploaded_file, save_image_result
 from utils.logger import log_admin_action
 
 
 bp = Blueprint('work', __name__, url_prefix='/work')
 admin_bp = Blueprint('admin_work', __name__, url_prefix='/admin/work')
+
+
+def _approved_current_photographer():
+    photographer = current_user.photographer
+    if photographer is None or photographer.cert_status != Photographer.STATUS_APPROVED:
+        return None
+    return photographer
+
+
+def _active_categories():
+    return db.session.execute(
+        select(Category).where(Category.status == 1).order_by(Category.sort.asc(), Category.category_id.asc())
+    ).scalars().all()
+
+
+def _save_work_from_request(
+    work,
+    categories,
+    template_name,
+    redirect_endpoint,
+    log_operation=None,
+    log_content_factory=None,
+    **template_context,
+):
+    old_cover_url = None
+    work.title = request.form.get('title', '').strip()
+    work.category_id = request.form.get('category_id', type=int)
+    work.city = request.form.get('city', '').strip() or None
+    work.description = request.form.get('description', '').strip() or None
+
+    if not work.title or not work.photographer_id or not work.category_id:
+        flash('标题、摄影师和分类不能为空。', 'error')
+        return render_template(template_name, work=work, categories=categories, **template_context)
+
+    delete_image_ids = {
+        int(image_id)
+        for image_id in request.form.getlist('delete_image_ids')
+        if image_id.isdigit()
+    }
+    for image in list(getattr(work, 'images', []) or []):
+        if image.image_id in delete_image_ids:
+            if not delete_uploaded_file(image.image_url, image.oss_object_name):
+                flash('作品图片删除失败，请稍后重试。', 'error')
+                return render_template(template_name, work=work, categories=categories, **template_context)
+            db.session.delete(image)
+
+    try:
+        cover_upload = save_image_result(request.files.get('cover_file'), 'works')
+        if cover_upload:
+            old_cover_url = work.cover_url
+            work.cover_url = cover_upload.url
+    except ValueError as exc:
+        flash(str(exc), 'error')
+        return render_template(template_name, work=work, categories=categories, **template_context)
+
+    db.session.add(work)
+    db.session.flush()
+
+    current_max_sort = max((image.sort or 0 for image in getattr(work, 'images', []) or []), default=0)
+    for offset, image_file in enumerate(request.files.getlist('work_images'), start=1):
+        try:
+            image_upload = save_image_result(image_file, 'works')
+        except ValueError as exc:
+            db.session.rollback()
+            flash(str(exc), 'error')
+            return render_template(template_name, work=work, categories=categories, **template_context)
+        if image_upload:
+            db.session.add(
+                PhotoWorkImage(
+                    work_id=work.work_id,
+                    image_url=image_upload.url,
+                    oss_object_name=image_upload.oss_object_name,
+                    sort=current_max_sort + offset,
+                )
+            )
+
+    work.update_hot_score()
+    db.session.commit()
+    delete_uploaded_file(old_cover_url)
+    if log_operation:
+        log_content = log_content_factory(work) if log_content_factory else work.title
+        log_admin_action(log_operation, log_content)
+    flash('作品已保存。', 'success')
+    return redirect(url_for(redirect_endpoint))
 
 
 @bp.route('/list')
@@ -54,6 +138,84 @@ def list_page():
 
     works = db.paginate(stmt, page=page, per_page=9, error_out=False)
     return render_template('work/list.html', works=works, categories=categories)
+
+
+@bp.route('/my')
+@user_required
+def my_works():
+    photographer = _approved_current_photographer()
+    if photographer is None:
+        flash('摄影师审核通过后才能管理作品。', 'error')
+        return redirect(url_for('user.profile'))
+
+    page = request.args.get('page', default=1, type=int)
+    stmt = (
+        select(PhotoWork)
+        .options(joinedload(PhotoWork.category))
+        .where(PhotoWork.photographer_id == photographer.photographer_id)
+        .order_by(PhotoWork.create_time.desc(), PhotoWork.work_id.desc())
+    )
+    works = db.paginate(stmt, page=page, per_page=10, error_out=False)
+    return render_template('work/my_list.html', works=works)
+
+
+@bp.route('/add', methods=['GET', 'POST'])
+@bp.route('/edit/<int:work_id>', methods=['GET', 'POST'])
+@user_required
+def photographer_form(work_id=None):
+    photographer = _approved_current_photographer()
+    if photographer is None:
+        flash('摄影师审核通过后才能发布作品。', 'error')
+        return redirect(url_for('user.profile'))
+
+    if work_id:
+        work = db.session.execute(
+            select(PhotoWork)
+            .options(selectinload(PhotoWork.images))
+            .where(
+                PhotoWork.work_id == work_id,
+                PhotoWork.photographer_id == photographer.photographer_id,
+            )
+        ).scalar_one_or_none()
+        if work is None:
+            abort(404)
+    else:
+        work = PhotoWork(
+            photographer_id=photographer.photographer_id,
+            status=1,
+            audit_status=PhotoWork.AUDIT_APPROVED,
+        )
+
+    categories = _active_categories()
+    if request.method == 'POST':
+        work.photographer_id = photographer.photographer_id
+        work.audit_status = PhotoWork.AUDIT_APPROVED
+        return _save_work_from_request(work, categories, 'work/form.html', 'work.my_works')
+
+    return render_template('work/form.html', work=work if work_id else None, categories=categories)
+
+
+@bp.route('/status/<int:work_id>')
+@user_required
+def toggle_my_work_status(work_id):
+    photographer = _approved_current_photographer()
+    if photographer is None:
+        flash('摄影师审核通过后才能管理作品。', 'error')
+        return redirect(url_for('user.profile'))
+
+    work = db.session.execute(
+        select(PhotoWork).where(
+            PhotoWork.work_id == work_id,
+            PhotoWork.photographer_id == photographer.photographer_id,
+        )
+    ).scalar_one_or_none()
+    if work is None:
+        abort(404)
+
+    work.status = 0 if work.status == 1 else 1
+    db.session.commit()
+    flash('作品状态已更新。', 'success')
+    return redirect(url_for('work.my_works'))
 
 
 @bp.route('/detail/<int:work_id>')
@@ -144,57 +306,20 @@ def admin_form(work_id=None):
         .where(Photographer.cert_status == Photographer.STATUS_APPROVED)
         .order_by(Photographer.photographer_id.desc())
     ).scalars().all()
-    categories = db.session.execute(
-        select(Category).where(Category.status == 1).order_by(Category.sort.asc(), Category.category_id.asc())
-    ).scalars().all()
+    categories = _active_categories()
 
     if request.method == 'POST':
-        old_cover_url = None
-        work.title = request.form.get('title', '').strip()
         work.photographer_id = request.form.get('photographer_id', type=int)
-        work.category_id = request.form.get('category_id', type=int)
-        work.city = request.form.get('city', '').strip() or None
-        work.description = request.form.get('description', '').strip() or None
-
-        if not work.title or not work.photographer_id or not work.category_id:
-            flash('标题、摄影师和分类不能为空。', 'error')
-            return render_template('work/admin_form.html', work=work, photographers=photographers, categories=categories)
-
-        try:
-            cover_upload = save_image_result(request.files.get('cover_file'), 'works')
-            if cover_upload:
-                old_cover_url = work.cover_url
-                work.cover_url = cover_upload.url
-        except ValueError as exc:
-            flash(str(exc), 'error')
-            return render_template('work/admin_form.html', work=work, photographers=photographers, categories=categories)
-
-        db.session.add(work)
-        db.session.flush()
-
-        for sort, image_file in enumerate(request.files.getlist('work_images'), start=1):
-            try:
-                image_upload = save_image_result(image_file, 'works')
-            except ValueError as exc:
-                db.session.rollback()
-                flash(str(exc), 'error')
-                return render_template('work/admin_form.html', work=work, photographers=photographers, categories=categories)
-            if image_upload:
-                db.session.add(
-                    PhotoWorkImage(
-                        work_id=work.work_id,
-                        image_url=image_upload.url,
-                        oss_object_name=image_upload.oss_object_name,
-                        sort=sort,
-                    )
-                )
-
-        work.update_hot_score()
-        db.session.commit()
-        delete_uploaded_file(old_cover_url)
-        log_admin_action('作品保存', f'保存作品：{work.title}')
-        flash('作品已保存。', 'success')
-        return redirect(url_for('admin_work.admin_list'))
+        response = _save_work_from_request(
+            work,
+            categories,
+            'work/admin_form.html',
+            'admin_work.admin_list',
+            log_operation='作品保存',
+            log_content_factory=lambda saved_work: f'保存作品：{saved_work.title}',
+            photographers=photographers,
+        )
+        return response
 
     return render_template(
         'work/admin_form.html',

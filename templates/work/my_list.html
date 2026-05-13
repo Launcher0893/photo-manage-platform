@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+
+{% block title %}我的作品{% endblock %}
+
+{% block content %}
+    <div class="mb-4">
+        <h2>我的作品</h2>
+        <a href="/work/add" class="btn btn-primary">发布作品</a>
+    </div>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>标题</th>
+                <th>分类</th>
+                <th>浏览</th>
+                <th>点赞</th>
+                <th>评论</th>
+                <th>状态</th>
+                <th>时间</th>
+                <th>操作</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for work in works.items %}
+                <tr>
+                    <td>{{ work.title }}</td>
+                    <td>{{ work.category.category_name if work.category else '未分类' }}</td>
+                    <td>{{ work.view_count }}</td>
+                    <td>{{ work.like_count }}</td>
+                    <td>{{ work.comment_count }}</td>
+                    <td>{% if work.status == 1 %}上架{% else %}下架{% endif %}</td>
+                    <td>{{ work.create_time.strftime('%Y-%m-%d') }}</td>
+                    <td>
+                        {% if work.status == 1 %}
+                            <a href="/work/detail/{{ work.work_id }}" class="btn btn-sm btn-info">查看</a>
+                        {% endif %}
+                        <a href="/work/edit/{{ work.work_id }}" class="btn btn-sm btn-primary">编辑</a>
+                        <a href="/work/status/{{ work.work_id }}" class="btn btn-sm btn-secondary">
+                            {% if work.status == 1 %}下架{% else %}恢复{% endif %}
+                        </a>
+                    </td>
+                </tr>
+            {% else %}
+                <tr>
+                    <td colspan="8" class="text-center text-muted">暂无作品</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <nav aria-label="Page navigation">
+        <ul class="pagination">
+            {% if works.has_prev %}
+                <li class="page-item"><a class="page-link" href="?page={{ works.prev_num }}">上一页</a></li>
+            {% endif %}
+            {% for page in works.iter_pages() %}
+                {% if page %}
+                    <li class="page-item {% if page == works.page %}active{% endif %}">
+                        <a class="page-link" href="?page={{ page }}">{{ page }}</a>
+                    </li>
+                {% else %}
+                    <li class="page-item disabled"><span class="page-link">...</span></li>
+                {% endif %}
+            {% endfor %}
+            {% if works.has_next %}
+                <li class="page-item"><a class="page-link" href="?page={{ works.next_num }}">下一页</a></li>
+            {% endif %}
+        </ul>
+    </nav>
+{% endblock %}

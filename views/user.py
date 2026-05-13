@@ -1,10 +1,10 @@
-from flask import Blueprint, flash, redirect, render_template, request, url_for
+from flask import Blueprint, abort, flash, redirect, render_template, request, url_for
 from flask_login import current_user
 from sqlalchemy import select
 from sqlalchemy.orm import joinedload
 
 from db import db
-from models import ForumPost, User, WorkComment
+from models import ForumPost, Photographer, User, WorkComment
 from utils.decorators import admin_required, user_required
 from utils.file_upload import delete_uploaded_file, save_image
 from utils.logger import log_admin_action
@@ -17,13 +17,41 @@ admin_bp = Blueprint('admin_user', __name__, url_prefix='/admin/user')
 @bp.route('/profile')
 @user_required
 def profile():
+    photographer = current_user.photographer if current_user.user_role == User.ROLE_PHOTOGRAPHER else None
     my_posts = db.session.execute(
         select(ForumPost)
         .options(joinedload(ForumPost.forum_board))
         .where(ForumPost.user_id == current_user.user_id, ForumPost.status == 1)
         .order_by(ForumPost.create_time.desc(), ForumPost.post_id.desc())
     ).scalars().all()
-    return render_template('user/profile.html', posts=my_posts)
+    return render_template('user/profile.html', posts=my_posts, photographer=photographer)
+
+
+@bp.route('/edit_photographer', methods=['GET', 'POST'])
+@user_required
+def edit_photographer():
+    if current_user.user_role != User.ROLE_PHOTOGRAPHER:
+        abort(403)
+
+    photographer = current_user.photographer
+    if photographer is None:
+        photographer = Photographer(
+            user_id=current_user.user_id,
+            cert_status=Photographer.STATUS_PENDING,
+        )
+
+    if request.method == 'POST':
+        db.session.add(photographer)
+        photographer.real_name = request.form.get('real_name', '').strip() or None
+        photographer.city = request.form.get('city', '').strip() or None
+        if photographer.cert_status == Photographer.STATUS_REJECTED:
+            photographer.cert_status = Photographer.STATUS_PENDING
+            photographer.cert_remark = None
+        db.session.commit()
+        flash('摄影师资料已保存。', 'success')
+        return redirect(url_for('user.profile'))
+
+    return render_template('user/edit_photographer.html', photographer=photographer)
 
 
 @bp.route('/edit_profile', methods=['GET', 'POST'])

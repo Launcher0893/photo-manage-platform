@@ -13,6 +13,36 @@
         <a href="/user/edit_profile" class="btn btn-primary">编辑资料</a>
         <a href="/user/change_password" class="btn btn-secondary">修改密码</a>
     </div>
+
+    {% if current_user.user_role == 2 %}
+        <div class="mb-4">
+            <h3>摄影师认证</h3>
+            {% if photographer %}
+                <p>真实姓名：{{ photographer.real_name or '未填写' }}</p>
+                <p>所在城市：{{ photographer.city or '未填写' }}</p>
+                <p>
+                    认证状态：
+                    {% if photographer.cert_status == 0 %}
+                        <span class="badge bg-warning text-dark">待审核</span>
+                    {% elif photographer.cert_status == 1 %}
+                        <span class="badge bg-success">已通过</span>
+                    {% else %}
+                        <span class="badge bg-danger">已拒绝</span>
+                    {% endif %}
+                </p>
+                {% if photographer.cert_remark %}
+                    <p>审核备注：{{ photographer.cert_remark }}</p>
+                {% endif %}
+            {% else %}
+                <p>尚未提交摄影师认证资料。</p>
+            {% endif %}
+            <a href="/user/edit_photographer" class="btn btn-primary">完善摄影师资料</a>
+            {% if photographer and photographer.cert_status == 1 %}
+                <a href="/work/add" class="btn btn-success">发布作品</a>
+                <a href="/work/my" class="btn btn-secondary">我的作品</a>
+            {% endif %}
+        </div>
+    {% endif %}
     
     <div class="mb-4">
         <h3>我的帖子</h3>
