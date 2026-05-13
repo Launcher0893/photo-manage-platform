@@ -82,6 +82,9 @@ CREATE TABLE `carousel`  (
 -- ----------------------------
 -- Records of carousel
 -- ----------------------------
+INSERT INTO `carousel` VALUES (1, 'test', 'https://photo-manage-oss.oss-cn-wuhan-lr.aliyuncs.com/photo-manage-platform/carousels/7bf8c492aacc49d69b69977470355caa.png', NULL, NULL, NULL, 0, 1, '2026-05-13 15:25:00');
+INSERT INTO `carousel` VALUES (2, 'test2', 'https://photo-manage-oss.oss-cn-wuhan-lr.aliyuncs.com/photo-manage-platform/carousels/e4218023d4774604b7ffcd2f8b386e26.png', NULL, NULL, NULL, 1, 1, '2026-05-13 15:30:31');
+INSERT INTO `carousel` VALUES (3, 'test3', 'https://photo-manage-oss.oss-cn-wuhan-lr.aliyuncs.com/photo-manage-platform/carousels/940aa602cb854cfe99d4a4bee322011b.png', NULL, NULL, NULL, 3, 1, '2026-05-13 15:31:08');
 
 -- ----------------------------
 -- Table structure for category
@@ -441,10 +444,6 @@ INSERT INTO `forum_comment` (`comment_id`, `post_id`, `user_id`, `content`, `sta
 INSERT INTO `announcement` (`announcement_id`, `title`, `content`, `cover_url`, `admin_id`, `status`, `create_time`, `update_time`) VALUES
 (1, '平台试运行公告', '摄影作品分享平台当前已完成基础功能接入，欢迎发布作品和参与论坛交流。', 'https://via.placeholder.com/900x360?text=Announcement', 1, 1, '2026-05-13 09:00:00', '2026-05-13 09:00:00'),
 (2, '作品征集说明', '欢迎上传街拍、人像、风光等类型作品，优秀作品将推荐到首页精选区域。', 'https://via.placeholder.com/900x360?text=Works+Wanted', 1, 1, '2026-05-12 09:00:00', '2026-05-12 09:00:00');
-
-INSERT INTO `carousel` (`carousel_id`, `title`, `image_url`, `link_type`, `link_id`, `link_url`, `sort`, `status`, `create_time`) VALUES
-(1, '精选作品：夜色人像', 'https://via.placeholder.com/1200x360?text=Night+Portrait', 'work', 1, NULL, 1, 1, '2026-05-13 10:00:00'),
-(2, '平台公告', 'https://via.placeholder.com/1200x360?text=Photo+Platform', 'announcement', 1, NULL, 2, 1, '2026-05-13 10:00:00');
 
 INSERT INTO `system_log` (`log_id`, `admin_id`, `operate_type`, `operate_content`, `ip_address`, `operate_time`) VALUES
 (1, 1, '初始化数据', '导入课程项目演示数据', '127.0.0.1', '2026-05-13 10:00:00');

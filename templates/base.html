@@ -29,6 +29,7 @@
                             <li class="nav-item"><a class="nav-link" href="/admin/dashboard/">后台控制台</a></li>
                             <li class="nav-item"><a class="nav-link" href="/auth/logout">退出</a></li>
                         {% else %}
+                            <li class="nav-item"><a class="nav-link" href="/forum/post_add">发布帖子</a></li>
                             <li class="nav-item"><a class="nav-link" href="/user/profile">{{ current_user.nickname or current_user.username }}</a></li>
                             <li class="nav-item"><a class="nav-link" href="/auth/logout">退出</a></li>
                         {% endif %}

@@ -23,6 +23,7 @@
                     <th>浏览</th>
                     <th>评论</th>
                     <th>时间</th>
+                    <th>操作</th>
                 </tr>
             </thead>
             <tbody>
@@ -32,6 +33,7 @@
                         <td>{{ post.view_count }}</td>
                         <td>{{ post.comment_count }}</td>
                         <td>{{ post.create_time.strftime('%Y-%m-%d') }}</td>
+                        <td><a href="/forum/post_edit/{{ post.post_id }}" class="btn btn-sm btn-primary">编辑</a></td>
                     </tr>
                 {% endfor %}
             </tbody>

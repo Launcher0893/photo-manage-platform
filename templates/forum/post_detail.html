@@ -7,6 +7,9 @@
         <h2>{{ post.title }}</h2>
         <p>板块：{{ post.forum_board.board_name }} | 作者：{{ post.user.nickname or post.user.username }}</p>
         <p>浏览：{{ post.view_count }} | 评论：{{ post.comment_count }}</p>
+        {% if current_user.is_authenticated and not current_user.is_admin and current_user.user_id == post.user_id %}
+            <a href="/forum/post_edit/{{ post.post_id }}" class="btn btn-primary">编辑帖子</a>
+        {% endif %}
     </div>
     
     <div class="mb-4 p-4 border">

@@ -1,33 +1,53 @@
 {% extends 'base.html' %}
 
-{% block title %}发布帖子{% endblock %}
+{% block title %}{{ post and '编辑帖子' or '发布帖子' }}{% endblock %}
 
 {% block content %}
     <div class="row justify-content-center">
         <div class="col-md-8">
-            <h2>发布帖子</h2>
+            <h2>{{ post and '编辑帖子' or '发布帖子' }}</h2>
             <form method="POST" enctype="multipart/form-data">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                <input type="hidden" name="board_id" value="{{ board.board_id if board else request.view_args.get('board_id', '') }}">
-                {% if board %}
-                    <div class="mb-3">
-                        <label>所属板块</label>
-                        <input type="text" class="form-control" value="{{ board.board_name }}" readonly>
-                    </div>
-                {% endif %}
+                <div class="mb-3">
+                    <label>所属板块</label>
+                    <select name="board_id" class="form-control" required>
+                        <option value="">请选择板块</option>
+                        {% for board in boards %}
+                            <option value="{{ board.board_id }}" {% if selected_board_id == board.board_id %}selected{% endif %}>
+                                {{ board.board_name }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
                 <div class="mb-3">
                     <label>标题</label>
-                    <input type="text" name="title" class="form-control" required>
+                    <input type="text" name="title" class="form-control" required value="{{ post.title if post else '' }}">
                 </div>
                 <div class="mb-3">
                     <label>内容</label>
-                    <textarea name="content" class="form-control" rows="10" required></textarea>
+                    <textarea name="content" class="form-control" rows="10" required>{{ post.content if post else '' }}</textarea>
                 </div>
+                {% if post and post.images %}
+                    <div class="mb-3">
+                        <label>已有图片</label>
+                        <div class="row">
+                            {% for image in post.images|sort(attribute='sort') %}
+                                <div class="col-md-4 mb-3">
+                                    <img src="{{ image.image_url }}" class="img-fluid rounded mb-2" alt="{{ post.title }}">
+                                    <div class="form-check">
+                                        <input type="checkbox" name="delete_image_ids" value="{{ image.image_id }}" class="form-check-input" id="delete-image-{{ image.image_id }}">
+                                        <label class="form-check-label" for="delete-image-{{ image.image_id }}">删除此图</label>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                {% endif %}
                 <div class="mb-3">
-                    <label>帖子图片</label>
+                    <label>{{ post and '追加图片' or '帖子图片' }}</label>
                     <input type="file" name="post_images" class="form-control" accept="image/*" multiple>
                 </div>
-                <button type="submit" class="btn btn-primary">发布</button>
+                <button type="submit" class="btn btn-primary">{{ post and '保存修改' or '发布' }}</button>
             </form>
         </div>
     </div>

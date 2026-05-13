@@ -7,7 +7,7 @@ from sqlalchemy.orm import joinedload, selectinload
 from db import db
 from models import ForumBoard, ForumComment, ForumPost, ForumPostImage
 from utils.decorators import admin_required, user_required
-from utils.file_upload import save_image_result
+from utils.file_upload import delete_uploaded_file, save_image_result
 from utils.logger import log_admin_action
 
 
@@ -69,22 +69,36 @@ def post_detail(post_id):
     return render_template('forum/post_detail.html', post=post, comments=comments)
 
 
+def _active_boards():
+    return db.session.execute(
+        select(ForumBoard)
+        .where(ForumBoard.status == 1)
+        .order_by(ForumBoard.sort.asc(), ForumBoard.board_id.asc())
+    ).scalars().all()
+
+
+@bp.route('/post_add', methods=['GET', 'POST'])
 @bp.route('/post_add/<int:board_id>', methods=['GET', 'POST'])
 @user_required
-def post_add(board_id):
-    board_item = db.session.get(ForumBoard, board_id)
-    if board_item is None or board_item.status != 1:
-        abort(404)
+def post_add(board_id=None):
+    boards = _active_boards()
+    selected_board_id = board_id
 
     if request.method == 'POST':
+        selected_board_id = request.form.get('board_id', type=int)
+        board_item = db.session.get(ForumBoard, selected_board_id) if selected_board_id else None
+        if board_item is None or board_item.status != 1:
+            flash('请选择有效的论坛板块。', 'error')
+            return render_template('forum/post_add.html', boards=boards, selected_board_id=selected_board_id)
+
         title = request.form.get('title', '').strip()
         content = request.form.get('content', '').strip()
         if not title or not content:
             flash('标题和内容不能为空。', 'error')
-            return render_template('forum/post_add.html', board=board_item)
+            return render_template('forum/post_add.html', boards=boards, selected_board_id=selected_board_id)
 
         post = ForumPost(
-            board_id=board_id,
+            board_id=selected_board_id,
             user_id=current_user.user_id,
             title=title,
             content=content,
@@ -99,7 +113,7 @@ def post_add(board_id):
             except ValueError as exc:
                 db.session.rollback()
                 flash(str(exc), 'error')
-                return render_template('forum/post_add.html', board=board_item)
+                return render_template('forum/post_add.html', boards=boards, selected_board_id=selected_board_id)
             if image_upload:
                 db.session.add(
                     ForumPostImage(
@@ -114,7 +128,82 @@ def post_add(board_id):
         flash('帖子已发布。', 'success')
         return redirect(url_for('forum.post_detail', post_id=post.post_id))
 
-    return render_template('forum/post_add.html', board=board_item)
+    if selected_board_id is not None:
+        board_item = db.session.get(ForumBoard, selected_board_id)
+        if board_item is None or board_item.status != 1:
+            abort(404)
+
+    return render_template('forum/post_add.html', boards=boards, selected_board_id=selected_board_id)
+
+
+@bp.route('/post_edit/<int:post_id>', methods=['GET', 'POST'])
+@user_required
+def post_edit(post_id):
+    post = db.session.execute(
+        select(ForumPost)
+        .options(selectinload(ForumPost.images))
+        .where(ForumPost.post_id == post_id, ForumPost.status == 1)
+    ).scalar_one_or_none()
+    if post is None:
+        abort(404)
+    if post.user_id != current_user.user_id:
+        abort(403)
+
+    boards = _active_boards()
+    selected_board_id = post.board_id
+
+    if request.method == 'POST':
+        selected_board_id = request.form.get('board_id', type=int)
+        board_item = db.session.get(ForumBoard, selected_board_id) if selected_board_id else None
+        if board_item is None or board_item.status != 1:
+            flash('请选择有效的论坛板块。', 'error')
+            return render_template('forum/post_add.html', post=post, boards=boards, selected_board_id=selected_board_id)
+
+        title = request.form.get('title', '').strip()
+        content = request.form.get('content', '').strip()
+        if not title or not content:
+            flash('标题和内容不能为空。', 'error')
+            return render_template('forum/post_add.html', post=post, boards=boards, selected_board_id=selected_board_id)
+
+        delete_image_ids = {
+            int(image_id)
+            for image_id in request.form.getlist('delete_image_ids')
+            if image_id.isdigit()
+        }
+        for image in list(post.images):
+            if image.image_id in delete_image_ids:
+                if not delete_uploaded_file(image.image_url, image.oss_object_name):
+                    flash('图片文件删除失败，请稍后重试。', 'error')
+                    return render_template('forum/post_add.html', post=post, boards=boards, selected_board_id=selected_board_id)
+                db.session.delete(image)
+
+        post.board_id = selected_board_id
+        post.title = title
+        post.content = content
+
+        current_max_sort = max((image.sort or 0 for image in post.images), default=0)
+        for offset, image_file in enumerate(request.files.getlist('post_images'), start=1):
+            try:
+                image_upload = save_image_result(image_file, 'forum')
+            except ValueError as exc:
+                db.session.rollback()
+                flash(str(exc), 'error')
+                return render_template('forum/post_add.html', post=post, boards=boards, selected_board_id=selected_board_id)
+            if image_upload:
+                db.session.add(
+                    ForumPostImage(
+                        post_id=post.post_id,
+                        image_url=image_upload.url,
+                        oss_object_name=image_upload.oss_object_name,
+                        sort=current_max_sort + offset,
+                    )
+                )
+
+        db.session.commit()
+        flash('帖子已更新。', 'success')
+        return redirect(url_for('forum.post_detail', post_id=post.post_id))
+
+    return render_template('forum/post_add.html', post=post, boards=boards, selected_board_id=selected_board_id)
 
 
 @bp.route('/comment_add/<int:post_id>', methods=['POST'])
