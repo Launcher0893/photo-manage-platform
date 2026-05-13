@@ -1,3 +1,3 @@
 # photo-manage-platfrom
 
-2026/5/13
+用于2026年5月软帝实习的项目
