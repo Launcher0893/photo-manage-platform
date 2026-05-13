@@ -1,0 +1,35 @@
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# IDE and editor files
+.idea/
+.vscode/
+*.code-workspace
+
+# Environment and secrets
+.env
+*.env
+
+# Logs
+*.log
+logs/
+
+# Local upload files
+static/uploads/*
+!static/uploads/.gitkeep
+uploads/*
+!uploads/.gitkeep
+
+# Flask local files
+instance/
+
+# OS files
+.DS_Store
+Thumbs.db
