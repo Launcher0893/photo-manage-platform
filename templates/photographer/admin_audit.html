@@ -1,0 +1,33 @@
+{% extends 'admin_base.html' %}
+
+{% block title %}摄影师审核{% endblock %}
+
+{% block content %}
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <h2>审核摄影师</h2>
+            <div class="mb-4">
+                <p><strong>用户名：</strong>{{ photographer.user.username }}</p>
+                <p><strong>昵称：</strong>{{ photographer.user.nickname }}</p>
+                <p><strong>真实姓名：</strong>{{ photographer.real_name or '未填写' }}</p>
+                <p><strong>城市：</strong>{{ photographer.city or '未填写' }}</p>
+                <p><strong>注册时间：</strong>{{ photographer.create_time.strftime('%Y-%m-%d') }}</p>
+                <p><strong>当前状态：</strong>{% if photographer.cert_status == 0 %}待审核{% elif photographer.cert_status == 1 %}已通过{% else %}已拒绝{% endif %}</p>
+            </div>
+            <form method="POST">
+                <div class="mb-3">
+                    <label>审核结果</label>
+                    <select name="cert_status" class="form-control" required>
+                        <option value="1">通过</option>
+                        <option value="2">拒绝</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label>审核备注</label>
+                    <textarea name="cert_remark" class="form-control" rows="3"></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary">提交审核</button>
+            </form>
+        </div>
+    </div>
+{% endblock %}

@@ -1,1 +1,79 @@
-<!-- 作品详情模板。后续用于展示作品信息、组图轮播、点赞按钮和评论区。 -->
+{% extends 'base.html' %}
+
+{% block title %}{{ work.title }}{% endblock %}
+
+{% block content %}
+    <div class="mb-4">
+        <h2>{{ work.title }}</h2>
+        <p>
+            摄影师：
+            {% if work.photographer and work.photographer.user %}
+                <a href="/photographer/detail/{{ work.photographer.photographer_id }}">{{ work.photographer.user.nickname or work.photographer.user.username }}</a>
+            {% else %}
+                未知
+            {% endif %}
+        </p>
+        <p>分类：{{ work.category.category_name if work.category else '未分类' }} | 城市：{{ work.city or '未知' }}</p>
+        <p>浏览：{{ work.view_count }} | 点赞：{{ work.like_count }} | 评论：{{ work.comment_count }}</p>
+    </div>
+    
+    <div class="mb-4">
+        <img src="{{ work.cover_url or 'https://via.placeholder.com/800x600' }}" class="img-fluid" alt="{{ work.title }}">
+    </div>
+    
+    <div class="mb-4">
+        <p>{{ work.description or '暂无描述' }}</p>
+    </div>
+    
+    <div class="mb-4">
+        <button id="like-btn" class="btn btn-primary" data-work-id="{{ work.work_id }}">
+            {% if is_liked %}取消点赞{% else %}点赞{% endif %}
+            ({{ work.like_count }})
+        </button>
+    </div>
+    
+    <div class="mb-4">
+        <h3>评论区</h3>
+        {% if current_user.is_authenticated %}
+            <form id="comment-form" method="POST">
+                <textarea name="content" class="form-control mb-2" rows="3" placeholder="发表评论..."></textarea>
+                <button type="submit" class="btn btn-primary">发表评论</button>
+            </form>
+        {% endif %}
+        
+        <div id="comments-list">
+            {% for comment in comments or [] %}
+                <div class="border p-3 mb-2">
+                    <p><strong>{{ comment.user.nickname or comment.user.username }}</strong>：{{ comment.content }}</p>
+                    <p class="text-sm text-muted">{{ comment.create_time.strftime('%Y-%m-%d %H:%M') }}</p>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+$(function() {
+    $('#like-btn').click(function() {
+        var workId = $(this).data('work-id');
+        $.post('/api/work/' + workId + '/like', function(data) {
+            if (data.success) {
+                $('#like-btn').text(data.liked ? '取消点赞' : '点赞');
+                $('#like-btn').html($('#like-btn').text() + ' (' + data.count + ')');
+            }
+        });
+    });
+    
+    $('#comment-form').submit(function(e) {
+        e.preventDefault();
+        var content = $('textarea[name="content"]').val();
+        $.post('/api/work/{{ work.work_id }}/comment', { content: content }, function(data) {
+            if (data.success) {
+                location.reload();
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

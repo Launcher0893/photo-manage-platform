@@ -1,1 +1,77 @@
-<!-- 用户端首页模板。后续用于展示轮播图、精选作品、推荐摄影师、热门作品和最新公告。 -->
+{% extends 'base.html' %}
+
+{% block title %}摄影作品分享平台{% endblock %}
+
+{% block content %}
+    <div class="mb-6">
+        <h2 class="mb-4">精选作品</h2>
+        <div class="row">
+            {% for work in featured_works %}
+                <div class="col-md-4 mb-4">
+                    <div class="card">
+                        <img src="{{ work.cover_url or 'https://via.placeholder.com/300x200' }}" class="card-img-top" alt="{{ work.title }}">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ work.title }}</h5>
+                            <p class="card-text">摄影师：{{ work.photographer.user.nickname if work.photographer and work.photographer.user else '未知' }}</p>
+                            <a href="/work/detail/{{ work.work_id }}" class="btn btn-primary">查看详情</a>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+    
+    <div class="mb-6">
+        <h2 class="mb-4">热门作品</h2>
+        <div class="row">
+            {% for work in hot_works %}
+                <div class="col-md-3 mb-4">
+                    <div class="card">
+                        <img src="{{ work.cover_url or 'https://via.placeholder.com/300x200' }}" class="card-img-top" alt="{{ work.title }}">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ work.title }}</h5>
+                            <p class="card-text">热度：{{ work.hot_score }}</p>
+                            <a href="/work/detail/{{ work.work_id }}" class="btn btn-primary">查看详情</a>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+    
+    <div class="mb-6">
+        <h2 class="mb-4">最新作品</h2>
+        <div class="row">
+            {% for work in recent_works %}
+                <div class="col-md-3 mb-4">
+                    <div class="card">
+                        <img src="{{ work.cover_url or 'https://via.placeholder.com/300x200' }}" class="card-img-top" alt="{{ work.title }}">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ work.title }}</h5>
+                            <p class="card-text">{{ work.create_time.strftime('%Y-%m-%d') }}</p>
+                            <a href="/work/detail/{{ work.work_id }}" class="btn btn-primary">查看详情</a>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+    
+    <div>
+        <h2 class="mb-4">推荐摄影师</h2>
+        <div class="row">
+            {% for photographer in photographers %}
+                <div class="col-md-4 mb-4">
+                    <div class="card">
+                        <img src="{{ photographer.user.avatar_url if photographer.user else 'https://via.placeholder.com/300x200' }}" class="card-img-top" alt="{{ photographer.user.nickname if photographer.user else '摄影师' }}">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ photographer.user.nickname if photographer.user else '未知摄影师' }}</h5>
+                            <p class="card-text">城市：{{ photographer.city or '未知' }}</p>
+                            <a href="/photographer/detail/{{ photographer.photographer_id }}" class="btn btn-primary">查看主页</a>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+{% endblock %}

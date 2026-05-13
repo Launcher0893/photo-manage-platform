@@ -1,0 +1,44 @@
+{% extends 'admin_base.html' %}
+
+{% block title %}{{ carousel and '编辑轮播图' or '新增轮播图' }}{% endblock %}
+
+{% block content %}
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <h2>{{ carousel and '编辑轮播图' or '新增轮播图' }}</h2>
+            <form method="POST">
+                <div class="mb-3">
+                    <label>标题</label>
+                    <input type="text" name="title" class="form-control" value="{{ carousel.title if carousel else '' }}">
+                </div>
+                <div class="mb-3">
+                    <label>图片URL</label>
+                    <input type="text" name="image_url" class="form-control" required value="{{ carousel.image_url if carousel else '' }}">
+                </div>
+                <div class="mb-3">
+                    <label>跳转类型</label>
+                    <select name="link_type" class="form-control">
+                        <option value="">无</option>
+                        <option value="work" {% if carousel and carousel.link_type == 'work' %}selected{% endif %}>作品</option>
+                        <option value="photographer" {% if carousel and carousel.link_type == 'photographer' %}selected{% endif %}>摄影师</option>
+                        <option value="announcement" {% if carousel and carousel.link_type == 'announcement' %}selected{% endif %}>公告</option>
+                        <option value="url" {% if carousel and carousel.link_type == 'url' %}selected{% endif %}>外部链接</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label>跳转目标ID（跳转类型为作品/摄影师/公告时填写）</label>
+                    <input type="number" name="link_id" class="form-control" value="{{ carousel.link_id if carousel else '' }}">
+                </div>
+                <div class="mb-3">
+                    <label>外部链接地址（跳转类型为url时填写）</label>
+                    <input type="text" name="link_url" class="form-control" value="{{ carousel.link_url if carousel else '' }}">
+                </div>
+                <div class="mb-3">
+                    <label>排序</label>
+                    <input type="number" name="sort" class="form-control" value="{{ carousel.sort if carousel else 0 }}">
+                </div>
+                <button type="submit" class="btn btn-primary">{{ carousel and '保存修改' or '新增轮播图' }}</button>
+            </form>
+        </div>
+    </div>
+{% endblock %}

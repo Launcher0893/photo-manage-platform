@@ -1,1 +1,41 @@
-<!-- 轮播图管理模板。后续用于管理员新增、编辑、删除、排序和启用禁用首页轮播图。 -->
+{% extends 'admin_base.html' %}
+
+{% block title %}轮播图管理{% endblock %}
+
+{% block content %}
+    <div class="mb-4">
+        <h2>轮播图管理</h2>
+        <a href="/admin/carousel/add" class="btn btn-primary">新增轮播图</a>
+    </div>
+    
+    <table class="table">
+        <thead>
+            <tr>
+                <th>标题</th>
+                <th>图片</th>
+                <th>跳转类型</th>
+                <th>排序</th>
+                <th>状态</th>
+                <th>操作</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for carousel in carousels %}
+                <tr>
+                    <td>{{ carousel.title or '无' }}</td>
+                    <td><img src="{{ carousel.image_url }}" width="100" /></td>
+                    <td>{{ carousel.link_type or '无' }}</td>
+                    <td>{{ carousel.sort }}</td>
+                    <td>{% if carousel.status == 1 %}启用{% else %}禁用{% endif %}</td>
+                    <td>
+                        <a href="/admin/carousel/edit/{{ carousel.carousel_id }}" class="btn btn-sm btn-primary">编辑</a>
+                        <a href="/admin/carousel/status/{{ carousel.carousel_id }}" class="btn btn-sm btn-secondary">
+                            {% if carousel.status == 1 %}禁用{% else %}启用{% endif %}
+                        </a>
+                        <a href="/admin/carousel/delete/{{ carousel.carousel_id }}" class="btn btn-sm btn-danger">删除</a>
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}

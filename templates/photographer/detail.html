@@ -1,1 +1,30 @@
-<!-- 摄影师主页模板。后续用于展示摄影师资料和该摄影师的作品集。 -->
+{% extends 'base.html' %}
+
+{% block title %}{{ photographer.user.nickname }} - 摄影师主页{% endblock %}
+
+{% block content %}
+    <div class="mb-4">
+        <img src="{{ photographer.user.avatar_url if photographer.user else 'https://via.placeholder.com/200x200' }}" class="img-fluid rounded-circle" style="width: 200px; height: 200px;" alt="{{ photographer.user.nickname if photographer.user else '摄影师' }}">
+        <h2>{{ photographer.user.nickname if photographer.user else '未知摄影师' }}</h2>
+        <p>真实姓名：{{ photographer.real_name or '未填写' }}</p>
+        <p>所在城市：{{ photographer.city or '未填写' }}</p>
+        <p>注册时间：{{ photographer.create_time.strftime('%Y-%m-%d') if photographer.create_time else '未知' }}</p>
+    </div>
+    
+    <div class="mb-4">
+        <h3>作品集</h3>
+        <div class="row">
+            {% for work in works %}
+                <div class="col-md-4 mb-4">
+                    <div class="card">
+                        <img src="{{ work.cover_url or 'https://via.placeholder.com/300x200' }}" class="card-img-top" alt="{{ work.title }}">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ work.title }}</h5>
+                            <a href="/work/detail/{{ work.work_id }}" class="btn btn-primary">查看详情</a>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+{% endblock %}

@@ -1,0 +1,29 @@
+{% extends 'admin_base.html' %}
+
+{% block title %}{{ announcement and '编辑公告' or '发布公告' }}{% endblock %}
+
+{% block content %}
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <h2>{{ announcement and '编辑公告' or '发布公告' }}</h2>
+            <form method="POST" enctype="multipart/form-data">
+                <div class="mb-3">
+                    <label>标题</label>
+                    <input type="text" name="title" class="form-control" required value="{{ announcement.title if announcement else '' }}">
+                </div>
+                <div class="mb-3">
+                    <label>内容</label>
+                    <textarea name="content" class="form-control" rows="10" required>{{ announcement.content if announcement else '' }}</textarea>
+                </div>
+                <div class="mb-3">
+                    <label>公告封面图</label>
+                    <input type="file" name="cover_file" class="form-control" accept="image/*">
+                    {% if announcement and announcement.cover_url %}
+                        <small class="form-text text-muted">当前封面：{{ announcement.cover_url }}</small>
+                    {% endif %}
+                </div>
+                <button type="submit" class="btn btn-primary">{{ announcement and '保存修改' or '发布公告' }}</button>
+            </form>
+        </div>
+    </div>
+{% endblock %}

@@ -1,1 +1,78 @@
-<!-- 后台首页模板。后续用于展示统计卡片、趋势图、分类占比图和热门作品排行。 -->
+{% extends 'admin_base.html' %}
+
+{% block title %}后台控制台{% endblock %}
+
+{% block content %}
+    <h2>控制台</h2>
+    
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <h5>总作品数</h5>
+                    <p class="text-3xl">{{ total_works }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <h5>总用户数</h5>
+                    <p class="text-3xl">{{ total_users }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <h5>认证摄影师</h5>
+                    <p class="text-3xl">{{ approved_photographers }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-white">
+                <div class="card-body">
+                    <h5>待审核摄影师</h5>
+                    <p class="text-3xl">{{ pending_photographers }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <h5>热门作品 Top 10</h5>
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>排名</th>
+                                <th>作品名称</th>
+                                <th>热度</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for work in hot_works %}
+                                <tr>
+                                    <td>{{ loop.index }}</td>
+                                    <td>{{ work.title }}</td>
+                                    <td>{{ work.hot_score }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <h5>作品分类占比</h5>
+                    <div id="category-chart" style="height: 300px;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

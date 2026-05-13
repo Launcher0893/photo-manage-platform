@@ -1,1 +1,57 @@
-<!-- 后台作品表单模板。后续用于管理员新增和编辑摄影作品、上传封面图和作品组图。 -->
+{% extends 'admin_base.html' %}
+
+{% block title %}{{ work and '编辑作品' or '新增作品' }}{% endblock %}
+
+{% block content %}
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <h2>{{ work and '编辑作品' or '新增作品' }}</h2>
+            <form method="POST" enctype="multipart/form-data">
+                <div class="mb-3">
+                    <label>标题</label>
+                    <input type="text" name="title" class="form-control" required value="{{ work.title if work else '' }}">
+                </div>
+                <div class="mb-3">
+                    <label>摄影师</label>
+                    <select name="photographer_id" class="form-control" required>
+                        {% for photographer in photographers %}
+                            <option value="{{ photographer.photographer_id }}" {% if work and work.photographer_id == photographer.photographer_id %}selected{% endif %}>
+                                {{ photographer.user.nickname }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label>分类</label>
+                    <select name="category_id" class="form-control" required>
+                        {% for category in categories %}
+                            <option value="{{ category.category_id }}" {% if work and work.category_id == category.category_id %}selected{% endif %}>
+                                {{ category.category_name }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label>拍摄城市</label>
+                    <input type="text" name="city" class="form-control" value="{{ work.city if work else '' }}">
+                </div>
+                <div class="mb-3">
+                    <label>描述</label>
+                    <textarea name="description" class="form-control" rows="5">{{ work.description if work else '' }}</textarea>
+                </div>
+                <div class="mb-3">
+                    <label>封面图</label>
+                    <input type="file" name="cover_file" class="form-control" accept="image/*">
+                    {% if work and work.cover_url %}
+                        <small class="form-text text-muted">当前封面：{{ work.cover_url }}</small>
+                    {% endif %}
+                </div>
+                <div class="mb-3">
+                    <label>作品组图</label>
+                    <input type="file" name="work_images" class="form-control" accept="image/*" multiple>
+                </div>
+                <button type="submit" class="btn btn-primary">{{ work and '保存修改' or '新增作品' }}</button>
+            </form>
+        </div>
+    </div>
+{% endblock %}

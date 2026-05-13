@@ -1,3 +1,29 @@
-# 摄影师路由文件。
-# 后续用于编写摄影师列表、摄影师主页、摄影师认证提交和后台摄影师审核相关接口。
-# 当前文件只保留结构说明，不写入实际路由代码。
+from flask import Blueprint, render_template
+
+from utils.demo_data import Pagination, get_photographer, photographers
+
+
+bp = Blueprint('photographer', __name__, url_prefix='/photographer')
+admin_bp = Blueprint('admin_photographer', __name__, url_prefix='/admin/photographer')
+
+
+@bp.route('/list')
+def list_page():
+    return render_template('photographer/list.html', photographers=Pagination(photographers))
+
+
+@bp.route('/detail/<int:photographer_id>')
+def detail(photographer_id):
+    photographer = get_photographer(photographer_id) or photographers[0]
+    return render_template('photographer/detail.html', photographer=photographer, works=photographer.works)
+
+
+@admin_bp.route('/list')
+def admin_list():
+    return render_template('photographer/admin_list.html', photographers=Pagination(photographers))
+
+
+@admin_bp.route('/audit/<int:photographer_id>', methods=['GET', 'POST'])
+def admin_audit(photographer_id):
+    photographer = get_photographer(photographer_id) or photographers[0]
+    return render_template('photographer/admin_audit.html', photographer=photographer)

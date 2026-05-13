@@ -1,0 +1,22 @@
+{% extends 'admin_base.html' %}
+
+{% block title %}{{ category and '编辑分类' or '新增分类' }}{% endblock %}
+
+{% block content %}
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <h2>{{ category and '编辑分类' or '新增分类' }}</h2>
+            <form method="POST">
+                <div class="mb-3">
+                    <label>分类名称</label>
+                    <input type="text" name="category_name" class="form-control" required value="{{ category.category_name if category else '' }}">
+                </div>
+                <div class="mb-3">
+                    <label>排序</label>
+                    <input type="number" name="sort" class="form-control" value="{{ category.sort if category else 0 }}">
+                </div>
+                <button type="submit" class="btn btn-primary">{{ category and '保存修改' or '新增分类' }}</button>
+            </form>
+        </div>
+    </div>
+{% endblock %}

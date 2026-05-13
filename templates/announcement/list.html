@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+
+{% block title %}公告列表{% endblock %}
+
+{% block content %}
+    <h2>公告列表</h2>
+    <div class="row">
+        {% for announcement in announcements.items %}
+            <div class="col-md-6 mb-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title"><a href="/announcement/detail/{{ announcement.announcement_id }}">{{ announcement.title }}</a></h5>
+                        <p class="card-text">{{ announcement.content[:100] }}{% if announcement.content|length > 100 %}...{% endif %}</p>
+                        <p class="text-sm text-muted">{{ announcement.create_time.strftime('%Y-%m-%d') }}</p>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+    
+    <nav aria-label="Page navigation">
+        <ul class="pagination">
+            {% if announcements.has_prev %}
+                <li class="page-item"><a class="page-link" href="?page={{ announcements.prev_num }}">上一页</a></li>
+            {% endif %}
+            {% for page in announcements.iter_pages() %}
+                {% if page %}
+                    <li class="page-item {% if page == announcements.page %}active{% endif %}">
+                        <a class="page-link" href="?page={{ page }}">{{ page }}</a>
+                    </li>
+                {% else %}
+                    <li class="page-item disabled"><span class="page-link">...</span></li>
+                {% endif %}
+            {% endfor %}
+            {% if announcements.has_next %}
+                <li class="page-item"><a class="page-link" href="?page={{ announcements.next_num }}">下一页</a></li>
+            {% endif %}
+        </ul>
+    </nav>
+{% endblock %}

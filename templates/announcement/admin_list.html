@@ -1,1 +1,56 @@
-<!-- 公告管理模板。后续用于管理员新增、编辑、删除、发布和下架公告。 -->
+{% extends 'admin_base.html' %}
+
+{% block title %}公告管理{% endblock %}
+
+{% block content %}
+    <div class="mb-4">
+        <h2>公告管理</h2>
+        <a href="/admin/announcement/add" class="btn btn-primary">发布公告</a>
+    </div>
+    
+    <table class="table">
+        <thead>
+            <tr>
+                <th>标题</th>
+                <th>状态</th>
+                <th>发布时间</th>
+                <th>操作</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for announcement in announcements.items %}
+                <tr>
+                    <td>{{ announcement.title }}</td>
+                    <td>{% if announcement.status == 1 %}发布{% else %}下架{% endif %}</td>
+                    <td>{{ announcement.create_time.strftime('%Y-%m-%d') }}</td>
+                    <td>
+                        <a href="/admin/announcement/edit/{{ announcement.announcement_id }}" class="btn btn-sm btn-primary">编辑</a>
+                        <a href="/admin/announcement/status/{{ announcement.announcement_id }}" class="btn btn-sm btn-secondary">
+                            {% if announcement.status == 1 %}下架{% else %}发布{% endif %}
+                        </a>
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    
+    <nav aria-label="Page navigation">
+        <ul class="pagination">
+            {% if announcements.has_prev %}
+                <li class="page-item"><a class="page-link" href="?page={{ announcements.prev_num }}">上一页</a></li>
+            {% endif %}
+            {% for page in announcements.iter_pages() %}
+                {% if page %}
+                    <li class="page-item {% if page == announcements.page %}active{% endif %}">
+                        <a class="page-link" href="?page={{ page }}">{{ page }}</a>
+                    </li>
+                {% else %}
+                    <li class="page-item disabled"><span class="page-link">...</span></li>
+                {% endif %}
+            {% endfor %}
+            {% if announcements.has_next %}
+                <li class="page-item"><a class="page-link" href="?page={{ announcements.next_num }}">下一页</a></li>
+            {% endif %}
+        </ul>
+    </nav>
+{% endblock %}

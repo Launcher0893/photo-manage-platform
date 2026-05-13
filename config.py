@@ -1,3 +1,14 @@
-# 项目配置文件。
-# 后续用于集中管理 Flask 密钥、MySQL 数据库连接、阿里云 OSS 参数、上传大小限制、分页数量等配置项。
-# 当前文件只保留结构说明，不写入实际配置代码。
+import os
+
+
+BASE_DIR = os.path.abspath(os.path.dirname(__file__))
+
+
+class Config:
+    SECRET_KEY = os.environ.get('SECRET_KEY', 'photo-manage-platform-dev-key')
+    SQLALCHEMY_DATABASE_URI = os.environ.get(
+        'DATABASE_URL',
+        f"sqlite:///{os.path.join(BASE_DIR, 'photo_manage_platform.db')}"
+    )
+    SQLALCHEMY_TRACK_MODIFICATIONS = False
+    JSON_AS_ASCII = False

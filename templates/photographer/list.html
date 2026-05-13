@@ -1,1 +1,49 @@
-<!-- 摄影师列表模板。后续用于用户端展示审核通过的摄影师列表。 -->
+{% extends 'base.html' %}
+
+{% block title %}摄影师列表{% endblock %}
+
+{% block content %}
+    <div class="mb-4">
+        <h2>摄影师列表</h2>
+        <form method="GET" class="form-inline">
+            <input type="text" name="city" class="form-control mr-2" placeholder="搜索城市..." value="{{ request.args.get('city', '') }}">
+            <button type="submit" class="btn btn-primary">搜索</button>
+        </form>
+    </div>
+    
+    <div class="row">
+        {% for photographer in photographers.items %}
+            <div class="col-md-4 mb-4">
+                <div class="card">
+                    <img src="{{ photographer.user.avatar_url or 'https://via.placeholder.com/300x200' }}" class="card-img-top" alt="{{ photographer.user.nickname }}">
+                    <div class="card-body">
+                        <h5 class="card-title">{{ photographer.user.nickname }}</h5>
+                        <p class="card-text">城市：{{ photographer.city or '未知' }}</p>
+                        <p class="card-text">作品数：{{ photographer.works|length }}</p>
+                        <a href="/photographer/detail/{{ photographer.photographer_id }}" class="btn btn-primary">查看主页</a>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+    
+    <nav aria-label="Page navigation">
+        <ul class="pagination">
+            {% if photographers.has_prev %}
+                <li class="page-item"><a class="page-link" href="?page={{ photographers.prev_num }}">上一页</a></li>
+            {% endif %}
+            {% for page in photographers.iter_pages() %}
+                {% if page %}
+                    <li class="page-item {% if page == photographers.page %}active{% endif %}">
+                        <a class="page-link" href="?page={{ page }}">{{ page }}</a>
+                    </li>
+                {% else %}
+                    <li class="page-item disabled"><span class="page-link">...</span></li>
+                {% endif %}
+            {% endfor %}
+            {% if photographers.has_next %}
+                <li class="page-item"><a class="page-link" href="?page={{ photographers.next_num }}">下一页</a></li>
+            {% endif %}
+        </ul>
+    </nav>
+{% endblock %}

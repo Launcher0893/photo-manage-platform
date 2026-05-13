@@ -1,1 +1,40 @@
-<!-- 个人中心模板。后续用于用户查看个人资料、修改头像、修改密码和查看我的帖子。 -->
+{% extends 'base.html' %}
+
+{% block title %}个人中心{% endblock %}
+
+{% block content %}
+    <div class="mb-4">
+        <h2>个人资料</h2>
+        <img src="{{ current_user.avatar_url or 'https://via.placeholder.com/100x100' }}" class="img-fluid rounded-circle" style="width: 100px; height: 100px;" alt="头像">
+        <p>用户名：{{ current_user.username }}</p>
+        <p>昵称：{{ current_user.nickname or '未设置' }}</p>
+        <p>邮箱：{{ current_user.email or '未绑定' }}</p>
+        <p>手机号：{{ current_user.phone or '未绑定' }}</p>
+        <a href="/user/edit_profile" class="btn btn-primary">编辑资料</a>
+        <a href="/user/change_password" class="btn btn-secondary">修改密码</a>
+    </div>
+    
+    <div class="mb-4">
+        <h3>我的帖子</h3>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>标题</th>
+                    <th>浏览</th>
+                    <th>评论</th>
+                    <th>时间</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for post in posts %}
+                    <tr>
+                        <td><a href="/forum/post_detail/{{ post.post_id }}">{{ post.title }}</a></td>
+                        <td>{{ post.view_count }}</td>
+                        <td>{{ post.comment_count }}</td>
+                        <td>{{ post.create_time.strftime('%Y-%m-%d') }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endblock %}
