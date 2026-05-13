@@ -109,6 +109,143 @@
             </div>
         </div>
     </div>
+
+    <div class="row mb-4">
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5>待审核摄影师</h5>
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>用户</th>
+                                <th>真实姓名</th>
+                                <th>城市</th>
+                                <th>申请时间</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for photographer in pending_photographer_list %}
+                                <tr>
+                                    <td>{{ photographer.user.nickname or photographer.user.username if photographer.user else '未知用户' }}</td>
+                                    <td>{{ photographer.real_name or '-' }}</td>
+                                    <td>{{ photographer.city or '-' }}</td>
+                                    <td>{{ photographer.create_time.strftime('%Y-%m-%d') }}</td>
+                                    <td><a href="/admin/photographer/audit/{{ photographer.photographer_id }}" class="btn btn-sm btn-primary">审核</a></td>
+                                </tr>
+                            {% else %}
+                                <tr>
+                                    <td colspan="5" class="text-center text-muted">暂无待审核摄影师</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5>最新用户</h5>
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>账号</th>
+                                <th>昵称</th>
+                                <th>角色</th>
+                                <th>状态</th>
+                                <th>注册时间</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for user in latest_users %}
+                                <tr>
+                                    <td><a href="/admin/user/detail/{{ user.user_id }}">{{ user.username }}</a></td>
+                                    <td>{{ user.nickname or '-' }}</td>
+                                    <td>{% if user.user_role == 2 %}摄影师{% else %}普通用户{% endif %}</td>
+                                    <td>{% if user.status == 1 %}正常{% else %}禁用{% endif %}</td>
+                                    <td>{{ user.create_time.strftime('%Y-%m-%d') }}</td>
+                                </tr>
+                            {% else %}
+                                <tr>
+                                    <td colspan="5" class="text-center text-muted">暂无用户</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5>最新作品</h5>
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>作品</th>
+                                <th>摄影师</th>
+                                <th>分类</th>
+                                <th>审核</th>
+                                <th>状态</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for work in latest_works %}
+                                <tr>
+                                    <td><a href="/admin/work/edit/{{ work.work_id }}">{{ work.title }}</a></td>
+                                    <td>{{ work.photographer.user.nickname if work.photographer and work.photographer.user else '未知' }}</td>
+                                    <td>{{ work.category.category_name if work.category else '-' }}</td>
+                                    <td>{% if work.audit_status == 0 %}待审核{% elif work.audit_status == 1 %}已通过{% else %}已拒绝{% endif %}</td>
+                                    <td>{% if work.status == 1 %}上架{% else %}下架{% endif %}</td>
+                                </tr>
+                            {% else %}
+                                <tr>
+                                    <td colspan="5" class="text-center text-muted">暂无作品</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5>热门帖子 Top 5</h5>
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>帖子</th>
+                                <th>作者</th>
+                                <th>板块</th>
+                                <th>浏览</th>
+                                <th>点赞</th>
+                                <th>评论</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for post in hot_posts %}
+                                <tr>
+                                    <td><a href="/forum/post_detail/{{ post.post_id }}">{{ post.title }}</a></td>
+                                    <td>{{ post.user.nickname or post.user.username if post.user else '未知' }}</td>
+                                    <td>{{ post.forum_board.board_name if post.forum_board else '-' }}</td>
+                                    <td>{{ post.view_count }}</td>
+                                    <td>{{ post.like_count }}</td>
+                                    <td>{{ post.comment_count }}</td>
+                                </tr>
+                            {% else %}
+                                <tr>
+                                    <td colspan="6" class="text-center text-muted">暂无帖子</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
 {% endblock %}
 
 {% block scripts %}
