@@ -126,6 +126,7 @@ python app.py
 - SQL 演示账号密码均为 `123456`，密码以 MD5 写入。
 - 登录表单使用 POST 提交；直接 GET `/auth/login` 只渲染登录页，不提交账号密码。
 - 项目已启用 Flask-WTF CSRF 防护，所有 POST 表单需要 `csrf_token`，Ajax 请求通过 `X-CSRFToken` 请求头提交。
+- 作品评论提交后默认通过，写入 `audit_status = 1`；后台作品评论管理只做启用/禁用，不做评论审核通过/拒绝操作。
 - 如果运行时报 `No module named 'flask_wtf'`，请在项目虚拟环境执行 `python -m pip install -r requirements.txt`。
 - 演示图片使用占位 URL；正式演示可在后台上传真实图片，数据库会保存 OSS URL。
 - 不要提交 `environment.md`、`.env` 或任何含有 OSS AccessKey 的文件。

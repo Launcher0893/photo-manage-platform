@@ -59,6 +59,24 @@
                 </div>
             </div>
         </div>
+        <div class="col-md-12 mb-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5>论坛活跃趋势</h5>
+                    <div id="forum-activity-chart" style="height: 320px;"></div>
+                    <table class="table table-sm mt-3" id="forum-activity-table">
+                        <thead>
+                            <tr>
+                                <th>日期</th>
+                                <th>发帖量</th>
+                                <th>评论量</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
         <div class="col-md-6">
             <div class="card">
                 <div class="card-body">
@@ -301,6 +319,33 @@ $(function() {
             });
         } else {
             $('#category-chart').hide();
+        }
+    });
+
+    $.getJSON('/api/dashboard/forum_activity', function(data) {
+        var rows = [];
+        for (var i = 0; i < data.labels.length; i++) {
+            rows.push('<tr><td>' + data.labels[i] + '</td><td>' + data.posts[i] + '</td><td>' + data.comments[i] + '</td></tr>');
+        }
+        $('#forum-activity-table tbody').html(rows.join(''));
+
+        if (window.echarts) {
+            var forumActivityChart = echarts.init(document.getElementById('forum-activity-chart'));
+            forumActivityChart.setOption({
+                tooltip: { trigger: 'axis' },
+                legend: { data: ['发帖量', '评论量'] },
+                xAxis: { type: 'category', data: data.labels },
+                yAxis: { type: 'value' },
+                series: [
+                    { name: '发帖量', type: 'line', smooth: true, data: data.posts },
+                    { name: '评论量', type: 'line', smooth: true, data: data.comments }
+                ]
+            });
+            $(window).on('resize', function() {
+                forumActivityChart.resize();
+            });
+        } else {
+            $('#forum-activity-chart').hide();
         }
     });
 });

@@ -5,7 +5,7 @@ from flask_login import current_user
 from sqlalchemy import func, select
 
 from db import db
-from models import Category, PhotoWork, User, WorkComment, WorkLike
+from models import Category, ForumComment, ForumPost, PhotoWork, User, WorkComment, WorkLike
 from utils.decorators import admin_required
 
 
@@ -119,6 +119,35 @@ def dashboard_trends():
         'labels': labels,
         'users': [user_map.get(key, 0) for key in keys],
         'works': [work_map.get(key, 0) for key in keys],
+    })
+
+
+@bp.route('/dashboard/forum_activity')
+@admin_required
+def dashboard_forum_activity():
+    today = date.today()
+    days = [today - timedelta(days=offset) for offset in range(6, -1, -1)]
+    start_dt = datetime.combine(days[0], datetime.min.time())
+
+    post_rows = db.session.execute(
+        select(func.date(ForumPost.create_time), func.count(ForumPost.post_id))
+        .where(ForumPost.create_time >= start_dt)
+        .group_by(func.date(ForumPost.create_time))
+    ).all()
+    comment_rows = db.session.execute(
+        select(func.date(ForumComment.create_time), func.count(ForumComment.comment_id))
+        .where(ForumComment.create_time >= start_dt)
+        .group_by(func.date(ForumComment.create_time))
+    ).all()
+
+    post_map = {str(day): count for day, count in post_rows}
+    comment_map = {str(day): count for day, count in comment_rows}
+    labels = [day.strftime('%m-%d') for day in days]
+    keys = [day.isoformat() for day in days]
+    return jsonify({
+        'labels': labels,
+        'posts': [post_map.get(key, 0) for key in keys],
+        'comments': [comment_map.get(key, 0) for key in keys],
     })
 
 

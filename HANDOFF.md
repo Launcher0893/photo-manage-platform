@@ -110,6 +110,7 @@ python app.py
 - `photographer` 摄影师认证资料不包含“摄影师简介”和“从业年限”。
 - `category` 分类表不包含“分类描述”。
 - `photo_work` 作品表不包含“收藏数”。
+- 作品评论提交后默认通过，写入 `audit_status = 1`；后台作品评论管理只做启用/禁用，不做评论审核通过/拒绝操作。
 - 外键、可空和删除级联策略应与 `photo_manage_platform.sql` 保持一致。
 - 后台路由使用 `/admin/<module>/...`。
 - 前台路由使用 `/work/...`、`/photographer/...`、`/forum/...`、`/announcement/...`。
