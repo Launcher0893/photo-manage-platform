@@ -4,7 +4,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import joinedload
 
 from db import db
-from models import ForumPost, Photographer, User, WorkComment
+from models import ForumPost, PhotoWork, Photographer, User, WorkComment
 from utils.decorators import admin_required, user_required
 from utils.file_upload import delete_uploaded_file, save_image
 from utils.logger import log_admin_action
@@ -18,13 +18,21 @@ admin_bp = Blueprint('admin_user', __name__, url_prefix='/admin/user')
 @user_required
 def profile():
     photographer = current_user.photographer if current_user.user_role == User.ROLE_PHOTOGRAPHER else None
+    my_works = []
+    if photographer is not None and photographer.cert_status == Photographer.STATUS_APPROVED:
+        my_works = db.session.execute(
+            select(PhotoWork)
+            .options(joinedload(PhotoWork.category))
+            .where(PhotoWork.photographer_id == photographer.photographer_id)
+            .order_by(PhotoWork.create_time.desc(), PhotoWork.work_id.desc())
+        ).scalars().all()
     my_posts = db.session.execute(
         select(ForumPost)
         .options(joinedload(ForumPost.forum_board))
         .where(ForumPost.user_id == current_user.user_id, ForumPost.status == 1)
         .order_by(ForumPost.create_time.desc(), ForumPost.post_id.desc())
     ).scalars().all()
-    return render_template('user/profile.html', posts=my_posts, photographer=photographer)
+    return render_template('user/profile.html', posts=my_posts, photographer=photographer, works=my_works)
 
 
 @bp.route('/edit_photographer', methods=['GET', 'POST'])

@@ -43,6 +43,55 @@
             {% endif %}
         </div>
     {% endif %}
+
+    {% if photographer and photographer.cert_status == 1 %}
+        <div class="mb-4">
+            <h3>我的作品</h3>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>标题</th>
+                        <th>分类</th>
+                        <th>浏览</th>
+                        <th>点赞</th>
+                        <th>评论</th>
+                        <th>状态</th>
+                        <th>时间</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for work in works %}
+                        <tr>
+                            <td>{{ work.title }}</td>
+                            <td>{{ work.category.category_name if work.category else '未分类' }}</td>
+                            <td>{{ work.view_count }}</td>
+                            <td>{{ work.like_count }}</td>
+                            <td>{{ work.comment_count }}</td>
+                            <td>{% if work.status == 1 %}上架{% else %}下架{% endif %}</td>
+                            <td>{{ work.create_time.strftime('%Y-%m-%d') }}</td>
+                            <td>
+                                {% if work.status == 1 %}
+                                    <a href="/work/detail/{{ work.work_id }}" class="btn btn-sm btn-info">查看</a>
+                                {% endif %}
+                                <a href="/work/edit/{{ work.work_id }}" class="btn btn-sm btn-primary">编辑</a>
+                                <form method="POST" action="/work/status/{{ work.work_id }}" class="d-inline">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                    <button type="submit" class="btn btn-sm btn-secondary">
+                                        {% if work.status == 1 %}下架{% else %}恢复{% endif %}
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    {% else %}
+                        <tr>
+                            <td colspan="8" class="text-center text-muted">暂无作品</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% endif %}
     
     <div class="mb-4">
         <h3>我的帖子</h3>
