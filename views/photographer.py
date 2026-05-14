@@ -6,7 +6,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import joinedload, selectinload
 
 from db import db
-from models import PhotoWork, Photographer
+from models import PhotoWork, Photographer, User
 from utils.decorators import admin_required
 from utils.logger import log_admin_action
 
@@ -22,7 +22,11 @@ def list_page():
     stmt = (
         select(Photographer)
         .options(joinedload(Photographer.user), selectinload(Photographer.works))
-        .where(Photographer.cert_status == Photographer.STATUS_APPROVED)
+        .join(Photographer.user)
+        .where(
+            Photographer.cert_status == Photographer.STATUS_APPROVED,
+            User.status == 1,
+        )
         .order_by(Photographer.create_time.desc(), Photographer.photographer_id.desc())
     )
     if city:
@@ -36,9 +40,11 @@ def detail(photographer_id):
     photographer = db.session.execute(
         select(Photographer)
         .options(joinedload(Photographer.user))
+        .join(Photographer.user)
         .where(
             Photographer.photographer_id == photographer_id,
             Photographer.cert_status == Photographer.STATUS_APPROVED,
+            User.status == 1,
         )
     ).scalar_one_or_none()
     if photographer is None:
@@ -46,10 +52,13 @@ def detail(photographer_id):
 
     works = db.session.execute(
         select(PhotoWork)
+        .join(PhotoWork.photographer)
+        .join(Photographer.user)
         .where(
             PhotoWork.photographer_id == photographer_id,
             PhotoWork.audit_status == PhotoWork.AUDIT_APPROVED,
             PhotoWork.status == 1,
+            User.status == 1,
         )
         .order_by(PhotoWork.create_time.desc(), PhotoWork.work_id.desc())
     ).scalars().all()

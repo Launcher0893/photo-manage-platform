@@ -4,7 +4,7 @@ from sqlalchemy import func, select
 from sqlalchemy.orm import joinedload, selectinload
 
 from db import db
-from models import Category, PhotoWork, PhotoWorkImage, Photographer, WorkComment, WorkLike
+from models import Category, PhotoWork, PhotoWorkImage, Photographer, User, WorkComment, WorkLike
 from utils.decorators import admin_required, user_required
 from utils.file_upload import delete_uploaded_file, save_image_result
 from utils.logger import log_admin_action
@@ -124,9 +124,12 @@ def list_page():
             joinedload(PhotoWork.category),
             joinedload(PhotoWork.photographer).joinedload(Photographer.user),
         )
+        .join(PhotoWork.photographer)
+        .join(Photographer.user)
         .where(
             PhotoWork.audit_status == PhotoWork.AUDIT_APPROVED,
             PhotoWork.status == 1,
+            User.status == 1,
         )
     )
 
@@ -233,10 +236,13 @@ def detail(work_id):
             joinedload(PhotoWork.photographer).joinedload(Photographer.user),
             selectinload(PhotoWork.images),
         )
+        .join(PhotoWork.photographer)
+        .join(Photographer.user)
         .where(
             PhotoWork.work_id == work_id,
             PhotoWork.audit_status == PhotoWork.AUDIT_APPROVED,
             PhotoWork.status == 1,
+            User.status == 1,
         )
     ).scalar_one_or_none()
 

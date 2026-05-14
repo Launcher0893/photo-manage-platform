@@ -61,6 +61,24 @@
                     headers: { 'X-CSRFToken': csrfToken }
                 });
             }
+            $('form[method="POST"], form[method="post"]').on('submit', function() {
+                var $form = $(this);
+                if ($form.data('submitting')) {
+                    return false;
+                }
+                $form.data('submitting', true);
+                $form.find('button[type="submit"], input[type="submit"]').each(function() {
+                    var $button = $(this);
+                    $button.data('original-text', $button.is('input') ? $button.val() : $button.text());
+                    if ($button.is('input')) {
+                        $button.val('处理中...');
+                    } else {
+                        $button.text('处理中...');
+                    }
+                    $button.prop('disabled', true);
+                });
+                return true;
+            });
         });
     </script>
     {% block scripts %}{% endblock %}

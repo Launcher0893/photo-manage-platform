@@ -115,8 +115,10 @@ def admin_list():
         stmt = stmt.where(User.nickname.like(f'%{nickname}%'))
     if user_role in (User.ROLE_NORMAL, User.ROLE_PHOTOGRAPHER):
         stmt = stmt.where(User.user_role == user_role)
-    if status in (0, 1):
+    if status in (-1, 0, 1):
         stmt = stmt.where(User.status == status)
+    else:
+        stmt = stmt.where(User.status != -1)
 
     users = db.paginate(stmt, page=page, per_page=10, error_out=False)
     return render_template('user/admin_list.html', users=users)
@@ -163,8 +165,35 @@ def detail(user_id):
 def toggle_status(user_id):
     user = db.session.get(User, user_id)
     if user is not None:
+        if user.status == -1:
+            flash('已删除用户不能直接禁用或启用，请先恢复。', 'error')
+            return redirect(url_for('admin_user.admin_list'))
         user.status = 0 if user.status == 1 else 1
         db.session.commit()
         log_admin_action('用户状态', f'更新用户状态：{user.username}')
         flash('用户状态已更新。', 'success')
     return redirect(url_for('admin_user.admin_list'))
+
+
+@admin_bp.route('/delete/<int:user_id>', methods=['POST'])
+@admin_required
+def soft_delete(user_id):
+    user = db.session.get(User, user_id)
+    if user is not None:
+        user.status = -1
+        db.session.commit()
+        log_admin_action('用户删除', f'删除用户：{user.username}')
+        flash('用户已删除。', 'success')
+    return redirect(url_for('admin_user.admin_list'))
+
+
+@admin_bp.route('/restore/<int:user_id>', methods=['POST'])
+@admin_required
+def restore(user_id):
+    user = db.session.get(User, user_id)
+    if user is not None:
+        user.status = 1
+        db.session.commit()
+        log_admin_action('用户恢复', f'恢复用户：{user.username}')
+        flash('用户已恢复。', 'success')
+    return redirect(url_for('admin_user.admin_list', status=-1))

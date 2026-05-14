@@ -6,7 +6,7 @@ from sqlalchemy.orm import joinedload
 
 from config import Config
 from db import db
-from models import Announcement, Carousel, PhotoWork, Photographer
+from models import Announcement, Carousel, PhotoWork, Photographer, User
 import models  # noqa: F401
 from views.announcement import admin_bp as admin_announcement_bp
 from views.announcement import bp as announcement_bp
@@ -84,10 +84,13 @@ def index():
     featured_works = db.session.execute(
         select(PhotoWork)
         .options(work_user_load)
+        .join(PhotoWork.photographer)
+        .join(Photographer.user)
         .where(
             PhotoWork.audit_status == PhotoWork.AUDIT_APPROVED,
             PhotoWork.status == 1,
             PhotoWork.is_featured == 1,
+            User.status == 1,
         )
         .order_by(PhotoWork.create_time.desc(), PhotoWork.work_id.desc())
         .limit(3)
@@ -96,9 +99,12 @@ def index():
     hot_works = db.session.execute(
         select(PhotoWork)
         .options(work_user_load)
+        .join(PhotoWork.photographer)
+        .join(Photographer.user)
         .where(
             PhotoWork.audit_status == PhotoWork.AUDIT_APPROVED,
             PhotoWork.status == 1,
+            User.status == 1,
         )
         .order_by(PhotoWork.hot_score.desc(), PhotoWork.create_time.desc(), PhotoWork.work_id.desc())
         .limit(8)
@@ -107,9 +113,12 @@ def index():
     recent_works = db.session.execute(
         select(PhotoWork)
         .options(work_user_load)
+        .join(PhotoWork.photographer)
+        .join(Photographer.user)
         .where(
             PhotoWork.audit_status == PhotoWork.AUDIT_APPROVED,
             PhotoWork.status == 1,
+            User.status == 1,
         )
         .order_by(PhotoWork.create_time.desc(), PhotoWork.work_id.desc())
         .limit(8)
@@ -118,7 +127,11 @@ def index():
     photographers = db.session.execute(
         select(Photographer)
         .options(joinedload(Photographer.user))
-        .where(Photographer.cert_status == Photographer.STATUS_APPROVED)
+        .join(Photographer.user)
+        .where(
+            Photographer.cert_status == Photographer.STATUS_APPROVED,
+            User.status == 1,
+        )
         .order_by(Photographer.create_time.desc(), Photographer.photographer_id.desc())
         .limit(6)
     ).scalars().all()

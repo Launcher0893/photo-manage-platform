@@ -1,10 +1,14 @@
 import os
 
-from dotenv import load_dotenv
+try:
+    from dotenv import load_dotenv
+except ImportError:
+    load_dotenv = None
 
 
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
-load_dotenv(os.path.join(BASE_DIR, '.env'))
+if load_dotenv is not None:
+    load_dotenv(os.path.join(BASE_DIR, '.env'))
 
 DEFAULT_DATABASE_URL = (
     'mysql+pymysql://root:Sean20041218@127.0.0.1:3306/'

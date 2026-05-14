@@ -17,6 +17,7 @@
                 <option value="">全部状态</option>
                 <option value="1" {% if request.args.get('status') == '1' %}selected{% endif %}>正常</option>
                 <option value="0" {% if request.args.get('status') == '0' %}selected{% endif %}>禁用</option>
+                <option value="-1" {% if request.args.get('status') == '-1' %}selected{% endif %}>已删除</option>
             </select>
             <button type="submit" class="btn btn-primary">筛选</button>
         </form>
@@ -39,16 +40,27 @@
                     <td>{{ user.username }}</td>
                     <td>{{ user.nickname or '未设置' }}</td>
                     <td>{% if user.user_role == 1 %}普通用户{% else %}摄影师{% endif %}</td>
-                    <td>{% if user.status == 1 %}正常{% else %}禁用{% endif %}</td>
+                    <td>{% if user.status == 1 %}正常{% elif user.status == 0 %}禁用{% else %}已删除{% endif %}</td>
                     <td>{{ user.create_time.strftime('%Y-%m-%d') }}</td>
                     <td>
                         <a href="/admin/user/detail/{{ user.user_id }}" class="btn btn-sm btn-primary">详情</a>
-                        <form method="POST" action="/admin/user/status/{{ user.user_id }}" class="d-inline">
-                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                            <button type="submit" class="btn btn-sm btn-secondary">
-                                {% if user.status == 1 %}禁用{% else %}启用{% endif %}
-                            </button>
-                        </form>
+                        {% if user.status == -1 %}
+                            <form method="POST" action="/admin/user/restore/{{ user.user_id }}" class="d-inline">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <button type="submit" class="btn btn-sm btn-success">恢复</button>
+                            </form>
+                        {% else %}
+                            <form method="POST" action="/admin/user/status/{{ user.user_id }}" class="d-inline">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <button type="submit" class="btn btn-sm btn-secondary">
+                                    {% if user.status == 1 %}禁用{% else %}启用{% endif %}
+                                </button>
+                            </form>
+                            <form method="POST" action="/admin/user/delete/{{ user.user_id }}" class="d-inline" onsubmit="return confirm('确定删除该用户吗？删除后前台将隐藏该用户相关摄影师信息。')">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <button type="submit" class="btn btn-sm btn-danger">删除</button>
+                            </form>
+                        {% endif %}
                     </td>
                 </tr>
             {% endfor %}
