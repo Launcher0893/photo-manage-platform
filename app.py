@@ -136,12 +136,12 @@ def index():
         .limit(6)
     ).scalars().all()
 
-    latest_announcements = db.session.execute(
+    latest_announcement = db.session.execute(
         select(Announcement)
         .where(Announcement.status == 1)
         .order_by(Announcement.create_time.desc(), Announcement.announcement_id.desc())
-        .limit(4)
-    ).scalars().all()
+        .limit(1)
+    ).scalar_one_or_none()
 
     return render_template(
         'index.html',
@@ -150,7 +150,7 @@ def index():
         hot_works=hot_works,
         recent_works=recent_works,
         photographers=photographers,
-        latest_announcements=latest_announcements,
+        latest_announcement=latest_announcement,
     )
 
 

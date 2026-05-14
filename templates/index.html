@@ -133,23 +133,60 @@
         </div>
     </div>
 
-    <div class="mt-4">
-        <h2 class="mb-4">最新公告</h2>
-        <div class="row">
-            {% for announcement in latest_announcements %}
-                <div class="col-md-6 mb-4">
-                    <div class="card">
-                        {% if announcement.cover_url %}
-                            <img src="{{ announcement.cover_url }}" class="card-img-top" alt="{{ announcement.title }}">
+    {% if latest_announcement %}
+        <div class="modal fade" id="announcementModal" tabindex="-1" aria-labelledby="announcementModalLabel" aria-hidden="true" data-announcement-id="{{ latest_announcement.announcement_id }}">
+            <div class="modal-dialog modal-dialog-centered modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="announcementModalLabel">{{ latest_announcement.title }}</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="关闭"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p class="text-muted">{{ latest_announcement.create_time.strftime('%Y-%m-%d') }}</p>
+                        {% if latest_announcement.cover_url %}
+                            <img src="{{ latest_announcement.cover_url }}" class="img-fluid rounded mb-3" alt="{{ latest_announcement.title }}">
                         {% endif %}
-                        <div class="card-body">
-                            <h5 class="card-title">{{ announcement.title }}</h5>
-                            <p class="card-text">{{ announcement.content[:80] }}{% if announcement.content|length > 80 %}...{% endif %}</p>
-                            <a href="/announcement/detail/{{ announcement.announcement_id }}" class="btn btn-primary">查看公告</a>
+                        <p>{{ latest_announcement.content[:180] }}{% if latest_announcement.content|length > 180 %}...{% endif %}</p>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" value="1" id="skip-announcement-modal">
+                            <label class="form-check-label" for="skip-announcement-modal">不再弹出此公告</label>
                         </div>
                     </div>
+                    <div class="modal-footer">
+                        <a href="/announcement/detail/{{ latest_announcement.announcement_id }}" class="btn btn-primary">查看详情</a>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">关闭</button>
+                    </div>
                 </div>
-            {% endfor %}
+            </div>
         </div>
-    </div>
+    {% endif %}
+{% endblock %}
+
+{% block scripts %}
+    {% if latest_announcement %}
+        <script>
+            $(function() {
+                var modalElement = document.getElementById('announcementModal');
+                if (!modalElement || !window.bootstrap) {
+                    return;
+                }
+
+                var announcementId = modalElement.getAttribute('data-announcement-id');
+                var storageKey = 'hiddenAnnouncement:' + announcementId;
+                if (localStorage.getItem(storageKey)) {
+                    return;
+                }
+
+                var announcementModal = new bootstrap.Modal(modalElement);
+                announcementModal.show();
+
+                modalElement.addEventListener('hidden.bs.modal', function() {
+                    var skipCheckbox = document.getElementById('skip-announcement-modal');
+                    if (skipCheckbox && skipCheckbox.checked) {
+                        localStorage.setItem(storageKey, '1');
+                    }
+                });
+            });
+        </script>
+    {% endif %}
 {% endblock %}
