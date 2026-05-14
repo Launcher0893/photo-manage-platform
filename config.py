@@ -1,7 +1,11 @@
 import os
 
+from dotenv import load_dotenv
+
 
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
+load_dotenv(os.path.join(BASE_DIR, '.env'))
+
 DEFAULT_DATABASE_URL = (
     'mysql+pymysql://root:Sean20041218@127.0.0.1:3306/'
     'photo_manage_platform?charset=utf8mb4'
