@@ -2,6 +2,7 @@
 
 ## 📋 文档概述
 
+
 本文档详细说明了 `photo-manage-platform/templates/index.html` 文件中各个功能模块的实现原理、代码结构和定制方法。
 
 ---
