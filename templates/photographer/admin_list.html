@@ -3,108 +3,95 @@
 {% block title %}摄影师审核{% endblock %}
 
 {% block content %}
-    <div class="mb-4">
-        <h2 class="fw-bold mb-3">摄影师审核</h2>
-
-        <!-- 美化搜索栏 -->
-        <div class="card p-3 rounded-3 shadow-sm">
-            <form method="GET" class="row g-3 align-items-center">
-                <div class="col-auto">
-                    <select name="status" class="form-select rounded-3">
-                        <option value="">全部状态</option>
-                        <option value="0" {% if request.args.get('status') == '0' %}selected{% endif %}>待审核</option>
-                        <option value="1" {% if request.args.get('status') == '1' %}selected{% endif %}>已通过</option>
-                        <option value="2" {% if request.args.get('status') == '2' %}selected{% endif %}>已拒绝</option>
-                    </select>
-                </div>
-                <div class="col-auto">
-                    <button type="submit" class="btn btn-primary rounded-3 px-4">筛选</button>
-                </div>
-            </form>
-        </div>
+<div class="admin-page-header">
+    <div>
+        <h2 class="admin-page-title">摄影师审核</h2>
+        <p class="admin-page-desc">查看摄影师认证申请，并处理待审核记录。</p>
     </div>
+</div>
 
-    <table class="table table-hover align-middle">
-        <thead class="table-light">
-            <tr>
-                <th>昵称</th>
-                <th>真实姓名</th>
-                <th>城市</th>
-                <th>认证状态</th>
-                <th>注册时间</th>
-                <th>操作</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for photographer in photographers.items %}
+<div class="admin-filter-card mb-4">
+    <form method="GET" class="row g-3 align-items-center">
+        <div class="col-auto">
+            <select name="status" class="form-select">
+                <option value="">全部状态</option>
+                <option value="0" {% if request.args.get('status') == '0' %}selected{% endif %}>待审核</option>
+                <option value="1" {% if request.args.get('status') == '1' %}selected{% endif %}>已通过</option>
+                <option value="2" {% if request.args.get('status') == '2' %}selected{% endif %}>已拒绝</option>
+            </select>
+        </div>
+        <div class="col-auto">
+            <button type="submit" class="btn btn-primary px-4">筛选</button>
+        </div>
+    </form>
+</div>
+
+<div class="admin-table-card">
+    <div class="table-responsive">
+        <table class="table table-hover admin-table">
+            <thead>
                 <tr>
-                    <td>{{ photographer.user.nickname if photographer.user else '未知用户' }}</td>
-                    <td>{{ photographer.real_name or '未填写' }}</td>
-                    <td>{{ photographer.city or '未填写' }}</td>
-                    <td>
-                        {% if photographer.cert_status == 0 %}
-                            <span class="badge bg-warning text-dark">待审核</span>
-                        {% elif photographer.cert_status == 1 %}
-                            <span class="badge bg-success">已通过</span>
-                        {% else %}
-                            <span class="badge bg-danger">已拒绝</span>
-                        {% endif %}
-                    </td>
-                    <td>{{ photographer.create_time.strftime('%Y-%m-%d') }}</td>
-                    <td>
-                        {% if photographer.cert_status == 0 %}
-                            {# 待审核：显示 审核 #}
-                            <a href="/admin/photographer/audit/{{ photographer.photographer_id }}"
-                               class="btn btn-sm btn-primary rounded-3">
-                                审核
-                            </a>
-                        {% else %}
-                            {# 已审核：显示 已审核，但是依然可以点击 #}
-                            <a href="/admin/photographer/audit/{{ photographer.photographer_id }}"
-                               class="btn btn-sm btn-secondary rounded-3">
-                                已审核
-                            </a>
-                        {% endif %}
-                    </td>
+                    <th>昵称</th>
+                    <th>真实姓名</th>
+                    <th>城市</th>
+                    <th>认证状态</th>
+                    <th>注册时间</th>
+                    <th>操作</th>
                 </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-
-    <!-- 美化分页 -->
-    <nav aria-label="Page navigation">
-        <ul class="pagination justify-content-center gap-2">
-            {% if photographers.has_prev %}
-                <li class="page-item">
-                    <a class="page-link rounded-3" href="?page={{ photographers.prev_num }}">上一页</a>
-                </li>
-            {% else %}
-                <li class="page-item disabled">
-                    <a class="page-link rounded-3">上一页</a>
-                </li>
-            {% endif %}
-
-            {% for page in photographers.iter_pages() %}
-                {% if page %}
-                    <li class="page-item {% if page == photographers.page %}active{% endif %}">
-                        <a class="page-link rounded-3" href="?page={{ page }}">{{ page }}</a>
-                    </li>
+            </thead>
+            <tbody>
+                {% for photographer in photographers.items %}
+                    <tr>
+                        <td>{{ photographer.user.nickname if photographer.user else '未知用户' }}</td>
+                        <td>{{ photographer.real_name or '未填写' }}</td>
+                        <td>{{ photographer.city or '未填写' }}</td>
+                        <td>
+                            {% if photographer.cert_status == 0 %}
+                                <span class="badge bg-warning text-dark">待审核</span>
+                            {% elif photographer.cert_status == 1 %}
+                                <span class="badge bg-success">已通过</span>
+                            {% else %}
+                                <span class="badge bg-danger">已拒绝</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ photographer.create_time.strftime('%Y-%m-%d') }}</td>
+                        <td>
+                            <a href="/admin/photographer/audit/{{ photographer.photographer_id }}"
+                               class="btn btn-sm {% if photographer.cert_status == 0 %}btn-primary{% else %}btn-secondary{% endif %}">
+                                {% if photographer.cert_status == 0 %}审核{% else %}查看/调整{% endif %}
+                            </a>
+                        </td>
+                    </tr>
                 {% else %}
-                    <li class="page-item disabled">
-                        <span class="page-link rounded-3">...</span>
-                    </li>
-                {% endif %}
-            {% endfor %}
+                    <tr><td colspan="6" class="admin-empty">暂无摄影师认证记录</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
 
-            {% if photographers.has_next %}
-                <li class="page-item">
-                    <a class="page-link rounded-3" href="?page={{ photographers.next_num }}">下一页</a>
+<nav aria-label="Page navigation" class="mt-4">
+    <ul class="pagination justify-content-center">
+        {% set kw_status = request.args.get('status','')|urlencode %}
+        {% if photographers.has_prev %}
+            <li class="page-item"><a class="page-link" href="?page={{ photographers.prev_num }}&status={{ kw_status }}">上一页</a></li>
+        {% else %}
+            <li class="page-item disabled"><span class="page-link">上一页</span></li>
+        {% endif %}
+        {% for page in photographers.iter_pages() %}
+            {% if page %}
+                <li class="page-item {% if page == photographers.page %}active{% endif %}">
+                    <a class="page-link" href="?page={{ page }}&status={{ kw_status }}">{{ page }}</a>
                 </li>
             {% else %}
-                <li class="page-item disabled">
-                    <a class="page-link rounded-3">下一页</a>
-                </li>
+                <li class="page-item disabled"><span class="page-link">...</span></li>
             {% endif %}
-        </ul>
-    </nav>
+        {% endfor %}
+        {% if photographers.has_next %}
+            <li class="page-item"><a class="page-link" href="?page={{ photographers.next_num }}&status={{ kw_status }}">下一页</a></li>
+        {% else %}
+            <li class="page-item disabled"><span class="page-link">下一页</span></li>
+        {% endif %}
+    </ul>
+</nav>
 {% endblock %}

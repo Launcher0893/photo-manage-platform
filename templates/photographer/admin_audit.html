@@ -3,32 +3,58 @@
 {% block title %}摄影师审核{% endblock %}
 
 {% block content %}
-    <div class="row justify-content-center">
-        <div class="col-md-6">
-            <h2>审核摄影师</h2>
-            <div class="mb-4">
-                <p><strong>用户名：</strong>{{ photographer.user.username }}</p>
-                <p><strong>昵称：</strong>{{ photographer.user.nickname }}</p>
-                <p><strong>真实姓名：</strong>{{ photographer.real_name or '未填写' }}</p>
-                <p><strong>城市：</strong>{{ photographer.city or '未填写' }}</p>
-                <p><strong>注册时间：</strong>{{ photographer.create_time.strftime('%Y-%m-%d') }}</p>
-                <p><strong>当前状态：</strong>{% if photographer.cert_status == 0 %}待审核{% elif photographer.cert_status == 1 %}已通过{% else %}已拒绝{% endif %}</p>
+<div class="admin-page-header">
+    <div>
+        <h2 class="admin-page-title">审核摄影师</h2>
+        <p class="admin-page-desc">查看摄影师认证资料，并提交审核结果。</p>
+    </div>
+    <div class="admin-actions">
+        <a href="/admin/photographer/list" class="btn btn-secondary">返回列表</a>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-5">
+        <div class="admin-detail-card h-100">
+            <h5 class="fw-bold mb-3">认证资料</h5>
+            <div class="mb-2"><span class="text-muted">用户名：</span>{{ photographer.user.username }}</div>
+            <div class="mb-2"><span class="text-muted">昵称：</span>{{ photographer.user.nickname }}</div>
+            <div class="mb-2"><span class="text-muted">真实姓名：</span>{{ photographer.real_name or '未填写' }}</div>
+            <div class="mb-2"><span class="text-muted">城市：</span>{{ photographer.city or '未填写' }}</div>
+            <div class="mb-2"><span class="text-muted">注册时间：</span>{{ photographer.create_time.strftime('%Y-%m-%d') }}</div>
+            <div>
+                <span class="text-muted">当前状态：</span>
+                {% if photographer.cert_status == 0 %}
+                    <span class="badge bg-warning text-dark">待审核</span>
+                {% elif photographer.cert_status == 1 %}
+                    <span class="badge bg-success">已通过</span>
+                {% else %}
+                    <span class="badge bg-danger">已拒绝</span>
+                {% endif %}
             </div>
+        </div>
+    </div>
+    <div class="col-lg-7">
+        <div class="admin-form-card h-100">
             <form method="POST">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <div class="mb-3">
-                    <label>审核结果</label>
-                    <select name="cert_status" class="form-control" required>
+                    <label class="form-label">审核结果</label>
+                    <select name="cert_status" class="form-select" required>
                         <option value="1">通过</option>
                         <option value="2">拒绝</option>
                     </select>
                 </div>
                 <div class="mb-3">
-                    <label>审核备注</label>
-                    <textarea name="cert_remark" class="form-control" rows="3"></textarea>
+                    <label class="form-label">审核备注</label>
+                    <textarea name="cert_remark" class="form-control" rows="4">{{ photographer.cert_remark or '' }}</textarea>
                 </div>
-                <button type="submit" class="btn btn-primary">提交审核</button>
+                <div class="mt-4 d-flex gap-2">
+                    <button type="submit" class="btn btn-primary">提交审核</button>
+                    <a href="/admin/photographer/list" class="btn btn-secondary">取消</a>
+                </div>
             </form>
         </div>
     </div>
+</div>
 {% endblock %}

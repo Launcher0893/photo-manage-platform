@@ -3,58 +3,110 @@
 {% block title %}用户详情{% endblock %}
 
 {% block content %}
-    <h2>用户详情</h2>
-    <div class="mb-4">
-        <p>用户名：{{ user.username }}</p>
-        <p>昵称：{{ user.nickname or '未设置' }}</p>
-        <p>邮箱：{{ user.email or '未绑定' }}</p>
-        <p>手机号：{{ user.phone or '未绑定' }}</p>
-        <p>角色：{% if user.user_role == 1 %}普通用户{% else %}摄影师{% endif %}</p>
-        <p>状态：{% if user.status == 1 %}正常{% else %}禁用{% endif %}</p>
-        <p>注册时间：{{ user.create_time.strftime('%Y-%m-%d %H:%M') if user.create_time else '未知' }}</p>
+<div class="admin-page-header">
+    <div>
+        <h2 class="admin-page-title">用户详情</h2>
+        <p class="admin-page-desc">查看用户基础资料、摄影师认证资料和近期内容。</p>
     </div>
+    <div class="admin-actions">
+        <a href="/admin/user/list" class="btn btn-secondary">返回用户列表</a>
+    </div>
+</div>
 
-    {% if photographer %}
-        <div class="mb-4">
-            <h4>摄影师认证</h4>
-            <p>真实姓名：{{ photographer.real_name or '未填写' }}</p>
-            <p>城市：{{ photographer.city or '未填写' }}</p>
-            <p>认证状态：{% if photographer.cert_status == 0 %}待审核{% elif photographer.cert_status == 1 %}已通过{% else %}已拒绝{% endif %}</p>
-            <p>审核备注：{{ photographer.cert_remark or '无' }}</p>
+<div class="row g-4 mb-4">
+    <div class="col-lg-6">
+        <div class="admin-detail-card h-100">
+            <h5 class="fw-bold mb-3">基础资料</h5>
+            <div class="mb-2"><span class="text-muted">用户名：</span>{{ user.username }}</div>
+            <div class="mb-2"><span class="text-muted">昵称：</span>{{ user.nickname or '未设置' }}</div>
+            <div class="mb-2"><span class="text-muted">邮箱：</span>{{ user.email or '未绑定' }}</div>
+            <div class="mb-2"><span class="text-muted">手机号：</span>{{ user.phone or '未绑定' }}</div>
+            <div class="mb-2"><span class="text-muted">角色：</span>{% if user.user_role == 1 %}普通用户{% else %}摄影师{% endif %}</div>
+            <div class="mb-2">
+                <span class="text-muted">状态：</span>
+                {% if user.status == 1 %}
+                    <span class="badge bg-success">正常</span>
+                {% elif user.status == -1 %}
+                    <span class="badge bg-danger">已删除</span>
+                {% else %}
+                    <span class="badge bg-secondary">禁用</span>
+                {% endif %}
+            </div>
+            <div><span class="text-muted">注册时间：</span>{{ user.create_time.strftime('%Y-%m-%d %H:%M') if user.create_time else '未知' }}</div>
         </div>
-    {% endif %}
-
-    <div class="mb-4">
-        <h4>最近帖子</h4>
-        <table class="table">
-            <thead><tr><th>标题</th><th>板块</th><th>状态</th><th>时间</th></tr></thead>
-            <tbody>
-                {% for post in posts %}
-                    <tr>
-                        <td>{{ post.title }}</td>
-                        <td>{{ post.forum_board.board_name if post.forum_board else '未知板块' }}</td>
-                        <td>{% if post.status == 1 %}正常{% else %}删除{% endif %}</td>
-                        <td>{{ post.create_time.strftime('%Y-%m-%d') }}</td>
-                    </tr>
-                {% endfor %}
-            </tbody>
-        </table>
     </div>
-
-    <div class="mb-4">
-        <h4>最近作品评论</h4>
-        <table class="table">
-            <thead><tr><th>作品</th><th>内容</th><th>状态</th><th>时间</th></tr></thead>
-            <tbody>
-                {% for comment in comments %}
-                    <tr>
-                        <td>{{ comment.photo_work.title if comment.photo_work else '未知作品' }}</td>
-                        <td>{{ comment.content }}</td>
-                        <td>{% if comment.status == 1 %}正常{% else %}隐藏{% endif %}</td>
-                        <td>{{ comment.create_time.strftime('%Y-%m-%d') }}</td>
-                    </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+    <div class="col-lg-6">
+        <div class="admin-detail-card h-100">
+            <h5 class="fw-bold mb-3">摄影师认证</h5>
+            {% if photographer %}
+                <div class="mb-2"><span class="text-muted">真实姓名：</span>{{ photographer.real_name or '未填写' }}</div>
+                <div class="mb-2"><span class="text-muted">城市：</span>{{ photographer.city or '未填写' }}</div>
+                <div class="mb-2">
+                    <span class="text-muted">认证状态：</span>
+                    {% if photographer.cert_status == 0 %}
+                        <span class="badge bg-warning text-dark">待审核</span>
+                    {% elif photographer.cert_status == 1 %}
+                        <span class="badge bg-success">已通过</span>
+                    {% else %}
+                        <span class="badge bg-danger">已拒绝</span>
+                    {% endif %}
+                </div>
+                <div><span class="text-muted">审核备注：</span>{{ photographer.cert_remark or '无' }}</div>
+            {% else %}
+                <div class="text-muted">该用户不是摄影师或尚未提交认证资料。</div>
+            {% endif %}
+        </div>
     </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-6">
+        <div class="admin-table-card">
+            <div class="p-3 border-bottom">
+                <h5 class="fw-bold mb-0">最近帖子</h5>
+            </div>
+            <div class="table-responsive">
+                <table class="table admin-table">
+                    <thead><tr><th>标题</th><th>板块</th><th>状态</th><th>时间</th></tr></thead>
+                    <tbody>
+                        {% for post in posts %}
+                            <tr>
+                                <td>{{ post.title }}</td>
+                                <td>{{ post.forum_board.board_name if post.forum_board else '未知板块' }}</td>
+                                <td>{% if post.status == 1 %}<span class="badge bg-success">正常</span>{% else %}<span class="badge bg-danger">删除</span>{% endif %}</td>
+                                <td>{{ post.create_time.strftime('%Y-%m-%d') }}</td>
+                            </tr>
+                        {% else %}
+                            <tr><td colspan="4" class="admin-empty">暂无帖子</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="admin-table-card">
+            <div class="p-3 border-bottom">
+                <h5 class="fw-bold mb-0">最近作品评论</h5>
+            </div>
+            <div class="table-responsive">
+                <table class="table admin-table">
+                    <thead><tr><th>作品</th><th>内容</th><th>状态</th><th>时间</th></tr></thead>
+                    <tbody>
+                        {% for comment in comments %}
+                            <tr>
+                                <td>{{ comment.photo_work.title if comment.photo_work else '未知作品' }}</td>
+                                <td class="text-break">{{ comment.content }}</td>
+                                <td>{% if comment.status == 1 %}<span class="badge bg-success">正常</span>{% else %}<span class="badge bg-secondary">隐藏</span>{% endif %}</td>
+                                <td>{{ comment.create_time.strftime('%Y-%m-%d') }}</td>
+                            </tr>
+                        {% else %}
+                            <tr><td colspan="4" class="admin-empty">暂无评论</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}

@@ -3,25 +3,37 @@
 {% block title %}{{ board and '编辑板块' or '新增板块' }}{% endblock %}
 
 {% block content %}
-    <div class="row justify-content-center">
-        <div class="col-md-6">
-            <h2>{{ board and '编辑板块' or '新增板块' }}</h2>
-            <form method="POST">
-                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                <div class="mb-3">
-                    <label>板块名称</label>
-                    <input type="text" name="board_name" class="form-control" required value="{{ board.board_name if board else '' }}">
-                </div>
-                <div class="mb-3">
-                    <label>描述</label>
-                    <textarea name="description" class="form-control" rows="4">{{ board.description if board else '' }}</textarea>
-                </div>
-                <div class="mb-3">
-                    <label>排序</label>
-                    <input type="number" name="sort" class="form-control" value="{{ board.sort if board else 0 }}">
-                </div>
-                <button type="submit" class="btn btn-primary">{{ board and '保存修改' or '新增板块' }}</button>
-            </form>
-        </div>
+<div class="admin-page-header">
+    <div>
+        <h2 class="admin-page-title">{{ board and '编辑板块' or '新增板块' }}</h2>
+        <p class="admin-page-desc">维护论坛板块名称、描述和排序。</p>
     </div>
+    <div class="admin-actions">
+        <a href="/admin/forum/board_list" class="btn btn-secondary">返回板块列表</a>
+    </div>
+</div>
+
+<div class="admin-form-card">
+    <form method="POST">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <div class="row g-3">
+            <div class="col-md-8">
+                <label class="form-label">板块名称</label>
+                <input type="text" name="board_name" class="form-control" required value="{{ board.board_name if board else '' }}">
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">排序</label>
+                <input type="number" name="sort" class="form-control" value="{{ board.sort if board else 0 }}">
+            </div>
+            <div class="col-12">
+                <label class="form-label">描述</label>
+                <textarea name="description" class="form-control" rows="4">{{ board.description if board else '' }}</textarea>
+            </div>
+        </div>
+        <div class="mt-4 d-flex gap-2">
+            <button type="submit" class="btn btn-primary">{{ board and '保存修改' or '新增板块' }}</button>
+            <a href="/admin/forum/board_list" class="btn btn-secondary">取消</a>
+        </div>
+    </form>
+</div>
 {% endblock %}

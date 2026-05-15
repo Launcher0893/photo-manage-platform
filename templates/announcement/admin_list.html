@@ -1,33 +1,98 @@
-{% extends 'base.html' %}
+{% extends 'admin_base.html' %}
 
-{% block title %}登录{% endblock %}
+{% block title %}公告管理{% endblock %}
 
 {% block content %}
-<!-- 全屏图片背景 -->
-<div style="position:fixed; top:0; left:0; width:100vw; height:100vh;
-background:url('../photo/login_back.jpg') no-repeat center center;
-background-size:cover; z-index:-1;"></div>
-
-<div class="row justify-content-center" style="margin-top:100px;">
-    <!-- 改col-md-4 变窄 -->
-    <div class="col-md-4">
-        <!-- 调宽度更窄，padding上下加大拉长高度 -->
-        <div style="background:rgba(255,255,255,0.92); padding:50px 35px; border-radius:12px; box-shadow:0 0 30px rgba(0,0,0,0.2);">
-            <h2 style="text-align:center; margin-bottom:35px; color:#222;">登录</h2>
-            <form method="POST">
-                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                <div class="mb-4">
-                    <label style="color:#444; margin-bottom:8px; display:block;">账号</label>
-                    <input type="text" name="username" class="form-control" required style="border:1px solid #ddd;border-radius:6px;padding:12px;">
-                </div>
-                <div class="mb-4">
-                    <label style="color:#444; margin-bottom:8px; display:block;">密码</label>
-                    <input type="password" name="password" class="form-control" required style="border:1px solid #ddd;border-radius:6px;padding:12px;">
-                </div>
-                <button type="submit" class="btn" style="background:#222; color:white; width:100%; padding:12px; border-radius:6px; border:none; margin-top:15px;">登录</button>
-                <p class="mt-4 text-center">还没有账号？<a href="/auth/register" style="color:#222;text-decoration:none;">立即注册</a></p>
-            </form>
-        </div>
+<div class="admin-page-header">
+    <div>
+        <h2 class="admin-page-title">公告管理</h2>
+        <p class="admin-page-desc">维护前台公告列表和首页公告弹窗内容。</p>
+    </div>
+    <div class="admin-actions">
+        <a href="/admin/announcement/add" class="btn btn-primary">发布公告</a>
     </div>
 </div>
+
+<div class="admin-table-card">
+    <div class="table-responsive">
+        <table class="table table-hover admin-table">
+            <thead>
+                <tr>
+                    <th style="width: 70px;">ID</th>
+                    <th>标题</th>
+                    <th style="width: 140px;">封面</th>
+                    <th style="width: 100px;">状态</th>
+                    <th style="width: 150px;">发布时间</th>
+                    <th style="width: 220px;">操作</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for announcement in announcements.items %}
+                <tr>
+                    <td>{{ announcement.announcement_id }}</td>
+                    <td>
+                        <div class="fw-semibold">{{ announcement.title }}</div>
+                        <div class="text-muted small text-truncate-admin">{{ announcement.content }}</div>
+                    </td>
+                    <td>
+                        {% if announcement.cover_url %}
+                            <img src="{{ announcement.cover_url }}" alt="{{ announcement.title }}" class="admin-thumb">
+                        {% else %}
+                            <span class="text-muted small">无封面</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if announcement.status == 1 %}
+                            <span class="badge bg-success">已发布</span>
+                        {% else %}
+                            <span class="badge bg-secondary">已下架</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ announcement.create_time.strftime('%Y-%m-%d') }}</td>
+                    <td>
+                        <a href="/admin/announcement/edit/{{ announcement.announcement_id }}" class="btn btn-sm btn-outline-primary">编辑</a>
+                        <form method="POST" action="/admin/announcement/status/{{ announcement.announcement_id }}" class="d-inline">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <button type="submit" class="btn btn-sm btn-secondary">{% if announcement.status == 1 %}下架{% else %}发布{% endif %}</button>
+                        </form>
+                        <form method="POST" action="/admin/announcement/delete/{{ announcement.announcement_id }}" class="d-inline"
+                              onsubmit="return confirm('确定删除该公告吗？');">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <button type="submit" class="btn btn-sm btn-outline-danger">删除</button>
+                        </form>
+                    </td>
+                </tr>
+                {% else %}
+                    <tr><td colspan="6" class="admin-empty">暂无公告</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% if announcements.pages > 1 %}
+<nav aria-label="公告分页" class="mt-4">
+    <ul class="pagination justify-content-center">
+        {% if announcements.has_prev %}
+            <li class="page-item"><a class="page-link" href="?page={{ announcements.prev_num }}">上一页</a></li>
+        {% else %}
+            <li class="page-item disabled"><span class="page-link">上一页</span></li>
+        {% endif %}
+        {% for page in announcements.iter_pages() %}
+            {% if page %}
+                <li class="page-item {% if page == announcements.page %}active{% endif %}">
+                    <a class="page-link" href="?page={{ page }}">{{ page }}</a>
+                </li>
+            {% else %}
+                <li class="page-item disabled"><span class="page-link">...</span></li>
+            {% endif %}
+        {% endfor %}
+        {% if announcements.has_next %}
+            <li class="page-item"><a class="page-link" href="?page={{ announcements.next_num }}">下一页</a></li>
+        {% else %}
+            <li class="page-item disabled"><span class="page-link">下一页</span></li>
+        {% endif %}
+    </ul>
+</nav>
+{% endif %}
 {% endblock %}

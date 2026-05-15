@@ -3,76 +3,116 @@
 {% block title %}作品评论管理{% endblock %}
 
 {% block content %}
-    <div class="mb-4">
-        <h2>作品评论管理</h2>
+<div class="admin-page-header">
+    <div>
+        <h2 class="admin-page-title">作品评论管理</h2>
+        <p class="admin-page-desc">查看和隐藏作品评论，评论提交后默认通过。</p>
+    </div>
+    <div class="admin-actions">
         <a href="/admin/work/list" class="btn btn-secondary">作品管理</a>
-        <form method="GET" class="form-inline mt-2">
-            <select name="status" class="form-control mr-2">
+    </div>
+</div>
+
+<div class="admin-filter-card mb-4">
+    <form method="GET" class="row g-3 align-items-center">
+        <div class="col-auto">
+            <select name="status" class="form-select">
                 <option value="">全部状态</option>
                 <option value="1" {% if request.args.get('status') == '1' %}selected{% endif %}>正常</option>
                 <option value="0" {% if request.args.get('status') == '0' %}selected{% endif %}>隐藏</option>
             </select>
-            <select name="audit_status" class="form-control mr-2">
+        </div>
+        <div class="col-auto">
+            <select name="audit_status" class="form-select">
                 <option value="">全部审核状态</option>
                 <option value="0" {% if request.args.get('audit_status') == '0' %}selected{% endif %}>待审核</option>
                 <option value="1" {% if request.args.get('audit_status') == '1' %}selected{% endif %}>已通过</option>
                 <option value="2" {% if request.args.get('audit_status') == '2' %}selected{% endif %}>已拒绝</option>
             </select>
-            <button type="submit" class="btn btn-primary">筛选</button>
-        </form>
-    </div>
+        </div>
+        <div class="col-auto">
+            <button type="submit" class="btn btn-primary px-4">筛选</button>
+        </div>
+    </form>
+</div>
 
-    <table class="table">
-        <thead>
-            <tr>
-                <th>内容</th>
-                <th>作品</th>
-                <th>用户</th>
-                <th>审核状态</th>
-                <th>状态</th>
-                <th>时间</th>
-                <th>操作</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for comment in comments.items %}
+<div class="admin-table-card">
+    <div class="table-responsive">
+        <table class="table table-hover admin-table">
+            <thead>
                 <tr>
-                    <td>{{ comment.content }}</td>
-                    <td>{{ comment.photo_work.title if comment.photo_work else '未知作品' }}</td>
-                    <td>{{ comment.user.nickname or comment.user.username if comment.user else '未知用户' }}</td>
-                    <td>{% if comment.audit_status == 0 %}待审核{% elif comment.audit_status == 1 %}已通过{% else %}已拒绝{% endif %}</td>
-                    <td>{% if comment.status == 1 %}正常{% else %}隐藏{% endif %}</td>
-                    <td>{{ comment.create_time.strftime('%Y-%m-%d') }}</td>
-                    <td>
-                        <form method="POST" action="/admin/work/comment/status/{{ comment.comment_id }}" class="d-inline">
-                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                            <button type="submit" class="btn btn-sm btn-secondary">
-                                {% if comment.status == 1 %}隐藏{% else %}恢复{% endif %}
-                            </button>
-                        </form>
-                    </td>
+                    <th>内容</th>
+                    <th>作品</th>
+                    <th>用户</th>
+                    <th>审核状态</th>
+                    <th>状态</th>
+                    <th>时间</th>
+                    <th>操作</th>
                 </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-
-    <nav aria-label="Page navigation">
-        <ul class="pagination">
-            {% if comments.has_prev %}
-                <li class="page-item"><a class="page-link" href="?page={{ comments.prev_num }}">上一页</a></li>
-            {% endif %}
-            {% for page in comments.iter_pages() %}
-                {% if page %}
-                    <li class="page-item {% if page == comments.page %}active{% endif %}">
-                        <a class="page-link" href="?page={{ page }}">{{ page }}</a>
-                    </li>
+            </thead>
+            <tbody>
+                {% for comment in comments.items %}
+                    <tr>
+                        <td class="text-break">{{ comment.content }}</td>
+                        <td>{{ comment.photo_work.title if comment.photo_work else '未知作品' }}</td>
+                        <td>{{ comment.user.nickname or comment.user.username if comment.user else '未知用户' }}</td>
+                        <td>
+                            {% if comment.audit_status == 0 %}
+                                <span class="badge bg-warning text-dark">待审核</span>
+                            {% elif comment.audit_status == 1 %}
+                                <span class="badge bg-success">已通过</span>
+                            {% else %}
+                                <span class="badge bg-danger">已拒绝</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if comment.status == 1 %}
+                                <span class="badge bg-success">正常</span>
+                            {% else %}
+                                <span class="badge bg-secondary">隐藏</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ comment.create_time.strftime('%Y-%m-%d') }}</td>
+                        <td>
+                            <form method="POST" action="/admin/work/comment/status/{{ comment.comment_id }}" class="d-inline">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <button type="submit" class="btn btn-sm btn-secondary">
+                                    {% if comment.status == 1 %}隐藏{% else %}恢复{% endif %}
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
                 {% else %}
-                    <li class="page-item disabled"><span class="page-link">...</span></li>
-                {% endif %}
-            {% endfor %}
-            {% if comments.has_next %}
-                <li class="page-item"><a class="page-link" href="?page={{ comments.next_num }}">下一页</a></li>
+                    <tr><td colspan="7" class="admin-empty">暂无评论</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<nav aria-label="Page navigation" class="mt-4">
+    <ul class="pagination justify-content-center">
+        {% set kw_status = request.args.get('status','')|urlencode %}
+        {% set kw_audit = request.args.get('audit_status','')|urlencode %}
+        {% if comments.has_prev %}
+            <li class="page-item"><a class="page-link" href="?page={{ comments.prev_num }}&status={{ kw_status }}&audit_status={{ kw_audit }}">上一页</a></li>
+        {% else %}
+            <li class="page-item disabled"><span class="page-link">上一页</span></li>
+        {% endif %}
+        {% for page in comments.iter_pages() %}
+            {% if page %}
+                <li class="page-item {% if page == comments.page %}active{% endif %}">
+                    <a class="page-link" href="?page={{ page }}&status={{ kw_status }}&audit_status={{ kw_audit }}">{{ page }}</a>
+                </li>
+            {% else %}
+                <li class="page-item disabled"><span class="page-link">...</span></li>
             {% endif %}
-        </ul>
-    </nav>
+        {% endfor %}
+        {% if comments.has_next %}
+            <li class="page-item"><a class="page-link" href="?page={{ comments.next_num }}&status={{ kw_status }}&audit_status={{ kw_audit }}">下一页</a></li>
+        {% else %}
+            <li class="page-item disabled"><span class="page-link">下一页</span></li>
+        {% endif %}
+    </ul>
+</nav>
 {% endblock %}
