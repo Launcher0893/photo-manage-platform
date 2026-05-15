@@ -170,14 +170,18 @@ def post_add(board_id=None):
         db.session.add(post)
         db.session.flush()
 
+        uploaded_results = []
         for sort, image_file in enumerate(request.files.getlist('post_images'), start=1):
             try:
                 image_upload = save_image_result(image_file, 'forum')
             except ValueError as exc:
                 db.session.rollback()
+                for upload in uploaded_results:
+                    delete_uploaded_file(upload.url, upload.oss_object_name)
                 flash(str(exc), 'error')
                 return render_template('forum/post_add.html', boards=boards, selected_board_id=selected_board_id)
             if image_upload:
+                uploaded_results.append(image_upload)
                 db.session.add(
                     ForumPostImage(
                         post_id=post.post_id,
@@ -187,7 +191,14 @@ def post_add(board_id=None):
                     )
                 )
 
-        db.session.commit()
+        try:
+            db.session.commit()
+        except Exception:
+            db.session.rollback()
+            for upload in uploaded_results:
+                delete_uploaded_file(upload.url, upload.oss_object_name)
+            flash('帖子发布失败，请稍后重试。', 'error')
+            return render_template('forum/post_add.html', boards=boards, selected_board_id=selected_board_id)
         flash('帖子已发布。', 'success')
         return redirect(url_for('forum.post_detail', post_id=post.post_id))
 
@@ -233,11 +244,10 @@ def post_edit(post_id):
             for image_id in request.form.getlist('delete_image_ids')
             if image_id.isdigit()
         }
+        deleted_images = []
         for image in list(post.images):
             if image.image_id in delete_image_ids:
-                if not delete_uploaded_file(image.image_url, image.oss_object_name):
-                    flash('图片文件删除失败，请稍后重试。', 'error')
-                    return render_template('forum/post_add.html', post=post, boards=boards, selected_board_id=selected_board_id)
+                deleted_images.append((image.image_url, image.oss_object_name))
                 db.session.delete(image)
 
         post.board_id = selected_board_id
@@ -245,14 +255,18 @@ def post_edit(post_id):
         post.content = content
 
         current_max_sort = max((image.sort or 0 for image in post.images), default=0)
+        uploaded_results = []
         for offset, image_file in enumerate(request.files.getlist('post_images'), start=1):
             try:
                 image_upload = save_image_result(image_file, 'forum')
             except ValueError as exc:
                 db.session.rollback()
+                for upload in uploaded_results:
+                    delete_uploaded_file(upload.url, upload.oss_object_name)
                 flash(str(exc), 'error')
                 return render_template('forum/post_add.html', post=post, boards=boards, selected_board_id=selected_board_id)
             if image_upload:
+                uploaded_results.append(image_upload)
                 db.session.add(
                     ForumPostImage(
                         post_id=post.post_id,
@@ -262,7 +276,19 @@ def post_edit(post_id):
                     )
                 )
 
-        db.session.commit()
+        try:
+            db.session.commit()
+        except Exception:
+            db.session.rollback()
+            for upload in uploaded_results:
+                delete_uploaded_file(upload.url, upload.oss_object_name)
+            flash('帖子更新失败，请稍后重试。', 'error')
+            return render_template('forum/post_add.html', post=post, boards=boards, selected_board_id=selected_board_id)
+
+        for image_url, oss_object_name in deleted_images:
+            if not delete_uploaded_file(image_url, oss_object_name):
+                flash('帖子已更新，但部分旧图片文件删除失败。', 'error')
+                break
         flash('帖子已更新。', 'success')
         return redirect(url_for('forum.post_detail', post_id=post.post_id))
 

@@ -5,7 +5,7 @@ from flask_login import current_user
 from sqlalchemy import func, select
 
 from db import db
-from models import Category, ForumComment, ForumPost, PhotoWork, User, WorkComment, WorkLike
+from models import Category, ForumComment, ForumPost, PhotoWork, Photographer, User, WorkComment, WorkLike
 from utils.decorators import admin_required
 
 
@@ -18,10 +18,14 @@ def like_work(work_id):
         return jsonify({'success': False, 'message': '请先使用用户账号登录。'}), 401
 
     work = db.session.execute(
-        select(PhotoWork).where(
+        select(PhotoWork)
+        .join(PhotoWork.photographer)
+        .join(Photographer.user)
+        .where(
             PhotoWork.work_id == work_id,
             PhotoWork.audit_status == PhotoWork.AUDIT_APPROVED,
             PhotoWork.status == 1,
+            User.status == 1,
         )
     ).scalar_one_or_none()
     if work is None:
@@ -57,10 +61,14 @@ def add_comment(work_id):
         return jsonify({'success': False, 'message': '请先使用用户账号登录。'}), 401
 
     work = db.session.execute(
-        select(PhotoWork).where(
+        select(PhotoWork)
+        .join(PhotoWork.photographer)
+        .join(Photographer.user)
+        .where(
             PhotoWork.work_id == work_id,
             PhotoWork.audit_status == PhotoWork.AUDIT_APPROVED,
             PhotoWork.status == 1,
+            User.status == 1,
         )
     ).scalar_one_or_none()
     if work is None:

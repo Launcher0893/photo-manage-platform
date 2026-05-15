@@ -43,6 +43,8 @@ def _save_work_from_request(
     **template_context,
 ):
     old_cover_url = None
+    deleted_images = []
+    uploaded_results = []
     work.title = request.form.get('title', '').strip()
     work.category_id = request.form.get('category_id', type=int)
     work.city = request.form.get('city', '').strip() or None
@@ -59,14 +61,13 @@ def _save_work_from_request(
     }
     for image in list(getattr(work, 'images', []) or []):
         if image.image_id in delete_image_ids:
-            if not delete_uploaded_file(image.image_url, image.oss_object_name):
-                flash('作品图片删除失败，请稍后重试。', 'error')
-                return render_template(template_name, work=work, categories=categories, **template_context)
+            deleted_images.append((image.image_url, image.oss_object_name))
             db.session.delete(image)
 
     try:
         cover_upload = save_image_result(request.files.get('cover_file'), 'works')
         if cover_upload:
+            uploaded_results.append(cover_upload)
             old_cover_url = work.cover_url
             work.cover_url = cover_upload.url
     except ValueError as exc:
@@ -82,9 +83,12 @@ def _save_work_from_request(
             image_upload = save_image_result(image_file, 'works')
         except ValueError as exc:
             db.session.rollback()
+            for upload in uploaded_results:
+                delete_uploaded_file(upload.url, upload.oss_object_name)
             flash(str(exc), 'error')
             return render_template(template_name, work=work, categories=categories, **template_context)
         if image_upload:
+            uploaded_results.append(image_upload)
             db.session.add(
                 PhotoWorkImage(
                     work_id=work.work_id,
@@ -95,8 +99,20 @@ def _save_work_from_request(
             )
 
     work.update_hot_score()
-    db.session.commit()
+    try:
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
+        for upload in uploaded_results:
+            delete_uploaded_file(upload.url, upload.oss_object_name)
+        flash('作品保存失败，请稍后重试。', 'error')
+        return render_template(template_name, work=work, categories=categories, **template_context)
+
     delete_uploaded_file(old_cover_url)
+    for image_url, oss_object_name in deleted_images:
+        if not delete_uploaded_file(image_url, oss_object_name):
+            flash('作品已保存，但部分旧图片文件删除失败。', 'error')
+            break
     if log_operation:
         log_content = log_content_factory(work) if log_content_factory else work.title
         log_admin_action(log_operation, log_content)
