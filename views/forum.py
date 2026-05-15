@@ -242,6 +242,46 @@ def post_add(board_id=None):
     return render_template('forum/post_add.html', boards=boards, selected_board_id=selected_board_id)
 
 
+@bp.route('/my')
+@user_required
+def my_posts():
+    """我的帖子页：完整访问地址 /forum/my。
+
+    只查询当前登录用户自己的帖子，并渲染 templates/forum/my_list.html。
+    """
+    page = request.args.get('page', default=1, type=int)
+    stmt = (
+        select(ForumPost)
+        .options(joinedload(ForumPost.forum_board))
+        .where(ForumPost.user_id == current_user.user_id)
+        .order_by(ForumPost.create_time.desc(), ForumPost.post_id.desc())
+    )
+    posts = db.paginate(stmt, page=page, per_page=10, error_out=False)
+    return render_template('forum/my_list.html', posts=posts)
+
+
+@bp.route('/post_status/<int:post_id>', methods=['POST'])
+@user_required
+def toggle_my_post_status(post_id):
+    """前台用户删除/恢复自己的帖子。
+
+    这里是软删除：status=1 表示正常，status=0 表示已删除。
+    """
+    post = db.session.execute(
+        select(ForumPost).where(
+            ForumPost.post_id == post_id,
+            ForumPost.user_id == current_user.user_id,
+        )
+    ).scalar_one_or_none()
+    if post is None:
+        abort(404)
+
+    post.status = 0 if post.status == 1 else 1
+    db.session.commit()
+    flash('帖子状态已更新。', 'success')
+    return redirect(url_for('forum.my_posts'))
+
+
 @bp.route('/post_edit/<int:post_id>', methods=['GET', 'POST'])
 @user_required
 def post_edit(post_id):

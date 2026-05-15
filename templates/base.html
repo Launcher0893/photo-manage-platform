@@ -49,6 +49,7 @@
                             <li class="nav-item"><a class="nav-link" href="/auth/logout">退出</a></li>
                         {% else %}
                             <li class="nav-item"><a class="nav-link" href="/forum/post_add">发布帖子</a></li>
+                            <li class="nav-item"><a class="nav-link" href="/forum/my">我的帖子</a></li>
                             {% if current_user.user_role == 2 and current_user.photographer and current_user.photographer.cert_status == 1 %}
                                 <li class="nav-item"><a class="nav-link" href="/work/add">发布作品</a></li>
                                 <li class="nav-item"><a class="nav-link" href="/work/my">我的作品</a></li>
