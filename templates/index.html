@@ -1,160 +1,434 @@
 {% extends 'base.html' %}
 
-{% block title %}摄影作品分享平台{% endblock %}
+{% block title %}拾帧 - 摄影作品分享平台{% endblock %}
 
 {% block content %}
-    {% if carousels %}
-        <div id="homeCarousel" class="carousel slide mb-5" data-bs-ride="carousel">
-            {% if carousels|length > 1 %}
-                <div class="carousel-indicators">
-                    {% for carousel in carousels %}
-                        <button type="button"
-                                data-bs-target="#homeCarousel"
-                                data-bs-slide-to="{{ loop.index0 }}"
-                                class="{% if loop.first %}active{% endif %}"
-                                {% if loop.first %}aria-current="true"{% endif %}
-                                aria-label="Slide {{ loop.index }}"></button>
-                    {% endfor %}
-                </div>
-            {% endif %}
+    <div class="showcase-container position-relative" style="width: 100vw; margin-left: calc(-50vw + 50%);">
+        <div class="position-relative" style="width: 100%; aspect-ratio: 16 / 9;">
+            <img 
+                src="/photo/background.jpg"
+                alt="背景图片"
+                style="width: 100%; height: 100%; object-fit: cover; display: block;"
+            >
+            <img 
+                src="/photo/on.png"
+                alt="装饰图片"
+                style="position: absolute; bottom: 0; left: 0; width: 100%; height: auto; pointer-events: none; z-index: 5;"
+            >
+            <div class="position-absolute" 
+                 style="top: 50%; left: 8%; transform: translateY(-50%); text-align: left; z-index: 10;">
+                <h1 class="text-white font-weight-bold mb-4" style="font-size: 8rem; line-height: 1.2; text-shadow: 3px 3px 10px rgba(0,0,0,0.6);">拾帧</h1>
+                <p class="text-white mb-3" style="font-size: 3rem; line-height: 1.4; text-shadow: 2px 2px 8px rgba(0,0,0,0.5);">全国最大摄影平台</p>
+                <p class="text-white" style="font-size: 2.4rem; line-height: 1.4; text-shadow: 2px 2px 8px rgba(0,0,0,0.5);">分享你的每一个心动时刻</p>
+            </div>
+            <div class="position-absolute" 
+                 style="bottom: 1%; right: 10%; text-align: right; z-index: 10;">
+                <h5 class="font-weight-bold text-dark mb-2" style="font-size: 2rem; text-shadow: 1px 1px 3px rgba(255,255,255,0.8);">《温馨时刻》</h5>
+                <p class="font-weight-bold text-dark mb-0" style="font-size: 1.4rem; text-shadow: 1px 1px 3px rgba(255,255,255,0.8);">摄影师：小小瑶池</p>
+            </div>
+        </div>
+    </div>
 
-            <div class="carousel-inner rounded overflow-hidden">
-                {% for carousel in carousels %}
-                    {% set link_url = None %}
-                    {% if carousel.link_type == 'work' and carousel.link_id %}
-                        {% set link_url = '/work/detail/' ~ carousel.link_id %}
-                    {% elif carousel.link_type == 'photographer' and carousel.link_id %}
-                        {% set link_url = '/photographer/detail/' ~ carousel.link_id %}
-                    {% elif carousel.link_type == 'announcement' and carousel.link_id %}
-                        {% set link_url = '/announcement/detail/' ~ carousel.link_id %}
-                    {% elif carousel.link_type == 'url' and carousel.link_url %}
-                        {% set link_url = carousel.link_url %}
-                    {% endif %}
+    <div style="margin-bottom: 80px;"></div>
 
-                    <div class="carousel-item {% if loop.first %}active{% endif %}">
-                        {% if link_url %}
-                            <a href="{{ link_url }}">
-                                <img src="{{ carousel.image_url }}" class="d-block w-100" style="height: 360px; object-fit: cover;" alt="{{ carousel.title or '轮播图' }}">
-                            </a>
-                        {% else %}
-                            <img src="{{ carousel.image_url }}" class="d-block w-100" style="height: 360px; object-fit: cover;" alt="{{ carousel.title or '轮播图' }}">
-                        {% endif %}
-                        {% if carousel.title %}
-                            <div class="carousel-caption d-none d-md-block">
-                                <h5>{{ carousel.title }}</h5>
-                            </div>
-                        {% endif %}
+    <div class="py-16 bg-white mb-8">
+        <div class="container">
+            <h2 class="text-center text-4xl font-bold text-gray-800" style="margin-bottom: 75px;">是什么让我们与众不同</h2>
+            <div class="row">
+                <div class="col-md-4 text-center" style="padding-bottom: 94px;">
+                    <div style="margin-bottom: 75px;">
+                        <span style="font-size: 400%;" class="font-bold text-gray-800">①</span>
                     </div>
+                    <h3 class="text-4xl font-semibold text-gray-800" style="margin-bottom: 38px;">展现你自己</h3>
+                    <h3 class="text-4xl font-semibold text-gray-800" style="margin-bottom: 38px;">寻找你的风格</h3>
+                    <h3 class="text-4xl font-semibold text-gray-800">作品云盘储存</h3>
+                </div>
+                <div class="col-md-4 text-center" style="padding-bottom: 94px;">
+                    <div style="margin-bottom: 75px;">
+                        <span style="font-size: 400%;" class="font-bold text-gray-800">②</span>
+                    </div>
+                    <h3 class="text-4xl font-semibold text-gray-800" style="margin-bottom: 38px;">在摄影社区互动</h3>
+                    <h3 class="text-4xl font-semibold text-gray-800" style="margin-bottom: 38px;">与全球摄影师建立联系</h3>
+                    <h3 class="text-4xl font-semibold text-gray-800">提升审美与摄影技巧</h3>
+                </div>
+                <div class="col-md-4 text-center" style="padding-bottom: 94px;">
+                    <div style="margin-bottom: 75px;">
+                        <span style="font-size: 400%;" class="font-bold text-gray-800">③</span>
+                    </div>
+                    <h3 class="text-4xl font-semibold text-gray-800" style="margin-bottom: 38px;">发现美图获得灵感</h3>
+                    <h3 class="text-4xl font-semibold text-gray-800" style="margin-bottom: 38px;">让作品产生价值</h3>
+                    <h3 class="text-4xl font-semibold text-gray-800">让更多人理解照片价值</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="position-relative" style="margin-bottom: 94px; width: 100vw; margin-left: calc(-50vw + 50%);">
+        <img 
+            src="/photo/back1.png"
+            alt="精选作品"
+            style="width: 100%; height: 300px; object-fit: cover; display: block;"
+        >
+        <div class="position-absolute" 
+             style="top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; z-index: 10;">
+            <h2 class="text-white font-weight-bold" style="font-size: 3rem; text-shadow: 2px 2px 8px rgba(0,0,0,0.8);">精选作品</h2>
+        </div>
+    </div>
+
+    {% if carousels %}
+    <div id="homeCarousel" class="carousel slide mb-8" data-bs-ride="carousel" style="width: 100vw; margin-left: calc(-50vw + 50%);">
+        {% if carousels|length > 1 %}
+            <div class="carousel-indicators">
+                {% for carousel in carousels %}
+                    <button type="button"
+                            data-bs-target="#homeCarousel"
+                            data-bs-slide-to="{{ loop.index0 }}"
+                            class="{% if loop.first %}active{% endif %}"
+                            {% if loop.first %}aria-current="true"{% endif %}
+                            aria-label="Slide {{ loop.index }}"></button>
                 {% endfor %}
             </div>
+        {% endif %}
 
-            {% if carousels|length > 1 %}
-                <button class="carousel-control-prev" type="button" data-bs-target="#homeCarousel" data-bs-slide="prev">
-                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-                    <span class="visually-hidden">上一张</span>
-                </button>
-                <button class="carousel-control-next" type="button" data-bs-target="#homeCarousel" data-bs-slide="next">
-                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
-                    <span class="visually-hidden">下一张</span>
-                </button>
-            {% endif %}
+        <div class="carousel-inner rounded-2xl overflow-hidden shadow-lg">
+            {% for carousel in carousels %}
+                {% set link_url = None %}
+                {% if carousel.link_type == 'work' and carousel.link_id %}
+                    {% set link_url = '/work/detail/' ~ carousel.link_id %}
+                {% elif carousel.link_type == 'photographer' and carousel.link_id %}
+                    {% set link_url = '/photographer/detail/' ~ carousel.link_id %}
+                {% elif carousel.link_type == 'announcement' and carousel.link_id %}
+                    {% set link_url = '/announcement/detail/' ~ carousel.link_id %}
+                {% elif carousel.link_type == 'url' and carousel.link_url %}
+                    {% set link_url = carousel.link_url %}
+                {% endif %}
+
+                <div class="carousel-item {% if loop.first %}active{% endif %}">
+                    {% if link_url %}
+                        <a href="{{ link_url }}">
+                            <img src="{{ carousel.image_url }}" class="d-block w-100" style="height: 360px; object-fit: cover;" alt="{{ carousel.title or '轮播图' }}">
+                        </a>
+                    {% else %}
+                        <img src="{{ carousel.image_url }}" class="d-block w-100" style="height: 360px; object-fit: cover;" alt="{{ carousel.title or '轮播图' }}">
+                    {% endif %}
+                    {% if carousel.title %}
+                        <div class="carousel-caption d-none d-md-block">
+                            <h5 class="text-white font-semibold text-shadow">{{ carousel.title }}</h5>
+                        </div>
+                    {% endif %}
+                </div>
+            {% endfor %}
         </div>
+
+        {% if carousels|length > 1 %}
+            <button class="carousel-control-prev" type="button" data-bs-target="#homeCarousel" data-bs-slide="prev">
+                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                <span class="visually-hidden">上一张</span>
+            </button>
+            <button class="carousel-control-next" type="button" data-bs-target="#homeCarousel" data-bs-slide="next">
+                <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                <span class="visually-hidden">下一张</span>
+            </button>
+        {% endif %}
+    </div>
     {% endif %}
 
-    <div class="mb-6">
-        <h2 class="mb-4">精选作品</h2>
-        <div class="row">
-            {% for work in featured_works %}
-                <div class="col-md-4 mb-4">
-                    <div class="card">
-                        <img src="{{ work.cover_url or 'https://via.placeholder.com/300x200' }}" class="card-img-top" alt="{{ work.title }}">
-                        <div class="card-body">
-                            <h5 class="card-title">{{ work.title }}</h5>
-                            <p class="card-text">摄影师：{{ work.photographer.user.nickname if work.photographer and work.photographer.user else '未知' }}</p>
-                            <a href="/work/detail/{{ work.work_id }}" class="btn btn-primary">查看详情</a>
-                        </div>
-                    </div>
-                </div>
-            {% endfor %}
-        </div>
+    <div class="text-center mb-8" style="margin-top: 50px;">
+        <a href="/work/list" class="btn btn-lg rounded-pill px-5 py-3" style="background: #333; color: #fff; border: none; font-weight: 500; letter-spacing: 1px; transition: all 0.3s ease;">查看全部></a>
     </div>
     
-    <div class="mb-6">
-        <h2 class="mb-4">热门作品</h2>
-        <div class="row">
+    <div style="margin-bottom: 80px;"></div>
+    
+    <div class="position-relative mb-8" style="width: 100vw; margin-left: calc(-50vw + 50%);">
+        <div class="position-absolute text-center w-100" style="top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 10;">
+            <h2 class="text-white font-bold" style="font-size: 3rem; text-shadow: 2px 2px 8px rgba(0,0,0,0.8);">热门作品</h2>
+        </div>
+        <img 
+            src="/photo/back2.jpg"
+            alt="热门作品"
+            style="width: 100%; height: 300px; object-fit: cover; display: block;"
+        >
+    </div>
+    
+    <div style="margin-bottom: 60px;"></div>
+    
+    <style>
+        .hot-works-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            justify-content: center;
+        }
+        .hot-work-item {
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            flex: 0 0 auto;
+        }
+        .hot-work-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+        }
+        .hot-work-link {
+            display: block;
+        }
+        .hot-work-image-wrapper {
+            position: relative;
+            overflow: hidden;
+            height: 240px;
+        }
+        .hot-work-image-wrapper img {
+            width: auto;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+            transition: transform 0.3s ease;
+        }
+        .hot-work-item:hover .hot-work-image-wrapper img {
+            transform: scale(1.05);
+        }
+        .hot-work-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.4) 40%, transparent 100%);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            padding: 20px;
+            z-index: 10;
+        }
+        .hot-work-item:hover .hot-work-overlay {
+            opacity: 1;
+        }
+        .hot-work-title {
+            color: white;
+            font-size: 1.1rem;
+            font-weight: bold;
+            margin-bottom: 8px;
+            line-height: 1.3;
+        }
+        .hot-work-author {
+            color: rgba(255,255,255,0.9);
+            font-size: 0.9rem;
+        }
+        .hot-work-more-indicator {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            background: rgba(0,0,0,0.6);
+            color: white;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: bold;
+            z-index: 15;
+        }
+    </style>
+    <div class="mb-8 container">
+        <div class="hot-works-container">
             {% for work in hot_works %}
-                <div class="col-md-3 mb-4">
-                    <div class="card">
-                        <img src="{{ work.cover_url or 'https://via.placeholder.com/300x200' }}" class="card-img-top" alt="{{ work.title }}">
-                        <div class="card-body">
-                            <h5 class="card-title">{{ work.title }}</h5>
-                            <p class="card-text">热度：{{ work.hot_score }}</p>
-                            <a href="/work/detail/{{ work.work_id }}" class="btn btn-primary">查看详情</a>
+                <div class="hot-work-item">
+                    <a href="/work/detail/{{ work.work_id }}" class="hot-work-link">
+                        {% set images = work.images %}
+                        {% if images and images|length > 0 %}
+                            {% if images|length > 1 %}
+                                <span class="hot-work-more-indicator">+{{ images|length - 1 }} 张</span>
+                            {% endif %}
+                            <div class="hot-work-image-wrapper">
+                                <img src="{{ images[0].image_url }}" alt="{{ work.title }}">
+                            </div>
+                        {% else %}
+                            <div class="hot-work-image-wrapper">
+                                <img src="{{ work.cover_url or 'https://via.placeholder.com/300x240' }}" alt="{{ work.title }}">
+                            </div>
+                        {% endif %}
+                        <div class="hot-work-overlay">
+                            <div class="hot-work-title">{{ work.title }}</div>
+                            <div class="hot-work-author">
+                                摄影师：{{ work.photographer.user.nickname if work.photographer and work.photographer.user else '未知' }}
+                            </div>
                         </div>
-                    </div>
+                    </a>
                 </div>
             {% endfor %}
         </div>
     </div>
-    
-    <div class="mb-6">
-        <h2 class="mb-4">最新作品</h2>
+
+    <div style="margin-bottom: 80px;"></div>
+
+    <div class="position-relative mb-8" style="width: 100vw; margin-left: calc(-50vw + 50%);">
+        <div class="position-absolute text-center w-100" style="top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 10;">
+            <h2 class="text-white font-bold" style="font-size: 3rem; text-shadow: 2px 2px 8px rgba(0,0,0,0.8);">最新作品</h2>
+        </div>
+        <img
+            src="/photo/back3.jpg"
+            alt="最新作品"
+            style="width: 100%; height: 300px; object-fit: cover; display: block;"
+        >
+    </div>
+
+    <div style="margin-bottom: 80px;"></div>
+
+    <div class="mb-8">
         <div class="row">
             {% for work in recent_works %}
                 <div class="col-md-3 mb-4">
-                    <div class="card">
-                        <img src="{{ work.cover_url or 'https://via.placeholder.com/300x200' }}" class="card-img-top" alt="{{ work.title }}">
+                    <div class="card h-full border-0 shadow-md hover:shadow-xl transition-shadow duration-300 rounded-xl overflow-hidden">
+                        <img src="{{ work.cover_url or 'https://via.placeholder.com/300x200' }}" class="card-img-top" style="height: 180px; object-fit: cover;" alt="{{ work.title }}">
                         <div class="card-body">
-                            <h5 class="card-title">{{ work.title }}</h5>
-                            <p class="card-text">{{ work.create_time.strftime('%Y-%m-%d') }}</p>
-                            <a href="/work/detail/{{ work.work_id }}" class="btn btn-primary">查看详情</a>
+                            <h5 class="card-title font-medium text-gray-800 mb-1 line-clamp-1">{{ work.title }}</h5>
+                            <p class="card-text text-xs text-gray-400 mb-2">{{ work.create_time.strftime('%Y-%m-%d') }}</p>
+                            <a href="/work/detail/{{ work.work_id }}" class="btn btn-outline-primary rounded-full px-4 py-1.5 text-xs font-medium">查看</a>
                         </div>
                     </div>
                 </div>
             {% endfor %}
         </div>
     </div>
+
+    <div class="text-center mb-8" style="margin-top: 10px;">
+        <a href="/work/list?sort_by=new" class="btn btn-lg rounded-pill px-5 py-3" style="background: #333; color: #fff; border: none; font-weight: 500; letter-spacing: 1px; transition: all 0.3s ease;">查看全部></a>
+    </div>
+
+    <div style="margin-bottom: 80px;"></div>
+
+    <div class="position-relative mb-8" style="width: 100vw; margin-left: calc(-50vw + 50%);">
+        <div class="position-absolute text-center w-100" style="top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 10;">
+            <h2 class="text-white font-bold" style="font-size: 3rem; text-shadow: 2px 2px 8px rgba(0,0,0,0.8);">推荐摄影师</h2>
+        </div>
+        <img
+            src="/photo/back4.jpg"
+            alt="推荐摄影师"
+            style="width: 100%; height: 300px; object-fit: cover; display: block;"
+        >
+    </div>
+
+    <div style="margin-bottom: 80px;"></div>
     
+        <!-- 索尼风格摄影师卡片（仅显示上架作品） -->
+    <style>
+        .sony-card {
+            border-radius: 16px;
+            overflow: hidden;
+            border: 0;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            transition: all 0.3s;
+        }
+        .sony-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.12);
+        }
+        .sony-avatar {
+            width: 90px;
+            height: 90px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+        .sony-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 6px;
+            margin-top: 12px;
+        }
+        .sony-grid .big-img {
+            grid-row: span 2;
+        }
+        .sony-grid img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 6px;
+        }
+    </style>
+
     <div>
-        <h2 class="mb-4">推荐摄影师</h2>
         <div class="row">
             {% for photographer in photographers %}
-                <div class="col-md-4 mb-4">
-                    <div class="card">
-                        <img src="{{ photographer.user.avatar_url if photographer.user else 'https://via.placeholder.com/300x200' }}" class="card-img-top" alt="{{ photographer.user.nickname if photographer.user else '摄影师' }}">
-                        <div class="card-body">
-                            <h5 class="card-title">{{ photographer.user.nickname if photographer.user else '未知摄影师' }}</h5>
-                            <p class="card-text">城市：{{ photographer.city or '未知' }}</p>
-                            <a href="/photographer/detail/{{ photographer.photographer_id }}" class="btn btn-primary">查看主页</a>
+            <div class="col-md-4 mb-4">
+                <div class="card sony-card h-full">
+
+                    <!-- 头像 + 信息 -->
+                    <div class="card-body text-center pt-4 pb-2">
+                        <img
+                            src="{{ photographer.user.avatar_url if photographer.user else 'https://picsum.photos/200' }}"
+                            class="sony-avatar mb-3"
+                            alt="头像">
+                        <h5 class="fw-bold mb-1">{{ photographer.user.nickname if photographer.user else '摄影师' }}</h5>
+                        <p class="text-muted small mb-2">城市：{{ photographer.city or '未知' }}</p>
+
+                        <!-- 真实作品数（只统计上架） -->
+                        <div class="d-flex justify-content-center gap-3 small text-muted">
+                            {% set valid_works = photographer.works | selectattr('status', 'equalto', 1) | list %}
+                            <span>作品 {{ valid_works | length }}</span>
                         </div>
                     </div>
+
+                    <!-- 只显示上架的作品图 -->
+                    <div class="px-3 pb-3">
+                        <div class="sony-grid">
+                            {% for work in valid_works[:5] %}
+                            {% if loop.first %}
+                            <div class="big-img">
+                                <a href="/work/detail/{{ work.work_id }}">
+                                    <img src="{{ work.cover_url }}" alt="作品">
+                                </a>
+                            </div>
+                            {% else %}
+                            <div>
+                                <a href="/work/detail/{{ work.work_id }}">
+                                    <img src="{{ work.cover_url }}" alt="作品">
+                                </a>
+                            </div>
+                            {% endif %}
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <!-- 按钮 -->
+                    <div class="text-center pb-4">
+                        <a href="/photographer/detail/{{ photographer.photographer_id }}" class="btn btn-primary rounded-full px-6 py-2">
+                            查看主页
+                        </a>
+                    </div>
+
                 </div>
+            </div>
             {% endfor %}
         </div>
+    </div>
+
+    <div class="text-center mb-8" style="margin-top: 10px;">
+        <a href="/photographer/list" class="btn btn-lg rounded-pill px-5 py-3" style="background: #333; color: #fff; border: none; font-weight: 500; letter-spacing: 1px; transition: all 0.3s ease;">查看全部></a>
     </div>
 
     {% if latest_announcement %}
         <div class="modal fade" id="announcementModal" tabindex="-1" aria-labelledby="announcementModalLabel" aria-hidden="true" data-announcement-id="{{ latest_announcement.announcement_id }}">
             <div class="modal-dialog modal-dialog-centered modal-lg">
-                <div class="modal-content">
-                    <div class="modal-header">
+                <div class="modal-content rounded-xl shadow-xl">
+                    <div class="modal-header border-0">
                         <h5 class="modal-title" id="announcementModalLabel">{{ latest_announcement.title }}</h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="关闭"></button>
                     </div>
                     <div class="modal-body">
-                        <p class="text-muted">{{ latest_announcement.create_time.strftime('%Y-%m-%d') }}</p>
+                        <p class="text-muted text-sm">{{ latest_announcement.create_time.strftime('%Y-%m-%d') }}</p>
                         {% if latest_announcement.cover_url %}
-                            <img src="{{ latest_announcement.cover_url }}" class="img-fluid rounded mb-3" alt="{{ latest_announcement.title }}">
+                            <img src="{{ latest_announcement.cover_url }}" class="img-fluid rounded-lg mb-3" alt="{{ latest_announcement.title }}">
                         {% endif %}
-                        <p>{{ latest_announcement.content[:180] }}{% if latest_announcement.content|length > 180 %}...{% endif %}</p>
-                        <div class="form-check">
+                        <p class="text-gray-700">{{ latest_announcement.content[:180] }}{% if latest_announcement.content|length > 180 %}...{% endif %}</p>
+                        <div class="form-check mt-3">
                             <input class="form-check-input" type="checkbox" value="1" id="skip-announcement-modal">
-                            <label class="form-check-label" for="skip-announcement-modal">不再弹出此公告</label>
+                            <label class="form-check-label text-sm text-gray-600" for="skip-announcement-modal">不再弹出此公告</label>
                         </div>
                     </div>
-                    <div class="modal-footer">
-                        <a href="/announcement/detail/{{ latest_announcement.announcement_id }}" class="btn btn-primary">查看详情</a>
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">关闭</button>
+                    <div class="modal-footer border-0">
+                        <a href="/announcement/detail/{{ latest_announcement.announcement_id }}" class="btn btn-primary rounded-full px-6 py-2">查看详情</a>
+                        <button type="button" class="btn btn-secondary rounded-full px-6 py-2" data-bs-dismiss="modal">关闭</button>
                     </div>
                 </div>
             </div>
@@ -189,4 +463,34 @@
             });
         </script>
     {% endif %}
+
+    <div style="margin-bottom: 80px;"></div>
+
+    <div
+    class="position-relative text-center py-20"
+    style="
+        width: 100vw;
+        margin-left: calc(-50vw + 50%);
+        background-color: #4B4B8A;
+        padding-top: 80px;
+        padding-bottom: 80px;
+    "
+    >
+
+    <div class="container">
+        <h2
+            class="text-white font-weight-bold mb-4"
+            style="font-size: 5rem; text-shadow: 2px 2px 8px rgba(0,0,0,0.3);"
+        >
+            加入我们
+        </h2>
+        <p
+            class="text-white"
+            style="font-size: 2rem; opacity: 0.9;"
+        >
+            Everything is possible!
+        </p>
+    </div>
+</div>
+
 {% endblock %}

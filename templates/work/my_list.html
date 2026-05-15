@@ -3,10 +3,25 @@
 {% block title %}我的作品{% endblock %}
 
 {% block content %}
-    <div class="mb-4">
-        <h2>我的作品</h2>
-        <a href="/work/add" class="btn btn-primary">发布作品</a>
+
+    <div class="position-relative mb-8" style="width: 100vw; margin-left: calc(-50vw + 50%);">
+        <div class="position-absolute text-center w-100" style="top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 10;">
+            <h2 class="text-white font-bold" style="font-size: 3rem; text-shadow: 2px 2px 8px rgba(0,0,0,0.8);">我的作品</h2>
+        </div>
+        <img
+            src="/photo/my.jpg"
+            alt="我的作品"
+            style="width: 100%; height: 300px; object-fit: cover; display: block;"
+        >
     </div>
+
+    <div style="margin-bottom: 30px;"></div>
+
+    <div class="text-center mb-8" style="margin-top: 10px;">
+        <a href="/work/add" class="btn btn-lg rounded-pill px-5 py-3" style="background: #333; color: #fff; border: none; font-weight: 500; letter-spacing: 1px; transition: all 0.3s ease;">发布作品></a>
+    </div>
+
+    <div style="margin-bottom: 30px;"></div>
 
     <table class="table">
         <thead>
@@ -52,23 +67,47 @@
         </tbody>
     </table>
 
-    <nav aria-label="Page navigation">
-        <ul class="pagination">
-            {% if works.has_prev %}
-                <li class="page-item"><a class="page-link" href="?page={{ works.prev_num }}">上一页</a></li>
+    <nav aria-label="Page navigation" class="mt-4">
+    <ul class="pagination justify-content-center" style="gap: 5px;">
+        {% if works.has_prev %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ works.prev_num }}"
+                style="border-radius: 6px; border:1px solid #ccc; background:#f8f9fa; color:#333;">上一页</a>
+            </li>
+        {% else %}
+            <li class="page-item disabled">
+                <span class="page-link"
+                style="border-radius: 6px; border:1px solid #eee; background:#f5f5f5; color:#aaa;">上一页</span>
+            </li>
+        {% endif %}
+
+        {% for page in works.iter_pages() %}
+            {% if page %}
+                <li class="page-item {% if page == works.page %}active{% endif %}">
+                    <a class="page-link" href="?page={{ page }}"
+                    style="border-radius: 6px; border:1px solid #ccc;
+                    {% if page == works.page %}background:#444; color:#fff; border-color:#444;{% else %}background:#f8f9fa; color:#333;{% endif %}">
+                        {{ page }}
+                    </a>
+                </li>
+            {% else %}
+                <li class="page-item disabled">
+                    <span class="page-link" style="border-radius: 6px; border:1px solid #eee; background:#f5f5f5; color:#999;">...</span>
+                </li>
             {% endif %}
-            {% for page in works.iter_pages() %}
-                {% if page %}
-                    <li class="page-item {% if page == works.page %}active{% endif %}">
-                        <a class="page-link" href="?page={{ page }}">{{ page }}</a>
-                    </li>
-                {% else %}
-                    <li class="page-item disabled"><span class="page-link">...</span></li>
-                {% endif %}
-            {% endfor %}
-            {% if works.has_next %}
-                <li class="page-item"><a class="page-link" href="?page={{ works.next_num }}">下一页</a></li>
-            {% endif %}
-        </ul>
+        {% endfor %}
+
+        {% if works.has_next %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ works.next_num }}"
+                style="border-radius: 6px; border:1px solid #ccc; background:#f8f9fa; color:#333;">下一页</a>
+            </li>
+        {% else %}
+            <li class="page-item disabled">
+                <span class="page-link"
+                style="border-radius: 6px; border:1px solid #eee; background:#f5f5f5; color:#aaa;">下一页</span>
+            </li>
+        {% endif %}
+    </ul>
     </nav>
 {% endblock %}

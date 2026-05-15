@@ -4,15 +4,25 @@
 
 {% block content %}
     <div class="mb-4">
-        <h2>系统日志</h2>
-        <form method="GET" class="form-inline">
-            <input type="text" name="operate_type" class="form-control mr-2" placeholder="操作类型" value="{{ request.args.get('operate_type', '') }}">
-            <button type="submit" class="btn btn-primary">筛选</button>
-        </form>
+        <h2 class="fw-bold mb-3">系统日志</h2>
+
+        <!-- 美化搜索栏 -->
+        <div class="card p-3 rounded-3 shadow-sm">
+            <form method="GET" class="row g-3 align-items-center">
+                <div class="col-auto">
+                    <input type="text" name="operate_type" class="form-control rounded-3" placeholder="操作类型"
+                           value="{{ request.args.get('operate_type', '') }}">
+                </div>
+                <div class="col-auto">
+                    <button type="submit" class="btn btn-primary rounded-3 px-4">筛选</button>
+                </div>
+            </form>
+        </div>
     </div>
 
-    <table class="table">
-        <thead>
+    <!-- 美化表格 -->
+    <table class="table table-hover align-middle rounded-3 overflow-hidden shadow-sm">
+        <thead class="table-light">
             <tr>
                 <th>管理员</th>
                 <th>操作类型</th>
@@ -24,9 +34,11 @@
         <tbody>
             {% for log in logs.items %}
                 <tr>
-                    <td>{{ log.admin.admin_name if log.admin else log.admin_id }}</td>
-                    <td>{{ log.operate_type }}</td>
-                    <td>{{ log.operate_content }}</td>
+                    <td class="fw-medium">{{ log.admin.admin_name if log.admin else log.admin_id }}</td>
+                    <td>
+                        <span class="badge bg-info text-white">{{ log.operate_type }}</span>
+                    </td>
+                    <td class="text-break">{{ log.operate_content }}</td>
                     <td>{{ log.ip_address or '-' }}</td>
                     <td>{{ log.operate_time.strftime('%Y-%m-%d %H:%M') if log.operate_time else '-' }}</td>
                 </tr>
@@ -34,22 +46,39 @@
         </tbody>
     </table>
 
-    <nav aria-label="Page navigation">
-        <ul class="pagination">
+    <!-- 美化分页（居中、圆角、保留搜索） -->
+    <nav aria-label="Page navigation" class="mt-4">
+        <ul class="pagination justify-content-center gap-2">
+            {% set kw_type = request.args.get('operate_type','')|urlencode %}
+
             {% if logs.has_prev %}
-                <li class="page-item"><a class="page-link" href="?page={{ logs.prev_num }}">上一页</a></li>
+                <li class="page-item">
+                    <a class="page-link rounded-3" href="?page={{ logs.prev_num }}&operate_type={{kw_type}}">上一页</a>
+                </li>
+            {% else %}
+                <li class="page-item disabled">
+                    <a class="page-link rounded-3">上一页</a>
+                </li>
             {% endif %}
+
             {% for page in logs.iter_pages() %}
                 {% if page %}
                     <li class="page-item {% if page == logs.page %}active{% endif %}">
-                        <a class="page-link" href="?page={{ page }}">{{ page }}</a>
+                        <a class="page-link rounded-3" href="?page={{ page }}&operate_type={{kw_type}}">{{ page }}</a>
                     </li>
                 {% else %}
-                    <li class="page-item disabled"><span class="page-link">...</span></li>
+                    <li class="page-item disabled"><span class="page-link rounded-3">...</span></li>
                 {% endif %}
             {% endfor %}
+
             {% if logs.has_next %}
-                <li class="page-item"><a class="page-link" href="?page={{ logs.next_num }}">下一页</a></li>
+                <li class="page-item">
+                    <a class="page-link rounded-3" href="?page={{ logs.next_num }}&operate_type={{kw_type}}">下一页</a>
+                </li>
+            {% else %}
+                <li class="page-item disabled">
+                    <a class="page-link rounded-3">下一页</a>
+                </li>
             {% endif %}
         </ul>
     </nav>

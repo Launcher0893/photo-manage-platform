@@ -3,52 +3,90 @@
 {% block title %}{{ post and '编辑帖子' or '发布帖子' }}{% endblock %}
 
 {% block content %}
-    <div class="row justify-content-center">
-        <div class="col-md-8">
-            <h2>{{ post and '编辑帖子' or '发布帖子' }}</h2>
-            <form method="POST" enctype="multipart/form-data">
-                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                <div class="mb-3">
-                    <label>所属板块</label>
-                    <select name="board_id" class="form-control" required>
-                        <option value="">请选择板块</option>
-                        {% for board in boards %}
+
+    <div class="position-relative mb-8" style="width: 100vw; margin-left: calc(-50vw + 50%);">
+        <div class="position-absolute text-center w-100" style="top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 10;">
+            <h2 class="text-white font-bold" style="font-size: 3rem; text-shadow: 2px 2px 8px rgba(0,0,0,0.8);">发布帖子</h2>
+        </div>
+        <img
+            src="/photo/post_add_back.jpg"
+            alt="发布帖子"
+            style="width: 100%; height: 300px; object-fit: cover; display: block;"
+        >
+    </div>
+
+    <div style="margin-bottom: 80px;"></div>
+
+    <div class="row justify-content-center mb-5">
+        <div class="col-md-8 col-lg-7">
+            <div class="card shadow-lg border-0 rounded-4 p-4 p-md-5">
+                <form method="POST" enctype="multipart/form-data">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+                    <div class="mb-4">
+                        <label class="form-label fw-semibold">所属板块</label>
+                        <select name="board_id" class="form-select form-select-lg rounded-3" required>
+                            <option value="">请选择板块</option>
+                            {% for board in boards %}
                             <option value="{{ board.board_id }}" {% if selected_board_id == board.board_id %}selected{% endif %}>
                                 {{ board.board_name }}
                             </option>
-                        {% endfor %}
-                    </select>
-                </div>
-                <div class="mb-3">
-                    <label>标题</label>
-                    <input type="text" name="title" class="form-control" required value="{{ post.title if post else '' }}">
-                </div>
-                <div class="mb-3">
-                    <label>内容</label>
-                    <textarea name="content" class="form-control" rows="10" required>{{ post.content if post else '' }}</textarea>
-                </div>
-                {% if post and post.images %}
-                    <div class="mb-3">
-                        <label>已有图片</label>
-                        <div class="row">
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label fw-semibold">帖子标题</label>
+                        <input type="text" name="title" class="form-control form-control-lg rounded-3" required value="{{ post.title if post else '' }}" placeholder="请输入帖子标题">
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label fw-semibold">帖子内容</label>
+                        <textarea name="content" class="form-control rounded-3" rows="10" required placeholder="分享你的想法...">{{ post.content if post else '' }}</textarea>
+                    </div>
+
+                    {% if post and post.images %}
+                    <div class="mb-4 p-3 bg-light rounded-3">
+                        <label class="form-label fw-semibold">已有图片</label>
+                        <div class="row g-3 mt-2">
                             {% for image in post.images|sort(attribute='sort') %}
-                                <div class="col-md-4 mb-3">
-                                    <img src="{{ image.image_url }}" class="img-fluid rounded mb-2" alt="{{ post.title }}">
-                                    <div class="form-check">
-                                        <input type="checkbox" name="delete_image_ids" value="{{ image.image_id }}" class="form-check-input" id="delete-image-{{ image.image_id }}">
-                                        <label class="form-check-label" for="delete-image-{{ image.image_id }}">删除此图</label>
+                            <div class="col-6 col-md-4">
+                                <div class="card rounded-3 shadow-sm overflow-hidden h-100">
+                                    <img src="{{ image.image_url }}" class="card-img-top" style="height:120px; object-fit:cover;">
+                                    <div class="card-body p-2">
+                                        <div class="form-check">
+                                            <input type="checkbox" name="delete_image_ids" value="{{ image.image_id }}" class="form-check-input" id="del{{ image.image_id }}">
+                                            <label class="form-check-label small" for="del{{ image.image_id }}">删除</label>
+                                        </div>
                                     </div>
                                 </div>
+                            </div>
                             {% endfor %}
                         </div>
                     </div>
-                {% endif %}
-                <div class="mb-3">
-                    <label>{{ post and '追加图片' or '帖子图片' }}</label>
-                    <input type="file" name="post_images" class="form-control" accept="image/*" multiple>
-                </div>
-                <button type="submit" class="btn btn-primary">{{ post and '保存修改' or '发布' }}</button>
-            </form>
+                    {% endif %}
+
+                    <div class="mb-4">
+                        <label class="form-label fw-semibold">{{ post and '追加图片' or '上传帖子图片' }}</label>
+                        <input type="file" name="post_images" class="form-control rounded-3" accept="image/*" multiple>
+                        <small class="text-muted">可按住 Ctrl 多选</small>
+                    </div>
+
+                    <!-- 极简黑白灰按钮 -->
+                    <div class="d-flex gap-2 mt-4">
+                        <button type="submit" class="btn btn-dark rounded-3 px-4 py-2 flex-grow-1 border-0 shadow-sm">
+                            {{ post and '保存修改' or '发布帖子' }}
+                        </button>
+                        <a href="/forum" class="btn btn-light rounded-3 px-4 py-2 border border-gray-200 shadow-sm">
+                            返回
+                        </a>
+                    </div>
+
+                </form>
+            </div>
         </div>
     </div>
+
+    <div style="margin-bottom: 60px;"></div>
+
 {% endblock %}

@@ -3,40 +3,89 @@
 {% block title %}公告列表{% endblock %}
 
 {% block content %}
-    <h2>公告列表</h2>
-    <div class="row">
+
+    <div class="position-relative mb-8" style="width: 100vw; margin-left: calc(-50vw + 50%);">
+        <div class="position-absolute text-center w-100" style="top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 10;">
+            <h2 class="text-white font-bold" style="font-size: 3rem; text-shadow: 2px 2px 8px rgba(0,0,0,0.8);">公告列表</h2>
+        </div>
+        <img
+            src="/photo/announcement_back.jpg"
+            alt="公告列表"
+            style="width: 100%; height: 300px; object-fit: cover; display: block;"
+        >
+    </div>
+
+    <div style="margin-bottom: 60px;"></div>
+
+    <style>
+        .announce-card{
+            border-radius: 16px;
+            border: 0;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            transition: all 0.3s ease;
+            overflow: hidden;
+        }
+        .announce-card:hover{
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.12);
+        }
+        .announce-card .title-link{
+            text-decoration: none;
+            color: #333;
+        }
+        .announce-card .title-link:hover{
+            color: #000;
+        }
+    </style>
+
+    <div class="row g-4">
         {% for announcement in announcements.items %}
-            <div class="col-md-6 mb-4">
-                <div class="card">
+            <div class="col-md-6">
+                <div class="card announce-card h-100">
                     {% if announcement.cover_url %}
-                        <img src="{{ announcement.cover_url }}" class="card-img-top" alt="{{ announcement.title }}">
+                        <img src="{{ announcement.cover_url }}" class="card-img-top" alt="{{ announcement.title }}" style="height:200px;object-fit:cover;">
                     {% endif %}
-                    <div class="card-body">
-                        <h5 class="card-title"><a href="/announcement/detail/{{ announcement.announcement_id }}">{{ announcement.title }}</a></h5>
-                        <p class="card-text">{{ announcement.content[:100] }}{% if announcement.content|length > 100 %}...{% endif %}</p>
-                        <p class="text-sm text-muted">{{ announcement.create_time.strftime('%Y-%m-%d') }}</p>
+                    <div class="card-body p-4">
+                        <h5 class="card-title fw-bold mb-3">
+                            <a href="/announcement/detail/{{ announcement.announcement_id }}" class="title-link">{{ announcement.title }}</a>
+                        </h5>
+                        <p class="card-text text-muted lh-base">
+                            {{ announcement.content[:100] }}{% if announcement.content|length > 100 %}...{% endif %}
+                        </p>
+                        <div class="d-flex justify-content-between align-items-center mt-4">
+                            <span class="text-secondary small">
+                                {{ announcement.create_time.strftime('%Y-%m-%d') }}
+                            </span>
+                            <a href="/announcement/detail/{{ announcement.announcement_id }}" class="btn btn-dark btn-sm rounded-3">查看详情</a>
+                        </div>
                     </div>
                 </div>
             </div>
         {% endfor %}
     </div>
-    
-    <nav aria-label="Page navigation">
-        <ul class="pagination">
+
+    <nav aria-label="Page navigation" class="mt-5">
+        <ul class="pagination justify-content-center gap-2">
             {% if announcements.has_prev %}
-                <li class="page-item"><a class="page-link" href="?page={{ announcements.prev_num }}">上一页</a></li>
+                <li class="page-item"><a class="page-link rounded-3 px-3 py-2 border-dark text-dark" href="?page={{ announcements.prev_num }}">上一页</a></li>
+            {% else %}
+                <li class="page-item disabled"><span class="page-link rounded-3 px-3 py-2">上一页</span></li>
             {% endif %}
+
             {% for page in announcements.iter_pages() %}
                 {% if page %}
                     <li class="page-item {% if page == announcements.page %}active{% endif %}">
-                        <a class="page-link" href="?page={{ page }}">{{ page }}</a>
+                        <a class="page-link rounded-3 px-3 py-2 {% if page == announcements.page %}bg-dark border-dark text-white{% else %}border-dark text-dark{% endif %}" href="?page={{ page }}">{{ page }}</a>
                     </li>
                 {% else %}
                     <li class="page-item disabled"><span class="page-link">...</span></li>
                 {% endif %}
             {% endfor %}
+
             {% if announcements.has_next %}
-                <li class="page-item"><a class="page-link" href="?page={{ announcements.next_num }}">下一页</a></li>
+                <li class="page-item"><a class="page-link rounded-3 px-3 py-2 border-dark text-dark" href="?page={{ announcements.next_num }}">下一页</a></li>
+            {% else %}
+                <li class="page-item disabled"><span class="page-link rounded-3 px-3 py-2">下一页</span></li>
             {% endif %}
         </ul>
     </nav>

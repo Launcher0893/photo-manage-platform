@@ -3,119 +3,225 @@
 {% block title %}个人中心{% endblock %}
 
 {% block content %}
-    <div class="mb-4">
-        <h2>个人资料</h2>
-        <img src="{{ current_user.avatar_url or 'https://via.placeholder.com/100x100' }}" class="img-fluid rounded-circle" style="width: 100px; height: 100px;" alt="头像">
-        <p>用户名：{{ current_user.username }}</p>
-        <p>昵称：{{ current_user.nickname or '未设置' }}</p>
-        <p>邮箱：{{ current_user.email or '未绑定' }}</p>
-        <p>手机号：{{ current_user.phone or '未绑定' }}</p>
-        <a href="/user/edit_profile" class="btn btn-primary">编辑资料</a>
-        <a href="/user/change_password" class="btn btn-secondary">修改密码</a>
-    </div>
+<style>
+    body {
+        background-color: #f5f7fa;
+    }
+    .main-card {
+        background: #ffffff;
+        border-radius: 12px;
+        box-shadow: 0 2px 12px rgba(30, 136, 229, 0.1);
+        border: 1px solid #e8edf5;
+    }
+    .theme-blue {
+        color: #000000 !important;
+    }
+    /* 左侧白灰黑按钮样式 */
+    .btn-gray {
+        background-color: #f8f9fa;
+        border: 1px solid #dee2e6;
+        color: #212529;
+    }
+    .btn-gray:hover {
+        background-color: #e9ecef;
+        border-color: #ced4da;
+        color: #212529;
+    }
+    .btn-dark-gray {
+        background-color: #495057;
+        color: #fff;
+    }
+    .btn-dark-gray:hover {
+        background-color: #343a40;
+        color: #fff;
+    }
+    .table-blue th {
+        background-color: #f0f6fc;
+        color: #000000 !important;
+        border-bottom: 1px solid #dbe7f5;
+    }
+    .table-blue td {
+        border-color: #edf2f9;
+        color: #000;
+    }
+    p, span {
+        color: #000 !important;
+    }
+    /* 例外：上架、下架标签保持原有颜色 */
+    .badge {
+        color: #fff !important;
+    }
+</style>
 
-    {% if current_user.user_role == 2 %}
-        <div class="mb-4">
-            <h3>摄影师认证</h3>
-            {% if photographer %}
-                <p>真实姓名：{{ photographer.real_name or '未填写' }}</p>
-                <p>所在城市：{{ photographer.city or '未填写' }}</p>
-                <p>
-                    认证状态：
-                    {% if photographer.cert_status == 0 %}
-                        <span class="badge bg-warning text-dark">待审核</span>
-                    {% elif photographer.cert_status == 1 %}
-                        <span class="badge bg-success">已通过</span>
+<div class="container py-4">
+    <div class="row g-4">
+        <!-- 左侧：个人资料+摄影师认证 合并同一卡片 -->
+        <div class="col-lg-4">
+            <div class="main-card p-4">
+                <h4 class="fw-bold border-bottom pb-3 mb-4 theme-blue">个人资料</h4>
+
+                <!-- 头像 -->
+                <div class="text-center mb-4">
+                    <img src="{{ current_user.avatar_url or 'https://via.placeholder.com/120x120' }}"
+                         class="rounded-circle border border-2 border-primary"
+                         style="width: 120px; height: 120px; object-fit: cover;">
+                </div>
+
+                <!-- 用户基础信息 -->
+                <div class="mb-4">
+                    <p class="mb-2">用户名：{{ current_user.username }}</p>
+                    <p class="mb-2">昵称：{{ current_user.nickname or '未设置' }}</p>
+                    <p class="mb-2">邮箱：{{ current_user.email or '未绑定' }}</p>
+                    <p class="mb-2">手机号：{{ current_user.phone or '未绑定' }}</p>
+                </div>
+
+                <!-- 白灰黑按钮 -->
+                <div class="d-grid gap-2 mb-5">
+                    <a href="/user/edit_profile" class="btn btn-dark-gray">编辑资料</a>
+                    <a href="/user/change_password" class="btn btn-gray">修改密码</a>
+                </div>
+
+                <!-- 摄影师认证 同卡片内 -->
+                {% if current_user.user_role == 2 %}
+                <div class="pt-4 border-top">
+                    <h5 class="fw-bold mb-3 theme-blue">摄影师认证</h5>
+                    {% if photographer %}
+                        <p class="mb-2">真实姓名：{{ photographer.real_name or '未填写' }}</p>
+                        <p class="mb-2">所在城市：{{ photographer.city or '未填写' }}</p>
+                        <p class="mb-2">
+                            认证状态：
+                            {% if photographer.cert_status == 0 %}
+                                <span class="badge bg-warning text-dark">待审核</span>
+                            {% elif photographer.cert_status == 1 %}
+                                <span class="badge bg-success">已通过</span>
+                            {% else %}
+                                <span class="badge bg-danger">已拒绝</span>
+                            {% endif %}
+                        </p>
+                        {% if photographer.cert_remark %}
+                            <p class="text-secondary small">审核备注：{{ photographer.cert_remark }}</p>
+                        {% endif %}
                     {% else %}
-                        <span class="badge bg-danger">已拒绝</span>
+                        <p class="text-secondary">尚未提交摄影师认证资料</p>
                     {% endif %}
-                </p>
-                {% if photographer.cert_remark %}
-                    <p>审核备注：{{ photographer.cert_remark }}</p>
-                {% endif %}
-            {% else %}
-                <p>尚未提交摄影师认证资料。</p>
-            {% endif %}
-            <a href="/user/edit_photographer" class="btn btn-primary">完善摄影师资料</a>
-            {% if photographer and photographer.cert_status == 1 %}
-                <a href="/work/add" class="btn btn-success">发布作品</a>
-                <a href="/work/my" class="btn btn-secondary">我的作品</a>
-            {% endif %}
-        </div>
-    {% endif %}
 
-    {% if photographer and photographer.cert_status == 1 %}
-        <div class="mb-4">
-            <h3>我的作品</h3>
-            <table class="table">
-                <thead>
-                    <tr>
-                        <th>标题</th>
-                        <th>分类</th>
-                        <th>浏览</th>
-                        <th>点赞</th>
-                        <th>评论</th>
-                        <th>状态</th>
-                        <th>时间</th>
-                        <th>操作</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for work in works %}
-                        <tr>
-                            <td>{{ work.title }}</td>
-                            <td>{{ work.category.category_name if work.category else '未分类' }}</td>
-                            <td>{{ work.view_count }}</td>
-                            <td>{{ work.like_count }}</td>
-                            <td>{{ work.comment_count }}</td>
-                            <td>{% if work.status == 1 %}上架{% else %}下架{% endif %}</td>
-                            <td>{{ work.create_time.strftime('%Y-%m-%d') }}</td>
-                            <td>
-                                {% if work.status == 1 %}
-                                    <a href="/work/detail/{{ work.work_id }}" class="btn btn-sm btn-info">查看</a>
-                                {% endif %}
-                                <a href="/work/edit/{{ work.work_id }}" class="btn btn-sm btn-primary">编辑</a>
-                                <form method="POST" action="/work/status/{{ work.work_id }}" class="d-inline">
-                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                                    <button type="submit" class="btn btn-sm btn-secondary">
-                                        {% if work.status == 1 %}下架{% else %}恢复{% endif %}
-                                    </button>
-                                </form>
-                            </td>
-                        </tr>
-                    {% else %}
-                        <tr>
-                            <td colspan="8" class="text-center text-muted">暂无作品</td>
-                        </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+                    <!-- 白灰黑按钮 -->
+                    <div class="d-grid gap-2 mt-3">
+                        <a href="/user/edit_photographer" class="btn btn-dark-gray">完善摄影师资料</a>
+                        {% if photographer and photographer.cert_status == 1 %}
+                            <a href="/work/add" class="btn btn-gray">发布作品</a>
+                            <a href="/work/my" class="btn btn-gray">我的作品</a>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
         </div>
-    {% endif %}
-    
-    <div class="mb-4">
-        <h3>我的帖子</h3>
-        <table class="table">
-            <thead>
-                <tr>
-                    <th>标题</th>
-                    <th>浏览</th>
-                    <th>评论</th>
-                    <th>时间</th>
-                    <th>操作</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for post in posts %}
-                    <tr>
-                        <td><a href="/forum/post_detail/{{ post.post_id }}">{{ post.title }}</a></td>
-                        <td>{{ post.view_count }}</td>
-                        <td>{{ post.comment_count }}</td>
-                        <td>{{ post.create_time.strftime('%Y-%m-%d') }}</td>
-                        <td><a href="/forum/post_edit/{{ post.post_id }}" class="btn btn-sm btn-primary">编辑</a></td>
-                    </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+
+        <!-- 右侧：我的作品 + 我的帖子 合并同一卡片 -->
+        <div class="col-lg-8">
+            <div class="main-card p-4">
+                <!-- 我的作品区域 -->
+                {% if photographer and photographer.cert_status == 1 %}
+                <div class="mb-5">
+                    <h4 class="fw-bold mb-4 theme-blue">我的作品</h4>
+                    <div class="table-responsive">
+                        <table class="table table-blue mb-0">
+                            <thead>
+                                <tr>
+                                    <th>标题</th>
+                                    <th>分类</th>
+                                    <th>浏览</th>
+                                    <th>点赞</th>
+                                    <th>评论</th>
+                                    <th>状态</th>
+                                    <th>时间</th>
+                                    <th>操作</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for work in works %}
+                                <tr>
+                                    <td>{{ work.title }}</td>
+                                    <td>{{ work.category.category_name if work.category else '未分类' }}</td>
+                                    <td>{{ work.view_count }}</td>
+                                    <td>{{ work.like_count }}</td>
+                                    <td>{{ work.comment_count }}</td>
+                                    <td>
+                                        {% if work.status == 1 %}
+                                            <span class="badge bg-success">上架</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">下架</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ work.create_time.strftime('%Y-%m-%d') }}</td>
+                                    <td>
+                                        <div class="d-flex gap-1">
+                                            {% if work.status == 1 %}
+                                            <a href="/work/detail/{{ work.work_id }}" class="btn btn-sm btn-info">查看</a>
+                                            {% endif %}
+                                            <a href="/work/edit/{{ work.work_id }}" class="btn btn-sm btn-primary">编辑</a>
+                                            <form method="POST" action="/work/status/{{ work.work_id }}" class="d-inline">
+                                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                                <button type="submit" class="btn btn-sm btn-secondary">
+                                                    {% if work.status == 1 %}下架{% else %}恢复{% endif %}
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% else %}
+                                <tr>
+                                    <td colspan="8" class="text-center text-secondary py-3">暂无作品</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- 分割线 -->
+                {% if photographer and photographer.cert_status == 1 %}
+                <hr class="my-4">
+                {% endif %}
+
+                <!-- 我的帖子区域 -->
+                <div>
+                    <h4 class="fw-bold mb-4 theme-blue">我的帖子</h4>
+                    <div class="table-responsive">
+                        <table class="table table-blue mb-0">
+                            <thead>
+                                <tr>
+                                    <th>标题</th>
+                                    <th>浏览</th>
+                                    <th>评论</th>
+                                    <th>时间</th>
+                                    <th>操作</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for post in posts %}
+                                <tr>
+                                    <td><a href="/forum/post_detail/{{ post.post_id }}" style="color:#000;text-decoration:none">{{ post.title }}</a></td>
+                                    <td>{{ post.view_count }}</td>
+                                    <td>{{ post.comment_count }}</td>
+                                    <td>{{ post.create_time.strftime('%Y-%m-%d') }}</td>
+                                    <td>
+                                        <a href="/forum/post_edit/{{ post.post_id }}" class="btn btn-sm btn-primary">编辑</a>
+                                    </td>
+                                </tr>
+                                {% else %}
+                                <tr>
+                                    <td colspan="5" class="text-center text-secondary py-3">暂无帖子</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
+</div>
 {% endblock %}

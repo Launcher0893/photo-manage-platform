@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from pathlib import Path, PurePosixPath
+from typing import Optional
 from uuid import uuid4
 
 from flask import current_app, url_for
@@ -24,19 +25,19 @@ class UploadResult:
     url: str
     filename: str
     local_path: Path
-    oss_object_name: str | None = None
+    oss_object_name: Optional[str] = None
 
 
 def allowed_image(filename: str) -> bool:
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_IMAGE_EXTENSIONS
 
 
-def save_image_result(file: FileStorage | None, folder: str) -> UploadResult | None:
+def save_image_result(file: Optional[FileStorage], folder: str) -> Optional[UploadResult]:
     if file is None or not file.filename:
         return None
     if not allowed_image(file.filename):
         raise ValueError('Only image files are allowed.')
-    max_size = int(current_app.config.get('MAX_IMAGE_SIZE', 5 * 1024 * 1024))
+    max_size = int(current_app.config.get('MAX_IMAGE_SIZE', 50 * 1024 * 1024))
     file.stream.seek(0, 2)
     file_size = file.stream.tell()
     file.stream.seek(0)
@@ -74,12 +75,12 @@ def save_image_result(file: FileStorage | None, folder: str) -> UploadResult | N
     )
 
 
-def save_image(file: FileStorage | None, folder: str) -> str | None:
+def save_image(file: Optional[FileStorage], folder: str) -> Optional[str]:
     result = save_image_result(file, folder)
     return result.url if result else None
 
 
-def _delete_local_static_file(static_relative_path: str | None) -> bool:
+def _delete_local_static_file(static_relative_path: Optional[str]) -> bool:
     if not static_relative_path:
         return True
 
@@ -103,7 +104,7 @@ def _delete_local_static_file(static_relative_path: str | None) -> bool:
         return False
 
 
-def delete_uploaded_file(file_url: str | None = None, oss_object_name: str | None = None) -> bool:
+def delete_uploaded_file(file_url: Optional[str] = None, oss_object_name: Optional[str] = None) -> bool:
     ok = True
 
     object_key = oss_object_name or extract_object_key_from_url(file_url)

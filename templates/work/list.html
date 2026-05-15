@@ -3,11 +3,26 @@
 {% block title %}作品列表{% endblock %}
 
 {% block content %}
-    <div class="mb-4">
-        <h2>作品列表</h2>
-        <form method="GET" class="form-inline">
-            <input type="text" name="keyword" class="form-control mr-2" placeholder="搜索作品..." value="{{ request.args.get('keyword', '') }}">
-            <select name="category_id" class="form-control mr-2">
+
+    <div class="position-relative mb-8" style="width: 100vw; margin-left: calc(-50vw + 50%);">
+        <div class="position-absolute text-center w-100" style="top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 10;">
+            <h2 class="text-white font-bold" style="font-size: 3rem; text-shadow: 2px 2px 8px rgba(0,0,0,0.8);">作品列表</h2>
+        </div>
+        <img
+            src="/photo/list_back.jpg"
+            alt="作品列表"
+            style="width: 100%; height: 300px; object-fit: cover; display: block;"
+        >
+    </div>
+
+    <div style="margin-bottom: 60px;"></div>
+
+    <!-- 横向搜索栏 + 按钮固定最右侧 -->
+    <div class="mb-5">
+        <form method="GET" class="d-flex align-items-center gap-2 p-3 bg-light rounded-3 shadow-sm">
+            <input type="text" name="keyword" class="form-control rounded-3 flex-grow-0" style="width: 220px;" placeholder="搜索作品..." value="{{ request.args.get('keyword', '') }}">
+
+            <select name="category_id" class="form-select rounded-3 flex-grow-0" style="width: 180px;">
                 <option value="">全部分类</option>
                 {% for category in categories %}
                     <option value="{{ category.category_id }}" {% if request.args.get('category_id') == category.category_id|string %}selected{% endif %}>
@@ -15,48 +30,60 @@
                     </option>
                 {% endfor %}
             </select>
-            <input type="text" name="city" class="form-control mr-2" placeholder="拍摄城市" value="{{ request.args.get('city', '') }}">
-            <select name="sort_by" class="form-control mr-2">
+
+            <input type="text" name="city" class="form-control rounded-3 flex-grow-0" style="width: 160px;" placeholder="拍摄城市" value="{{ request.args.get('city', '') }}">
+
+            <select name="sort_by" class="form-select rounded-3 flex-grow-0" style="width: 140px;">
                 <option value="hot" {% if request.args.get('sort_by') == 'hot' %}selected{% endif %}>按热度</option>
                 <option value="new" {% if request.args.get('sort_by') == 'new' %}selected{% endif %}>按时间</option>
             </select>
-            <button type="submit" class="btn btn-primary">筛选</button>
+
+            <!-- 按钮自动挤到最右侧 -->
+            <div class="ms-auto">
+                <button type="submit" class="btn btn-dark rounded-3 px-4 py-2">筛选搜索</button>
+            </div>
         </form>
     </div>
-    
+
     <div class="row">
         {% for work in works.items %}
             <div class="col-md-4 mb-4">
-                <div class="card">
-                    <img src="{{ work.cover_url or 'https://via.placeholder.com/300x200' }}" class="card-img-top" alt="{{ work.title }}">
+                <div class="card h-100 shadow-sm border-0 rounded-3 overflow-hidden">
+                    <img src="{{ work.cover_url or 'https://via.placeholder.com/300x200' }}" class="card-img-top" alt="{{ work.title }}" style="height:220px;object-fit:cover;">
                     <div class="card-body">
                         <h5 class="card-title">{{ work.title }}</h5>
                         <p class="card-text">分类：{{ work.category.category_name if work.category else '未分类' }}</p>
                         <p class="card-text">城市：{{ work.city or '未知' }}</p>
                         <p class="card-text">浏览：{{ work.view_count }} | 点赞：{{ work.like_count }} | 评论：{{ work.comment_count }}</p>
-                        <a href="/work/detail/{{ work.work_id }}" class="btn btn-primary">查看详情</a>
+                        <a href="/work/detail/{{ work.work_id }}" class="btn btn-dark w-100 rounded-3">查看详情</a>
                     </div>
                 </div>
             </div>
         {% endfor %}
     </div>
-    
-    <nav aria-label="Page navigation">
-        <ul class="pagination">
+
+    <nav aria-label="Page navigation" class="mt-5">
+        <ul class="pagination justify-content-center gap-2">
             {% if works.has_prev %}
-                <li class="page-item"><a class="page-link" href="?page={{ works.prev_num }}">上一页</a></li>
+                <li class="page-item"><a class="page-link rounded-3 px-3 py-2 border-dark" href="?page={{ works.prev_num }}">上一页</a></li>
+            {% else %}
+                <li class="page-item disabled"><span class="page-link rounded-3 px-3 py-2">上一页</span></li>
             {% endif %}
+
             {% for page in works.iter_pages() %}
                 {% if page %}
                     <li class="page-item {% if page == works.page %}active{% endif %}">
-                        <a class="page-link" href="?page={{ page }}">{{ page }}</a>
+                        <a class="page-link rounded-3 px-3 py-2 {% if page == works.page %}bg-dark border-dark{% else %}border-dark text-dark{% endif %}" href="?page={{ page }}">{{ page }}</a>
                     </li>
                 {% else %}
                     <li class="page-item disabled"><span class="page-link">...</span></li>
                 {% endif %}
             {% endfor %}
+
             {% if works.has_next %}
-                <li class="page-item"><a class="page-link" href="?page={{ works.next_num }}">下一页</a></li>
+                <li class="page-item"><a class="page-link rounded-3 px-3 py-2 border-dark" href="?page={{ works.next_num }}">下一页</a></li>
+            {% else %}
+                <li class="page-item disabled"><span class="page-link rounded-3 px-3 py-2">下一页</span></li>
             {% endif %}
         </ul>
     </nav>

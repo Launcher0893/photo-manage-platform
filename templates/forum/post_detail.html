@@ -2,79 +2,135 @@
 
 {% block title %}{{ post.title }}{% endblock %}
 
+{% block style %}
+<style>
+    /* 只保留基础样式，无任何放大效果 */
+</style>
+{% endblock %}
+
 {% block content %}
-    <div class="mb-4">
-        <h2>{{ post.title }}</h2>
-        <p>板块：{{ post.forum_board.board_name }} | 作者：{{ post.user.nickname or post.user.username }}</p>
-        <p>浏览：{{ post.view_count }} | 点赞：<span id="like-count">{{ post.like_count }}</span> | 评论：{{ post.comment_count }}</p>
-        {% if current_user.is_authenticated and not current_user.is_admin %}
-            <button type="button" id="like-btn" class="btn btn-outline-primary btn-sm" data-liked="{{ 1 if is_liked else 0 }}">
-                {% if is_liked %}取消点赞{% else %}点赞{% endif %}
-            </button>
-        {% elif not current_user.is_authenticated %}
-            <a href="/auth/login" class="btn btn-outline-primary btn-sm">登录后点赞</a>
-        {% endif %}
+<!-- 灰色顶部导航栏 -->
+<div class="bg-light rounded-3 p-3 mb-4 shadow-sm">
+    <div class="d-flex align-items-center justify-content-between">
+        <h5 class="mb-0 fw-semibold">{{ post.forum_board.board_name }}</h5>
         {% if current_user.is_authenticated and not current_user.is_admin and current_user.user_id == post.user_id %}
-            <a href="/forum/post_edit/{{ post.post_id }}" class="btn btn-primary">编辑帖子</a>
+            <a href="/forum/post_edit/{{ post.post_id }}" class="btn btn-dark rounded-3">编辑帖子</a>
         {% endif %}
     </div>
-    
-    <div class="mb-4 p-4 border">
-        {{ post.content }}
+</div>
+
+<!-- 左右分栏 左侧9列 右侧3列 -->
+<div class="row g-4">
+    <!-- 左侧大图区域 -->
+    <div class="col-md-9">
+        {% if post.images %}
+            {% for image in post.images|sort(attribute='sort') %}
+                <img
+                    src="{{ image.image_url }}"
+                    class="img-fluid rounded-3 shadow-sm mb-3 w-100"
+                    alt="帖子图片"
+                >
+            {% endfor %}
+        {% else %}
+            <div class="bg-light rounded-3 d-flex align-items-center justify-content-center" style="height: 400px">
+                <span class="text-muted">暂无图片</span>
+            </div>
+        {% endif %}
     </div>
 
-    {% if post.images %}
-        <div class="mb-4">
-            <h3>帖子图片</h3>
-            <div class="row">
-                {% for image in post.images|sort(attribute='sort') %}
-                    <div class="col-md-4 mb-3">
-                        <img src="{{ image.image_url }}" class="img-fluid rounded" alt="{{ post.title }}">
+    <!-- 右侧窄边信息栏 -->
+    <div class="col-md-3">
+
+    <div style="margin-bottom: 60px;"></div>
+
+        <div class="sticky-top" style="top:20px">
+            <h4 class="fw-bold mb-3">{{ post.title }}</h4>
+
+            <!-- 作者信息 -->
+            <div class="d-flex align-items-center gap-2 mb-3">
+                <img src="{{ post.user.avatar_url or 'https://picsum.photos/100' }}" class="rounded-circle" width="40" height="40" style="object-fit:cover">
+                <div>
+                    <div class="fw-medium">{{ post.user.nickname or post.user.username }}</div>
+                    <div class="small text-muted">{{ post.create_time.strftime('%Y-%m-%d') }}</div>
+                </div>
+            </div>
+
+            <!-- 数据统计 纯汉字 -->
+            <div class="d-flex gap-3 text-muted small mb-3">
+                <span>浏览 {{ post.view_count }}</span>
+                <span>点赞 <span id="like-count">{{ post.like_count }}</span></span>
+                <span>评论 {{ post.comment_count }}</span>
+            </div>
+
+            <!-- 点赞按钮 -->
+            <div class="mb-4">
+                {% if current_user.is_authenticated and not current_user.is_admin %}
+                    <button id="like-btn" class="btn btn-sm rounded-pill px-3 {% if is_liked %}btn-dark{% else %}btn-outline-dark{% endif %}" data-liked="{{ 1 if is_liked else 0 }}">
+                        {% if is_liked %}取消点赞{% else %}点赞{% endif %}
+                    </button>
+                {% elif not current_user.is_authenticated %}
+                    <a href="/auth/login" class="btn btn-outline-dark btn-sm rounded-pill px-3">登录后点赞</a>
+                {% endif %}
+            </div>
+
+            <!-- 帖子正文 -->
+            <div class="text-secondary mb-5">
+                {{ post.content }}
+            </div>
+
+            <!-- 评论区 -->
+            <div>
+                <h6 class="fw-bold mb-3">评论区</h6>
+                {% if current_user.is_authenticated and not current_user.is_admin %}
+                <form method="POST" action="/forum/comment_add/{{ post.post_id }}" class="mb-3">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <textarea name="content" class="form-control rounded-3 mb-2" rows="2" placeholder="发表评论..."></textarea>
+                    <button class="btn btn-dark btn-sm w-100">发表评论</button>
+                </form>
+                {% endif %}
+
+                {% for comment in comments %}
+                <div class="mb-3">
+                    <div class="d-flex gap-2 align-items-center">
+                        <img src="{{ comment.user.avatar_url or 'https://picsum.photos/100' }}" class="rounded-circle" width="30" height="30" style="object-fit:cover">
+                        <div class="fw-medium small">{{ comment.user.nickname or comment.user.username }}</div>
+                        <div class="small text-muted ms-auto">{{ comment.create_time.strftime('%m-%d %H:%M') }}</div>
                     </div>
+                    <div class="small mt-1 text-secondary ps-4">
+                        {{ comment.content }}
+                    </div>
+                </div>
+                {% else %}
+                <div class="small text-muted text-center py-3">暂无评论</div>
                 {% endfor %}
             </div>
         </div>
-    {% endif %}
-    
-    <div class="mb-4">
-        <h3>评论区</h3>
-        {% if current_user.is_authenticated and not current_user.is_admin %}
-            <form method="POST" action="/forum/comment_add/{{ post.post_id }}">
-                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                <textarea name="content" class="form-control mb-2" rows="3" placeholder="发表评论..."></textarea>
-                <button type="submit" class="btn btn-primary">发表评论</button>
-            </form>
-        {% endif %}
-        
-        <div>
-            {% for comment in comments %}
-                <div class="border p-3 mb-2">
-                    <p><strong>{{ comment.user.nickname or comment.user.username }}</strong>：{{ comment.content }}</p>
-                    <p class="text-sm text-muted">{{ comment.create_time.strftime('%Y-%m-%d %H:%M') }}</p>
-                </div>
-            {% endfor %}
-        </div>
     </div>
+</div>
 {% endblock %}
 
 {% block scripts %}
-    <script>
-        $('#like-btn').on('click', function() {
-            var $btn = $(this);
-            $.post('/forum/post_like/{{ post.post_id }}')
-                .done(function(res) {
-                    if (res.success) {
-                        $('#like-count').text(res.count);
-                        $btn.data('liked', res.liked ? 1 : 0);
-                        $btn.text(res.liked ? '取消点赞' : '点赞');
+<script>
+    $('#like-btn').on('click', function() {
+        var $btn = $(this);
+        $.post('/forum/post_like/{{ post.post_id }}')
+            .done(function(res) {
+                if (res.success) {
+                    $('#like-count').text(res.count);
+                    $btn.data('liked', res.liked ? 1 : 0);
+                    $btn.text(res.liked ? '取消点赞' : '点赞');
+                    if (res.liked) {
+                        $btn.removeClass('btn-outline-dark').addClass('btn-dark');
                     } else {
-                        alert(res.message || '操作失败');
+                        $btn.removeClass('btn-dark').addClass('btn-outline-dark');
                     }
-                })
-                .fail(function(xhr) {
-                    var res = xhr.responseJSON || {};
-                    alert(res.message || '操作失败，请稍后重试。');
-                });
-        });
-    </script>
+                } else {
+                    alert(res.message || '操作失败');
+                }
+            })
+            .fail(function() {
+                alert('操作失败');
+            });
+    });
+</script>
 {% endblock %}

@@ -3,18 +3,54 @@
 {% block title %}论坛板块{% endblock %}
 
 {% block content %}
-    <h2>论坛板块</h2>
-    <div class="row">
+
+    <div class="position-relative mb-8" style="width: 100vw; margin-left: calc(-50vw + 50%);">
+        <div class="position-absolute text-center w-100" style="top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 10;">
+            <h2 class="text-white font-bold" style="font-size: 3rem; text-shadow: 2px 2px 8px rgba(0,0,0,0.8);">论坛板块</h2>
+        </div>
+        <img
+            src="/photo/board_back.jpg"
+            alt="论坛板块"
+            style="width: 100%; height: 300px; object-fit: cover; display: block;"
+        >
+    </div>
+
+    <div style="margin-bottom: 60px;"></div>
+
+    <!-- 美化论坛板块卡片 -->
+    <div class="row g-4">
         {% for board in boards %}
             <div class="col-md-6 mb-4">
-                <div class="card">
-                    <div class="card-body">
-                        <h5 class="card-title"><a href="/forum/post_list/{{ board.board_id }}">{{ board.board_name }}</a></h5>
-                        <p class="card-text">{{ board.description or '暂无描述' }}</p>
-                        <p class="card-text">帖子数：{{ board.posts|length }}</p>
+                <div class="card border-0 rounded-4 shadow-sm h-100 transition-all hover-shadow">
+                    <div class="card-body p-4">
+                        <h5 class="card-title mb-3">
+                            <a href="/forum/post_list/{{ board.board_id }}" class="text-dark text-decoration-none fw-bold">
+                                {{ board.board_name }}
+                            </a>
+                        </h5>
+                        <p class="card-text text-muted mb-3">{{ board.description or '暂无描述' }}</p>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="badge bg-secondary bg-opacity-25 text-dark px-3 py-2 rounded-3">
+                                帖子数：{{ board.posts|length }}
+                            </span>
+                            <a href="/forum/post_list/{{ board.board_id }}" class="btn btn-sm btn-dark rounded-3 px-3">
+                                进入板块
+                            </a>
+                        </div>
                     </div>
                 </div>
             </div>
         {% endfor %}
     </div>
+
+    <style>
+        .hover-shadow:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.1) !important;
+            transition: all 0.3s ease;
+        }
+        .transition-all {
+            transition: all 0.3s ease;
+        }
+    </style>
 {% endblock %}

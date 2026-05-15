@@ -4,20 +4,31 @@
 
 {% block content %}
     <div class="mb-4">
-        <h2>评论管理</h2>
-        <a href="/admin/forum/post_list" class="btn btn-secondary">帖子管理</a>
-        <form method="GET" class="form-inline mt-2">
-            <select name="status" class="form-control">
-                <option value="">全部状态</option>
-                <option value="1" {% if request.args.get('status') == '1' %}selected{% endif %}>正常</option>
-                <option value="0" {% if request.args.get('status') == '0' %}selected{% endif %}>删除</option>
-            </select>
-            <button type="submit" class="btn btn-primary">筛选</button>
-        </form>
+        <h2 class="fw-bold mb-3">评论管理</h2>
+        <div class="d-flex gap-2 mb-3">
+            <a href="/admin/forum/post_list" class="btn btn-secondary rounded-3">帖子管理</a>
+        </div>
+
+        <!-- 美化搜索筛选栏 -->
+        <div class="card p-3 rounded-3 shadow-sm">
+            <form method="GET" class="row g-3 align-items-center">
+                <div class="col-auto">
+                    <select name="status" class="form-select rounded-3">
+                        <option value="">全部状态</option>
+                        <option value="1" {% if request.args.get('status') == '1' %}selected{% endif %}>正常</option>
+                        <option value="0" {% if request.args.get('status') == '0' %}selected{% endif %}>删除</option>
+                    </select>
+                </div>
+                <div class="col-auto">
+                    <button type="submit" class="btn btn-primary rounded-3 px-4">筛选</button>
+                </div>
+            </form>
+        </div>
     </div>
-    
-    <table class="table">
-        <thead>
+
+    <!-- 美化表格 -->
+    <table class="table table-hover align-middle rounded-3 overflow-hidden shadow-sm">
+        <thead class="table-light">
             <tr>
                 <th>内容</th>
                 <th>作者</th>
@@ -30,15 +41,21 @@
         <tbody>
             {% for comment in comments.items %}
                 <tr>
-                    <td>{{ comment.content }}</td>
+                    <td class="text-break">{{ comment.content }}</td>
                     <td>{{ comment.user.nickname or comment.user.username }}</td>
-                    <td>{{ comment.forum_post.title }}</td>
-                    <td>{% if comment.status == 1 %}正常{% else %}删除{% endif %}</td>
+                    <td class="fw-medium">{{ comment.forum_post.title }}</td>
+                    <td>
+                        {% if comment.status == 1 %}
+                            <span class="badge bg-success">正常</span>
+                        {% else %}
+                            <span class="badge bg-danger">删除</span>
+                        {% endif %}
+                    </td>
                     <td>{{ comment.create_time.strftime('%Y-%m-%d') }}</td>
                     <td>
                         <form method="POST" action="/admin/forum/comment_delete/{{ comment.comment_id }}" class="d-inline">
                             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                            <button type="submit" class="btn btn-sm btn-danger">
+                            <button type="submit" class="btn btn-sm btn-danger rounded-3">
                                 {% if comment.status == 1 %}删除{% else %}恢复{% endif %}
                             </button>
                         </form>
@@ -47,23 +64,40 @@
             {% endfor %}
         </tbody>
     </table>
-    
-    <nav aria-label="Page navigation">
-        <ul class="pagination">
+
+    <!-- 美化分页（居中、圆角、保留筛选） -->
+    <nav aria-label="Page navigation" class="mt-4">
+        <ul class="pagination justify-content-center gap-2">
+            {% set kw_status = request.args.get('status','')|urlencode %}
+
             {% if comments.has_prev %}
-                <li class="page-item"><a class="page-link" href="?page={{ comments.prev_num }}">上一页</a></li>
+                <li class="page-item">
+                    <a class="page-link rounded-3" href="?page={{ comments.prev_num }}&status={{kw_status}}">上一页</a>
+                </li>
+            {% else %}
+                <li class="page-item disabled">
+                    <a class="page-link rounded-3">上一页</a>
+                </li>
             {% endif %}
+
             {% for page in comments.iter_pages() %}
                 {% if page %}
                     <li class="page-item {% if page == comments.page %}active{% endif %}">
-                        <a class="page-link" href="?page={{ page }}">{{ page }}</a>
+                        <a class="page-link rounded-3" href="?page={{ page }}&status={{kw_status}}">{{ page }}</a>
                     </li>
                 {% else %}
-                    <li class="page-item disabled"><span class="page-link">...</span></li>
+                    <li class="page-item disabled"><span class="page-link rounded-3">...</span></li>
                 {% endif %}
             {% endfor %}
+
             {% if comments.has_next %}
-                <li class="page-item"><a class="page-link" href="?page={{ comments.next_num }}">下一页</a></li>
+                <li class="page-item">
+                    <a class="page-link rounded-3" href="?page={{ comments.next_num }}&status={{kw_status}}">下一页</a>
+                </li>
+            {% else %}
+                <li class="page-item disabled">
+                    <a class="page-link rounded-3">下一页</a>
+                </li>
             {% endif %}
         </ul>
     </nav>

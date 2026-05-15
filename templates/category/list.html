@@ -4,16 +4,28 @@
 
 {% block content %}
     <div class="mb-4">
-        <h2>分类管理</h2>
-        <a href="/admin/category/add" class="btn btn-primary">新增分类</a>
-        <form method="GET" class="form-inline mt-2">
-            <input type="text" name="category_name" class="form-control mr-2" placeholder="搜索分类..." value="{{ request.args.get('category_name', '') }}">
-            <button type="submit" class="btn btn-primary">搜索</button>
-        </form>
+        <h2 class="fw-bold mb-3">分类管理</h2>
+        <div class="d-flex gap-2 mb-3">
+            <a href="/admin/category/add" class="btn btn-primary rounded-3">新增分类</a>
+        </div>
+
+        <!-- 美化搜索栏：与之前后台页面风格统一 -->
+        <div class="card p-3 rounded-3 shadow-sm">
+            <form method="GET" class="row g-3 align-items-center">
+                <div class="col-auto flex-grow-1 max-w-md">
+                    <input type="text" name="category_name" class="form-control rounded-3"
+                           placeholder="搜索分类..." value="{{ request.args.get('category_name', '') }}">
+                </div>
+                <div class="col-auto">
+                    <button type="submit" class="btn btn-primary rounded-3 px-4">搜索</button>
+                </div>
+            </form>
+        </div>
     </div>
-    
-    <table class="table">
-        <thead>
+
+    <!-- 美化表格：hover效果、表头柔和、状态徽章 -->
+    <table class="table table-hover align-middle rounded-3 overflow-hidden shadow-sm">
+        <thead class="table-light">
             <tr>
                 <th>分类名称</th>
                 <th>排序</th>
@@ -24,14 +36,21 @@
         <tbody>
             {% for category in categories.items %}
                 <tr>
-                    <td>{{ category.category_name }}</td>
+                    <td class="fw-medium">{{ category.category_name }}</td>
                     <td>{{ category.sort }}</td>
-                    <td>{% if category.status == 1 %}启用{% else %}禁用{% endif %}</td>
                     <td>
-                        <a href="/admin/category/edit/{{ category.category_id }}" class="btn btn-sm btn-primary">编辑</a>
+                        {% if category.status == 1 %}
+                            <span class="badge bg-success">启用</span>
+                        {% else %}
+                            <span class="badge bg-secondary">禁用</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <a href="/admin/category/edit/{{ category.category_id }}"
+                           class="btn btn-sm btn-primary rounded-3 me-1">编辑</a>
                         <form method="POST" action="/admin/category/status/{{ category.category_id }}" class="d-inline">
                             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                            <button type="submit" class="btn btn-sm btn-secondary">
+                            <button type="submit" class="btn btn-sm btn-secondary rounded-3">
                                 {% if category.status == 1 %}禁用{% else %}启用{% endif %}
                             </button>
                         </form>
@@ -40,23 +59,40 @@
             {% endfor %}
         </tbody>
     </table>
-    
-    <nav aria-label="Page navigation">
-        <ul class="pagination">
+
+    <!-- 美化分页：居中、圆角、统一间距 -->
+    <nav aria-label="Page navigation" class="mt-4">
+        <ul class="pagination justify-content-center gap-2">
             {% if categories.has_prev %}
-                <li class="page-item"><a class="page-link" href="?page={{ categories.prev_num }}">上一页</a></li>
+                <li class="page-item">
+                    <a class="page-link rounded-3" href="?page={{ categories.prev_num }}&category_name={{ request.args.get('category_name', '')|urlencode }}">上一页</a>
+                </li>
+            {% else %}
+                <li class="page-item disabled">
+                    <a class="page-link rounded-3">上一页</a>
+                </li>
             {% endif %}
+
             {% for page in categories.iter_pages() %}
                 {% if page %}
                     <li class="page-item {% if page == categories.page %}active{% endif %}">
-                        <a class="page-link" href="?page={{ page }}">{{ page }}</a>
+                        <a class="page-link rounded-3" href="?page={{ page }}&category_name={{ request.args.get('category_name', '')|urlencode }}">{{ page }}</a>
                     </li>
                 {% else %}
-                    <li class="page-item disabled"><span class="page-link">...</span></li>
+                    <li class="page-item disabled">
+                        <span class="page-link rounded-3">...</span>
+                    </li>
                 {% endif %}
             {% endfor %}
+
             {% if categories.has_next %}
-                <li class="page-item"><a class="page-link" href="?page={{ categories.next_num }}">下一页</a></li>
+                <li class="page-item">
+                    <a class="page-link rounded-3" href="?page={{ categories.next_num }}&category_name={{ request.args.get('category_name', '')|urlencode }}">下一页</a>
+                </li>
+            {% else %}
+                <li class="page-item disabled">
+                    <a class="page-link rounded-3">下一页</a>
+                </li>
             {% endif %}
         </ul>
     </nav>

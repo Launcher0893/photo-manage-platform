@@ -3,64 +3,106 @@
 {% block title %}{{ work and '编辑作品' or '发布作品' }}{% endblock %}
 
 {% block content %}
-    <div class="row justify-content-center">
-        <div class="col-md-8">
-            <h2>{{ work and '编辑作品' or '发布作品' }}</h2>
+
+<div class="position-relative mb-8" style="width: 100vw; margin-left: calc(-50vw + 50%);">
+        <div class="position-absolute text-center w-100" style="top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 10;">
+            <h2 class="text-white font-bold" style="font-size: 3rem; text-shadow: 2px 2px 8px rgba(0,0,0,0.8);">{{ work and '编辑作品' or '发布作品' }}</h2>
+        </div>
+        <img
+            src="/photo/add_back.jpg"
+            alt="发布作品"
+            style="width: 100%; height: 300px; object-fit: cover; display: block;"
+        >
+    </div>
+
+    <div style="margin-bottom: 60px;"></div>
+
+<!-- 表单卡片 -->
+<div class="row justify-content-center mb-5">
+    <div class="col-md-8 col-lg-7">
+        <div class="card shadow-lg border-0 rounded-4 p-4 p-md-5">
             <form method="POST" enctype="multipart/form-data">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                <div class="mb-3">
-                    <label>标题</label>
-                    <input type="text" name="title" class="form-control" required value="{{ work.title if work else '' }}">
+
+                <div class="mb-4">
+                    <label class="form-label fw-semibold">作品标题</label>
+                    <input type="text" name="title" class="form-control form-control-lg rounded-3" required value="{{ work.title if work else '' }}" placeholder="请输入作品标题">
                 </div>
-                <div class="mb-3">
-                    <label>分类</label>
-                    <select name="category_id" class="form-control" required>
+
+                <div class="mb-4">
+                    <label class="form-label fw-semibold">作品分类</label>
+                    <select name="category_id" class="form-select form-select-lg rounded-3" required>
                         <option value="">请选择分类</option>
                         {% for category in categories %}
-                            <option value="{{ category.category_id }}" {% if work and work.category_id == category.category_id %}selected{% endif %}>
-                                {{ category.category_name }}
-                            </option>
+                        <option value="{{ category.category_id }}" {% if work and work.category_id == category.category_id %}selected{% endif %}>
+                            {{ category.category_name }}
+                        </option>
                         {% endfor %}
                     </select>
                 </div>
-                <div class="mb-3">
-                    <label>拍摄城市</label>
-                    <input type="text" name="city" class="form-control" value="{{ work.city if work else '' }}">
+
+                <div class="mb-4">
+                    <label class="form-label fw-semibold">拍摄城市</label>
+                    <input type="text" name="city" class="form-control form-control-lg rounded-3" value="{{ work.city if work else '' }}" placeholder="例如：上海 / 北京 / 杭州">
                 </div>
-                <div class="mb-3">
-                    <label>描述</label>
-                    <textarea name="description" class="form-control" rows="5">{{ work.description if work else '' }}</textarea>
+
+                <div class="mb-4">
+                    <label class="form-label fw-semibold">作品描述</label>
+                    <textarea name="description" class="form-control rounded-3" rows="5" placeholder="简单描述你的作品">{{ work.description if work else '' }}</textarea>
                 </div>
-                <div class="mb-3">
-                    <label>封面图</label>
-                    <input type="file" name="cover_file" class="form-control" accept="image/*">
+
+                <div class="mb-4">
+                    <label class="form-label fw-semibold">封面图</label>
+                    <input type="file" name="cover_file" class="form-control rounded-3" accept="image/*">
                     {% if work and work.cover_url %}
-                        <small class="form-text text-muted">当前封面：{{ work.cover_url }}</small>
+                    <div class="mt-2">
+                        <small class="text-muted">当前封面：</small>
+                        <img src="{{ work.cover_url }}" class="img-fluid rounded-2 mt-2" style="max-height:120px;">
+                    </div>
                     {% endif %}
                 </div>
+
                 {% if work and work.images %}
-                    <div class="mb-3">
-                        <label>已有组图</label>
-                        <div class="row">
-                            {% for image in work.images|sort(attribute='sort') %}
-                                <div class="col-md-4 mb-3">
-                                    <img src="{{ image.image_url }}" class="img-fluid rounded mb-2" alt="{{ work.title }}">
+                <div class="mb-4 p-3 bg-light rounded-3">
+                    <label class="form-label fw-semibold">已有组图</label>
+                    <div class="row g-3 mt-2">
+                        {% for image in work.images|sort(attribute='sort') %}
+                        <div class="col-6 col-md-4">
+                            <div class="card rounded-3 shadow-sm overflow-hidden h-100">
+                                <img src="{{ image.image_url }}" class="card-img-top" style="height:120px; object-fit:cover;">
+                                <div class="card-body p-2">
                                     <div class="form-check">
-                                        <input type="checkbox" name="delete_image_ids" value="{{ image.image_id }}" class="form-check-input" id="delete-image-{{ image.image_id }}">
-                                        <label class="form-check-label" for="delete-image-{{ image.image_id }}">删除此图</label>
+                                        <input type="checkbox" name="delete_image_ids" value="{{ image.image_id }}" class="form-check-input" id="del{{ image.image_id }}">
+                                        <label class="form-check-label small" for="del{{ image.image_id }}">删除</label>
                                     </div>
                                 </div>
-                            {% endfor %}
+                            </div>
                         </div>
+                        {% endfor %}
                     </div>
-                {% endif %}
-                <div class="mb-3">
-                    <label>{{ work and '追加组图' or '作品组图' }}</label>
-                    <input type="file" name="work_images" class="form-control" accept="image/*" multiple>
                 </div>
-                <button type="submit" class="btn btn-primary">{{ work and '保存修改' or '发布作品' }}</button>
-                <a href="/work/my" class="btn btn-secondary">返回</a>
+                {% endif %}
+
+                <div class="mb-4">
+                    <label class="form-label fw-semibold">{{ work and '追加组图' or '上传作品组图' }}</label>
+                    <input type="file" name="work_images" class="form-control rounded-3" accept="image/*" multiple>
+                    <small class="text-muted">可按住 Ctrl 多选</small>
+                </div>
+
+                <!-- 简约黑白灰按键优化：去掉彩色，统一黑白灰，保留简约质感 -->
+                <div class="d-flex gap-2 mt-4">
+                    <button type="submit" class="btn btn-dark rounded-3 px-4 py-2 flex-grow-1 border-0 shadow-sm hover:shadow">
+                        {{ work and '保存修改' or '发布作品' }}
+                    </button>
+                    <a href="/work/my" class="btn btn-light rounded-3 px-4 py-2 border border-gray-200 shadow-sm hover:shadow">
+                        返回
+                    </a>
+                </div>
             </form>
         </div>
     </div>
+</div>
+
+<div style="margin-bottom: 60px;"></div>
+
 {% endblock %}

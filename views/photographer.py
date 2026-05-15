@@ -19,6 +19,9 @@ admin_bp = Blueprint('admin_photographer', __name__, url_prefix='/admin/photogra
 def list_page():
     page = request.args.get('page', default=1, type=int)
     city = request.args.get('city', '').strip()
+    # 🔥 新增：获取昵称搜索参数
+    nickname = request.args.get('nickname', '').strip()
+
     stmt = (
         select(Photographer)
         .options(joinedload(Photographer.user), selectinload(Photographer.works))
@@ -29,8 +32,14 @@ def list_page():
         )
         .order_by(Photographer.create_time.desc(), Photographer.photographer_id.desc())
     )
+
     if city:
         stmt = stmt.where(Photographer.city.like(f'%{city}%'))
+
+    # 🔥 新增：按摄影师昵称（用户表）搜索
+    if nickname:
+        stmt = stmt.where(User.nickname.like(f'%{nickname}%'))
+
     photographers = db.paginate(stmt, page=page, per_page=9, error_out=False)
     return render_template('photographer/list.html', photographers=photographers)
 

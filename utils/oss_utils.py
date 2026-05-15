@@ -1,4 +1,5 @@
 from pathlib import PurePosixPath
+from typing import Optional
 from urllib.parse import unquote, urlparse
 
 from flask import current_app
@@ -74,7 +75,7 @@ def upload_file_to_oss(local_file_path, object_key: str) -> str:
         raise RuntimeError(f'OSS upload failed: {exc}') from exc
 
 
-def delete_file_from_oss(object_key: str | None) -> bool:
+def delete_file_from_oss(object_key: Optional[str]) -> bool:
     if not object_key or not oss_enabled():
         return True
     try:
@@ -85,7 +86,7 @@ def delete_file_from_oss(object_key: str | None) -> bool:
         return False
 
 
-def extract_object_key_from_url(file_url: str | None) -> str | None:
+def extract_object_key_from_url(file_url: Optional[str]) -> Optional[str]:
     if not file_url:
         return None
 
@@ -104,7 +105,7 @@ def extract_object_key_from_url(file_url: str | None) -> str | None:
     return path or None
 
 
-def object_key_to_upload_relative_path(object_key: str | None) -> str | None:
+def object_key_to_upload_relative_path(object_key: Optional[str]) -> Optional[str]:
     if not object_key:
         return None
 

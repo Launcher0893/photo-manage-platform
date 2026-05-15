@@ -1,8 +1,9 @@
-from flask import Flask, jsonify, redirect, render_template, request, url_for
+from flask import Flask, jsonify, redirect, render_template, request, send_from_directory, url_for
 from flask_login import LoginManager, current_user
 from flask_wtf.csrf import CSRFError, CSRFProtect
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.orm import joinedload
+import os
 
 from config import Config
 from db import db
@@ -68,12 +69,19 @@ app.register_blueprint(api_bp)
 app.register_blueprint(system_bp)
 
 
+@app.route('/photo/<path:filename>')
+def photo_static(filename):
+    photo_dir = os.path.join(app.root_path, 'photo')
+    return send_from_directory(photo_dir, filename)
+
+
 @app.route('/')
 def index():
     if current_user.is_authenticated and getattr(current_user, 'is_admin', False):
         return redirect(url_for('dashboard.index'))
 
     work_user_load = joinedload(PhotoWork.photographer).joinedload(Photographer.user)
+    work_images_load = joinedload(PhotoWork.images)
 
     carousels = db.session.execute(
         select(Carousel)
@@ -98,7 +106,7 @@ def index():
 
     hot_works = db.session.execute(
         select(PhotoWork)
-        .options(work_user_load)
+        .options(work_user_load, work_images_load)
         .join(PhotoWork.photographer)
         .join(Photographer.user)
         .where(
@@ -106,9 +114,9 @@ def index():
             PhotoWork.status == 1,
             User.status == 1,
         )
-        .order_by(PhotoWork.hot_score.desc(), PhotoWork.create_time.desc(), PhotoWork.work_id.desc())
+        .order_by(func.random())
         .limit(8)
-    ).scalars().all()
+    ).scalars().unique().all()
 
     recent_works = db.session.execute(
         select(PhotoWork)
@@ -143,6 +151,20 @@ def index():
         .limit(1)
     ).scalar_one_or_none()
 
+    showcase_work = db.session.execute(
+        select(PhotoWork)
+        .options(work_user_load)
+        .join(PhotoWork.photographer)
+        .join(Photographer.user)
+        .where(
+            PhotoWork.audit_status == PhotoWork.AUDIT_APPROVED,
+            PhotoWork.status == 1,
+            User.status == 1,
+        )
+        .order_by(func.rand())
+        .limit(1)
+    ).scalar_one_or_none()
+
     return render_template(
         'index.html',
         carousels=carousels,
@@ -151,6 +173,7 @@ def index():
         recent_works=recent_works,
         photographers=photographers,
         latest_announcement=latest_announcement,
+        showcase_work=showcase_work,
     )
 
 
