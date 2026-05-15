@@ -11,7 +11,7 @@ if load_dotenv is not None:
     load_dotenv(os.path.join(BASE_DIR, '.env'))
 
 DEFAULT_DATABASE_URL = (
-    'mysql+pymysql://root:Sean20041218@127.0.0.1:3306/'
+    'mysql+pymysql://root:1234qwer@127.0.0.1:3306/'
     'photo_manage_platform?charset=utf8mb4'
 )
 
@@ -24,7 +24,7 @@ class Config:
     )
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     JSON_AS_ASCII = False
-    MAX_IMAGE_SIZE = int(os.environ.get('MAX_IMAGE_SIZE', 5 * 1024 * 1024))
+    MAX_IMAGE_SIZE = int(os.environ.get('MAX_IMAGE_SIZE', 20 * 1024 * 1024))
 
     OSS_ENABLED = os.environ.get('OSS_ENABLED', 'true').lower() not in ('0', 'false', 'no')
     OSS_ACCESS_KEY_ID = os.environ.get('OSS_ACCESS_KEY_ID', '')
