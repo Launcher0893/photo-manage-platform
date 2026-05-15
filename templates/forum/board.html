@@ -31,7 +31,7 @@
                         <p class="card-text text-muted mb-3">{{ board.description or '暂无描述' }}</p>
                         <div class="d-flex justify-content-between align-items-center">
                             <span class="badge bg-secondary bg-opacity-25 text-dark px-3 py-2 rounded-3">
-                                帖子数：{{ board.posts|length }}
+                                帖子数：{{ post_counts.get(board.board_id, 0) }}
                             </span>
                             <a href="/forum/post_list/{{ board.board_id }}" class="btn btn-sm btn-dark rounded-3 px-3">
                                 进入板块

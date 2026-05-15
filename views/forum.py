@@ -19,11 +19,16 @@ admin_bp = Blueprint('admin_forum', __name__, url_prefix='/admin/forum')
 def board():
     boards = db.session.execute(
         select(ForumBoard)
-        .options(selectinload(ForumBoard.posts))
         .where(ForumBoard.status == 1)
         .order_by(ForumBoard.sort.asc(), ForumBoard.board_id.asc())
     ).scalars().all()
-    return render_template('forum/board.html', boards=boards)
+    post_count_rows = db.session.execute(
+        select(ForumPost.board_id, func.count(ForumPost.post_id))
+        .where(ForumPost.status == 1)
+        .group_by(ForumPost.board_id)
+    ).all()
+    post_counts = {board_id: count for board_id, count in post_count_rows}
+    return render_template('forum/board.html', boards=boards, post_counts=post_counts)
 
 
 @bp.route('/post_list/<int:board_id>')
