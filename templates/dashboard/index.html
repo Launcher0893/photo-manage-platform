@@ -3,50 +3,210 @@
 {% block title %}后台控制台{% endblock %}
 
 {% block content %}
-    <h2>控制台</h2>
-    
-    <div class="row mb-4">
-        <div class="col-md-3">
-            <div class="card bg-primary text-white">
-                <div class="card-body">
-                    <h5>总作品数</h5>
-                    <p class="text-3xl">{{ total_works }}</p>
-                </div>
+<style>
+    body {
+        background: #f5f7fa;
+    }
+    .dashboard-page {
+        color: #1f2933;
+    }
+    .dashboard-header {
+        background: #fff;
+        border: 1px solid #e6ebf2;
+        border-radius: 10px;
+        padding: 22px 24px;
+        box-shadow: 0 2px 10px rgba(30, 41, 59, 0.05);
+    }
+    .dashboard-title {
+        font-size: 26px;
+        font-weight: 700;
+        margin: 0;
+    }
+    .dashboard-subtitle {
+        color: #667085;
+        margin: 8px 0 0;
+        font-size: 14px;
+    }
+    .quick-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        justify-content: flex-end;
+    }
+    .quick-actions .btn {
+        border-radius: 6px;
+        font-size: 13px;
+        padding: 7px 12px;
+    }
+    .metric-card,
+    .dashboard-panel {
+        background: #fff;
+        border: 1px solid #e6ebf2;
+        border-radius: 10px;
+        box-shadow: 0 2px 10px rgba(30, 41, 59, 0.05);
+    }
+    .metric-card {
+        padding: 18px 20px;
+        height: 100%;
+    }
+    .metric-label {
+        color: #667085;
+        font-size: 13px;
+        margin-bottom: 10px;
+    }
+    .metric-value {
+        font-size: 32px;
+        font-weight: 700;
+        line-height: 1;
+        color: #111827;
+    }
+    .metric-note {
+        color: #98a2b3;
+        font-size: 12px;
+        margin-top: 10px;
+    }
+    .dashboard-panel {
+        padding: 18px;
+        height: 100%;
+    }
+    .panel-heading {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 14px;
+    }
+    .panel-title {
+        font-size: 16px;
+        font-weight: 700;
+        margin: 0;
+    }
+    .panel-link {
+        color: #475467;
+        font-size: 13px;
+        text-decoration: none;
+    }
+    .panel-link:hover {
+        color: #111827;
+    }
+    .chart-box {
+        height: 280px;
+        min-height: 280px;
+    }
+    .dashboard-table {
+        margin-bottom: 0;
+        font-size: 13px;
+    }
+    .dashboard-table th {
+        background: #f8fafc;
+        color: #475467;
+        font-weight: 600;
+        border-bottom: 1px solid #e6ebf2;
+        white-space: nowrap;
+    }
+    .dashboard-table td {
+        color: #344054;
+        vertical-align: middle;
+        border-color: #eef2f6;
+    }
+    .dashboard-table a {
+        color: #1f2937;
+        text-decoration: none;
+        font-weight: 500;
+    }
+    .dashboard-table a:hover {
+        color: #0d6efd;
+    }
+    .status-badge {
+        display: inline-block;
+        border-radius: 999px;
+        padding: 3px 9px;
+        font-size: 12px;
+        font-weight: 600;
+    }
+    .status-ok {
+        background: #e8f5ee;
+        color: #198754;
+    }
+    .status-muted {
+        background: #eef2f6;
+        color: #667085;
+    }
+    .status-warn {
+        background: #fff4e5;
+        color: #b54708;
+    }
+    .status-danger {
+        background: #fdecec;
+        color: #b42318;
+    }
+    .text-truncate-cell {
+        max-width: 220px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+</style>
+
+<div class="dashboard-page">
+    <div class="dashboard-header mb-4">
+        <div class="row align-items-center g-3">
+            <div class="col-lg-7">
+                <h2 class="dashboard-title">后台控制台</h2>
+                <p class="dashboard-subtitle">查看平台运营概况、待处理事项和近期内容动态。</p>
             </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card bg-success text-white">
-                <div class="card-body">
-                    <h5>总用户数</h5>
-                    <p class="text-3xl">{{ total_users }}</p>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card bg-info text-white">
-                <div class="card-body">
-                    <h5>认证摄影师</h5>
-                    <p class="text-3xl">{{ approved_photographers }}</p>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card bg-warning text-white">
-                <div class="card-body">
-                    <h5>待审核摄影师</h5>
-                    <p class="text-3xl">{{ pending_photographers }}</p>
+            <div class="col-lg-5">
+                <div class="quick-actions">
+                    <a href="/admin/work/list" class="btn btn-outline-dark">作品管理</a>
+                    <a href="/admin/photographer/list" class="btn btn-outline-dark">摄影师审核</a>
+                    <a href="/admin/forum/post_list" class="btn btn-outline-dark">论坛管理</a>
+                    <a href="/admin/user/list" class="btn btn-dark">用户管理</a>
                 </div>
             </div>
         </div>
     </div>
-    
-    <div class="row mb-4">
-        <div class="col-md-12 mb-4">
-            <div class="card">
-                <div class="card-body">
-                    <h5>最近 7 天新增趋势</h5>
-                    <div id="trend-chart" style="height: 320px;"></div>
-                    <table class="table table-sm mt-3" id="trend-table">
+
+    <div class="row g-3 mb-4">
+        <div class="col-md-6 col-xl-3">
+            <div class="metric-card">
+                <div class="metric-label">总作品数</div>
+                <div class="metric-value">{{ total_works }}</div>
+                <div class="metric-note">平台作品总量</div>
+            </div>
+        </div>
+        <div class="col-md-6 col-xl-3">
+            <div class="metric-card">
+                <div class="metric-label">总用户数</div>
+                <div class="metric-value">{{ total_users }}</div>
+                <div class="metric-note">包含普通用户与摄影师</div>
+            </div>
+        </div>
+        <div class="col-md-6 col-xl-3">
+            <div class="metric-card">
+                <div class="metric-label">认证摄影师</div>
+                <div class="metric-value">{{ approved_photographers }}</div>
+                <div class="metric-note">已通过认证</div>
+            </div>
+        </div>
+        <div class="col-md-6 col-xl-3">
+            <div class="metric-card">
+                <div class="metric-label">待审核摄影师</div>
+                <div class="metric-value">{{ pending_photographers }}</div>
+                <div class="metric-note">需要管理员处理</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4 mb-4">
+        <div class="col-xl-7">
+            <div class="dashboard-panel">
+                <div class="panel-heading">
+                    <h5 class="panel-title">最近 7 天新增趋势</h5>
+                    <span class="text-muted small">用户 / 作品</span>
+                </div>
+                <div id="trend-chart" class="chart-box"></div>
+                <div class="table-responsive mt-3">
+                    <table class="table table-sm dashboard-table" id="trend-table">
                         <thead>
                             <tr>
                                 <th>日期</th>
@@ -59,55 +219,15 @@
                 </div>
             </div>
         </div>
-        <div class="col-md-12 mb-4">
-            <div class="card">
-                <div class="card-body">
-                    <h5>论坛活跃趋势</h5>
-                    <div id="forum-activity-chart" style="height: 320px;"></div>
-                    <table class="table table-sm mt-3" id="forum-activity-table">
-                        <thead>
-                            <tr>
-                                <th>日期</th>
-                                <th>发帖量</th>
-                                <th>评论量</th>
-                            </tr>
-                        </thead>
-                        <tbody></tbody>
-                    </table>
+        <div class="col-xl-5">
+            <div class="dashboard-panel">
+                <div class="panel-heading">
+                    <h5 class="panel-title">作品分类占比</h5>
+                    <a href="/admin/category/list" class="panel-link">分类管理</a>
                 </div>
-            </div>
-        </div>
-        <div class="col-md-6">
-            <div class="card">
-                <div class="card-body">
-                    <h5>热门作品 Top 10</h5>
-                    <table class="table">
-                        <thead>
-                            <tr>
-                                <th>排名</th>
-                                <th>作品名称</th>
-                                <th>热度</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for work in hot_works %}
-                                <tr>
-                                    <td>{{ loop.index }}</td>
-                                    <td>{{ work.title }}</td>
-                                    <td>{{ work.hot_score }}</td>
-                                </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-6">
-            <div class="card">
-                <div class="card-body">
-                    <h5>作品分类占比</h5>
-                    <div id="category-chart" style="height: 300px;"></div>
-                    <table class="table table-sm mt-3" id="category-table">
+                <div id="category-chart" class="chart-box"></div>
+                <div class="table-responsive mt-3">
+                    <table class="table table-sm dashboard-table" id="category-table">
                         <thead>
                             <tr>
                                 <th>分类</th>
@@ -120,6 +240,10 @@
                                     <td>{{ category_name }}</td>
                                     <td>{{ work_count }}</td>
                                 </tr>
+                            {% else %}
+                                <tr>
+                                    <td colspan="2" class="text-center text-muted">暂无分类数据</td>
+                                </tr>
                             {% endfor %}
                         </tbody>
                     </table>
@@ -128,12 +252,71 @@
         </div>
     </div>
 
-    <div class="row mb-4">
-        <div class="col-md-6 mb-4">
-            <div class="card">
-                <div class="card-body">
-                    <h5>待审核摄影师</h5>
-                    <table class="table table-sm">
+    <div class="row g-4 mb-4">
+        <div class="col-xl-7">
+            <div class="dashboard-panel">
+                <div class="panel-heading">
+                    <h5 class="panel-title">论坛活跃趋势</h5>
+                    <a href="/admin/forum/post_list" class="panel-link">查看帖子</a>
+                </div>
+                <div id="forum-activity-chart" class="chart-box"></div>
+                <div class="table-responsive mt-3">
+                    <table class="table table-sm dashboard-table" id="forum-activity-table">
+                        <thead>
+                            <tr>
+                                <th>日期</th>
+                                <th>发帖量</th>
+                                <th>评论量</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-5">
+            <div class="dashboard-panel">
+                <div class="panel-heading">
+                    <h5 class="panel-title">热门作品 Top 10</h5>
+                    <a href="/admin/work/list" class="panel-link">作品管理</a>
+                </div>
+                <div class="table-responsive">
+                    <table class="table dashboard-table">
+                        <thead>
+                            <tr>
+                                <th>排名</th>
+                                <th>作品名称</th>
+                                <th>热度</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for work in hot_works %}
+                                <tr>
+                                    <td>{{ loop.index }}</td>
+                                    <td class="text-truncate-cell"><a href="/admin/work/edit/{{ work.work_id }}">{{ work.title }}</a></td>
+                                    <td>{{ work.hot_score }}</td>
+                                </tr>
+                            {% else %}
+                                <tr>
+                                    <td colspan="3" class="text-center text-muted">暂无作品</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-xl-6">
+            <div class="dashboard-panel">
+                <div class="panel-heading">
+                    <h5 class="panel-title">待审核摄影师</h5>
+                    <a href="/admin/photographer/list?status=0" class="panel-link">全部待审</a>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-sm dashboard-table">
                         <thead>
                             <tr>
                                 <th>用户</th>
@@ -150,7 +333,7 @@
                                     <td>{{ photographer.real_name or '-' }}</td>
                                     <td>{{ photographer.city or '-' }}</td>
                                     <td>{{ photographer.create_time.strftime('%Y-%m-%d') }}</td>
-                                    <td><a href="/admin/photographer/audit/{{ photographer.photographer_id }}" class="btn btn-sm btn-primary">审核</a></td>
+                                    <td><a href="/admin/photographer/audit/{{ photographer.photographer_id }}" class="btn btn-sm btn-outline-dark">审核</a></td>
                                 </tr>
                             {% else %}
                                 <tr>
@@ -162,11 +345,14 @@
                 </div>
             </div>
         </div>
-        <div class="col-md-6 mb-4">
-            <div class="card">
-                <div class="card-body">
-                    <h5>最新用户</h5>
-                    <table class="table table-sm">
+        <div class="col-xl-6">
+            <div class="dashboard-panel">
+                <div class="panel-heading">
+                    <h5 class="panel-title">最新用户</h5>
+                    <a href="/admin/user/list" class="panel-link">用户管理</a>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-sm dashboard-table">
                         <thead>
                             <tr>
                                 <th>账号</th>
@@ -182,7 +368,15 @@
                                     <td><a href="/admin/user/detail/{{ user.user_id }}">{{ user.username }}</a></td>
                                     <td>{{ user.nickname or '-' }}</td>
                                     <td>{% if user.user_role == 2 %}摄影师{% else %}普通用户{% endif %}</td>
-                                    <td>{% if user.status == 1 %}正常{% else %}禁用{% endif %}</td>
+                                    <td>
+                                        {% if user.status == 1 %}
+                                            <span class="status-badge status-ok">正常</span>
+                                        {% elif user.status == -1 %}
+                                            <span class="status-badge status-danger">已删除</span>
+                                        {% else %}
+                                            <span class="status-badge status-muted">禁用</span>
+                                        {% endif %}
+                                    </td>
                                     <td>{{ user.create_time.strftime('%Y-%m-%d') }}</td>
                                 </tr>
                             {% else %}
@@ -195,11 +389,14 @@
                 </div>
             </div>
         </div>
-        <div class="col-md-6 mb-4">
-            <div class="card">
-                <div class="card-body">
-                    <h5>最新作品</h5>
-                    <table class="table table-sm">
+        <div class="col-xl-6">
+            <div class="dashboard-panel">
+                <div class="panel-heading">
+                    <h5 class="panel-title">最新作品</h5>
+                    <a href="/admin/work/list" class="panel-link">作品管理</a>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-sm dashboard-table">
                         <thead>
                             <tr>
                                 <th>作品</th>
@@ -212,11 +409,25 @@
                         <tbody>
                             {% for work in latest_works %}
                                 <tr>
-                                    <td><a href="/admin/work/edit/{{ work.work_id }}">{{ work.title }}</a></td>
+                                    <td class="text-truncate-cell"><a href="/admin/work/edit/{{ work.work_id }}">{{ work.title }}</a></td>
                                     <td>{{ work.photographer.user.nickname if work.photographer and work.photographer.user else '未知' }}</td>
                                     <td>{{ work.category.category_name if work.category else '-' }}</td>
-                                    <td>{% if work.audit_status == 0 %}待审核{% elif work.audit_status == 1 %}已通过{% else %}已拒绝{% endif %}</td>
-                                    <td>{% if work.status == 1 %}上架{% else %}下架{% endif %}</td>
+                                    <td>
+                                        {% if work.audit_status == 0 %}
+                                            <span class="status-badge status-warn">待审核</span>
+                                        {% elif work.audit_status == 1 %}
+                                            <span class="status-badge status-ok">已通过</span>
+                                        {% else %}
+                                            <span class="status-badge status-danger">已拒绝</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if work.status == 1 %}
+                                            <span class="status-badge status-ok">上架</span>
+                                        {% else %}
+                                            <span class="status-badge status-muted">下架</span>
+                                        {% endif %}
+                                    </td>
                                 </tr>
                             {% else %}
                                 <tr>
@@ -228,11 +439,14 @@
                 </div>
             </div>
         </div>
-        <div class="col-md-6 mb-4">
-            <div class="card">
-                <div class="card-body">
-                    <h5>热门帖子 Top 5</h5>
-                    <table class="table table-sm">
+        <div class="col-xl-6">
+            <div class="dashboard-panel">
+                <div class="panel-heading">
+                    <h5 class="panel-title">热门帖子 Top 5</h5>
+                    <a href="/admin/forum/post_list" class="panel-link">论坛管理</a>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-sm dashboard-table">
                         <thead>
                             <tr>
                                 <th>帖子</th>
@@ -246,7 +460,7 @@
                         <tbody>
                             {% for post in hot_posts %}
                                 <tr>
-                                    <td><a href="/forum/post_detail/{{ post.post_id }}">{{ post.title }}</a></td>
+                                    <td class="text-truncate-cell"><a href="/forum/post_detail/{{ post.post_id }}">{{ post.title }}</a></td>
                                     <td>{{ post.user.nickname or post.user.username if post.user else '未知' }}</td>
                                     <td>{{ post.forum_board.board_name if post.forum_board else '-' }}</td>
                                     <td>{{ post.view_count }}</td>
@@ -264,29 +478,53 @@
             </div>
         </div>
     </div>
+</div>
 {% endblock %}
 
 {% block scripts %}
 <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.1/dist/echarts.min.js"></script>
 <script>
 $(function() {
+    var chartTextColor = '#667085';
+    var chartGrid = { left: 36, right: 20, top: 44, bottom: 28 };
+    var lineColors = ['#2563eb', '#16a34a'];
+
+    function fillRows($tbody, rows, emptyColspan) {
+        if (rows.length) {
+            $tbody.html(rows.join(''));
+        } else {
+            $tbody.html('<tr><td colspan="' + emptyColspan + '" class="text-center text-muted">暂无数据</td></tr>');
+        }
+    }
+
     $.getJSON('/api/dashboard/trends', function(data) {
         var rows = [];
         for (var i = 0; i < data.labels.length; i++) {
             rows.push('<tr><td>' + data.labels[i] + '</td><td>' + data.users[i] + '</td><td>' + data.works[i] + '</td></tr>');
         }
-        $('#trend-table tbody').html(rows.join(''));
+        fillRows($('#trend-table tbody'), rows, 3);
 
         if (window.echarts) {
             var trendChart = echarts.init(document.getElementById('trend-chart'));
             trendChart.setOption({
+                color: lineColors,
                 tooltip: { trigger: 'axis' },
-                legend: { data: ['新增用户', '新增作品'] },
-                xAxis: { type: 'category', data: data.labels },
-                yAxis: { type: 'value' },
+                legend: { top: 0, textStyle: { color: chartTextColor }, data: ['新增用户', '新增作品'] },
+                grid: chartGrid,
+                xAxis: {
+                    type: 'category',
+                    data: data.labels,
+                    axisLine: { lineStyle: { color: '#d0d5dd' } },
+                    axisLabel: { color: chartTextColor }
+                },
+                yAxis: {
+                    type: 'value',
+                    axisLabel: { color: chartTextColor },
+                    splitLine: { lineStyle: { color: '#eef2f6' } }
+                },
                 series: [
-                    { name: '新增用户', type: 'line', smooth: true, data: data.users },
-                    { name: '新增作品', type: 'line', smooth: true, data: data.works }
+                    { name: '新增用户', type: 'line', smooth: true, symbolSize: 6, data: data.users },
+                    { name: '新增作品', type: 'line', smooth: true, symbolSize: 6, data: data.works }
                 ]
             });
             $(window).on('resize', function() {
@@ -301,16 +539,20 @@ $(function() {
         var rows = data.map(function(item) {
             return '<tr><td>' + item.name + '</td><td>' + item.value + '</td></tr>';
         });
-        $('#category-table tbody').html(rows.join(''));
+        fillRows($('#category-table tbody'), rows, 2);
 
         if (window.echarts) {
             var categoryChart = echarts.init(document.getElementById('category-chart'));
             categoryChart.setOption({
+                color: ['#2563eb', '#16a34a', '#64748b', '#f59e0b', '#7c3aed', '#0891b2'],
                 tooltip: { trigger: 'item' },
+                legend: { bottom: 0, textStyle: { color: chartTextColor } },
                 series: [{
                     name: '作品分类',
                     type: 'pie',
-                    radius: '65%',
+                    radius: ['42%', '68%'],
+                    center: ['50%', '43%'],
+                    label: { color: '#344054' },
                     data: data
                 }]
             });
@@ -327,18 +569,29 @@ $(function() {
         for (var i = 0; i < data.labels.length; i++) {
             rows.push('<tr><td>' + data.labels[i] + '</td><td>' + data.posts[i] + '</td><td>' + data.comments[i] + '</td></tr>');
         }
-        $('#forum-activity-table tbody').html(rows.join(''));
+        fillRows($('#forum-activity-table tbody'), rows, 3);
 
         if (window.echarts) {
             var forumActivityChart = echarts.init(document.getElementById('forum-activity-chart'));
             forumActivityChart.setOption({
+                color: ['#2563eb', '#64748b'],
                 tooltip: { trigger: 'axis' },
-                legend: { data: ['发帖量', '评论量'] },
-                xAxis: { type: 'category', data: data.labels },
-                yAxis: { type: 'value' },
+                legend: { top: 0, textStyle: { color: chartTextColor }, data: ['发帖量', '评论量'] },
+                grid: chartGrid,
+                xAxis: {
+                    type: 'category',
+                    data: data.labels,
+                    axisLine: { lineStyle: { color: '#d0d5dd' } },
+                    axisLabel: { color: chartTextColor }
+                },
+                yAxis: {
+                    type: 'value',
+                    axisLabel: { color: chartTextColor },
+                    splitLine: { lineStyle: { color: '#eef2f6' } }
+                },
                 series: [
-                    { name: '发帖量', type: 'line', smooth: true, data: data.posts },
-                    { name: '评论量', type: 'line', smooth: true, data: data.comments }
+                    { name: '发帖量', type: 'line', smooth: true, symbolSize: 6, data: data.posts },
+                    { name: '评论量', type: 'line', smooth: true, symbolSize: 6, data: data.comments }
                 ]
             });
             $(window).on('resize', function() {
