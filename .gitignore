@@ -27,6 +27,7 @@ static/uploads/*
 !static/uploads/.gitkeep
 uploads/*
 !uploads/.gitkeep
+photo/
 
 # Flask local files
 instance/
