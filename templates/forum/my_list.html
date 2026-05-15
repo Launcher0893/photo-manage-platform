@@ -1,0 +1,113 @@
+{% extends 'base.html' %}
+
+{% block title %}我的帖子{% endblock %}
+
+{% block content %}
+
+    <div class="position-relative mb-8" style="width: 100vw; margin-left: calc(-50vw + 50%);">
+        <div class="position-absolute text-center w-100" style="top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 10;">
+            <h2 class="text-white font-bold" style="font-size: 3rem; text-shadow: 2px 2px 8px rgba(0,0,0,0.8);">我的帖子</h2>
+        </div>
+        <img
+            src="/photo/back666.jpg"
+            alt="我的帖子"
+            style="width: 100%; height: 300px; object-fit: cover; display: block;"
+        >
+    </div>
+
+    <div style="margin-bottom: 30px;"></div>
+
+    <div class="text-center mb-8" style="margin-top: 10px;">
+        <a href="/forum/post_add" class="btn btn-lg rounded-pill px-5 py-3" style="background: #333; color: #fff; border: none; font-weight: 500; letter-spacing: 1px; transition: all 0.3s ease;">发布帖子&gt;</a>
+    </div>
+
+    <div style="margin-bottom: 30px;"></div>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>标题</th>
+                <th>板块</th>
+                <th>浏览</th>
+                <th>点赞</th>
+                <th>评论</th>
+                <th>状态</th>
+                <th>时间</th>
+                <th>操作</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for post in posts.items %}
+                <tr>
+                    <td>{{ post.title }}</td>
+                    <td>{{ post.forum_board.board_name if post.forum_board else '未知板块' }}</td>
+                    <td>{{ post.view_count }}</td>
+                    <td>{{ post.like_count }}</td>
+                    <td>{{ post.comment_count }}</td>
+                    <td>{% if post.status == 1 %}正常{% else %}已删除{% endif %}</td>
+                    <td>{{ post.create_time.strftime('%Y-%m-%d') }}</td>
+                    <td>
+                        {% if post.status == 1 %}
+                            <a href="/forum/post_detail/{{ post.post_id }}" class="btn btn-sm btn-info">查看</a>
+                            <a href="/forum/post_edit/{{ post.post_id }}" class="btn btn-sm btn-primary">编辑</a>
+                        {% endif %}
+                        <form method="POST" action="/forum/post_status/{{ post.post_id }}" class="d-inline">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <button type="submit" class="btn btn-sm btn-secondary">
+                                {% if post.status == 1 %}删除{% else %}恢复{% endif %}
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+            {% else %}
+                <tr>
+                    <td colspan="8" class="text-center text-muted">暂无帖子</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <nav aria-label="Page navigation" class="mt-4">
+    <ul class="pagination justify-content-center" style="gap: 5px;">
+        {% if posts.has_prev %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ posts.prev_num }}"
+                style="border-radius: 6px; border:1px solid #ccc; background:#f8f9fa; color:#333;">上一页</a>
+            </li>
+        {% else %}
+            <li class="page-item disabled">
+                <span class="page-link"
+                style="border-radius: 6px; border:1px solid #eee; background:#f5f5f5; color:#aaa;">上一页</span>
+            </li>
+        {% endif %}
+
+        {% for page in posts.iter_pages() %}
+            {% if page %}
+                <li class="page-item {% if page == posts.page %}active{% endif %}">
+                    <a class="page-link" href="?page={{ page }}"
+                    style="border-radius: 6px; border:1px solid #ccc;
+                    {% if page == posts.page %}background:#444; color:#fff; border-color:#444;{% else %}background:#f8f9fa; color:#333;{% endif %}">
+                        {{ page }}
+                    </a>
+                </li>
+            {% else %}
+                <li class="page-item disabled">
+                    <span class="page-link" style="border-radius: 6px; border:1px solid #eee; background:#f5f5f5; color:#999;">...</span>
+                </li>
+            {% endif %}
+        {% endfor %}
+
+        {% if posts.has_next %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ posts.next_num }}"
+                style="border-radius: 6px; border:1px solid #ccc; background:#f8f9fa; color:#333;">下一页</a>
+            </li>
+        {% else %}
+            <li class="page-item disabled">
+                <span class="page-link"
+                style="border-radius: 6px; border:1px solid #eee; background:#f5f5f5; color:#aaa;">下一页</span>
+            </li>
+        {% endif %}
+    </ul>
+    </nav>
+{% endblock %}

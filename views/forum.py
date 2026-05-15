@@ -132,6 +132,20 @@ def post_like(post_id):
     return jsonify({'success': True, 'liked': liked, 'count': post.like_count, 'message': '操作成功。'})
 
 
+@bp.route('/my')
+@user_required
+def my_posts():
+    page = request.args.get('page', default=1, type=int)
+    stmt = (
+        select(ForumPost)
+        .options(joinedload(ForumPost.forum_board))
+        .where(ForumPost.user_id == current_user.user_id)
+        .order_by(ForumPost.create_time.desc(), ForumPost.post_id.desc())
+    )
+    posts = db.paginate(stmt, page=page, per_page=10, error_out=False)
+    return render_template('forum/my_list.html', posts=posts)
+
+
 def _active_boards():
     return db.session.execute(
         select(ForumBoard)
@@ -317,6 +331,24 @@ def comment_add(post_id):
     db.session.commit()
     flash('评论已发布。', 'success')
     return redirect(url_for('forum.post_detail', post_id=post_id))
+
+
+@bp.route('/post_status/<int:post_id>', methods=['POST'])
+@user_required
+def toggle_my_post_status(post_id):
+    post = db.session.execute(
+        select(ForumPost).where(
+            ForumPost.post_id == post_id,
+            ForumPost.user_id == current_user.user_id,
+        )
+    ).scalar_one_or_none()
+    if post is None:
+        abort(404)
+
+    post.status = 0 if post.status == 1 else 1
+    db.session.commit()
+    flash('帖子状态已更新。', 'success')
+    return redirect(url_for('forum.my_posts'))
 
 
 @admin_bp.route('/post_list')
