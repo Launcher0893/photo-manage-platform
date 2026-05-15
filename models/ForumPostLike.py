@@ -1,9 +1,16 @@
+"""论坛帖子点赞模型，对应数据库表 forum_post_like。
+
+一条记录表示某个用户点赞了某篇帖子。
+UniqueConstraint 保证同一用户不能重复点赞同一帖子。
+"""
+
 from datetime import datetime
 
 from db import db
 
 
 class ForumPostLike(db.Model):
+    """论坛帖子点赞关系表。"""
     __tablename__ = 'forum_post_like'
 
     like_id = db.Column(db.Integer, primary_key=True, autoincrement=True)

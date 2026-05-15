@@ -1,3 +1,9 @@
+"""管理员模型，对应数据库表 admin。
+
+管理员和普通用户是两张表，但都接入 Flask-Login。
+管理员 get_id() 返回 admin:<id>，普通用户返回 user:<id>。
+"""
+
 from datetime import datetime
 from flask_login import UserMixin
 
@@ -5,6 +11,7 @@ from db import db
 
 
 class Admin(db.Model, UserMixin):
+    """后台管理员账号。"""
     __tablename__ = 'admin'
     
     admin_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
@@ -20,6 +27,7 @@ class Admin(db.Model, UserMixin):
     create_time = db.Column(db.DateTime, default=datetime.now)
     update_time = db.Column(db.DateTime, default=datetime.now, onupdate=datetime.now)
     
+    # 视图和模板通过 is_admin 判断当前登录者是不是管理员。
     is_admin = True
 
     @property

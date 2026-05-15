@@ -1,3 +1,14 @@
+"""阿里云 OSS 工具。
+
+OSS 可以理解成“云端图片文件夹”。
+业务代码不会直接调用 oss2，而是通过本文件封装：
+- 生成 OSS 文件路径 object_key。
+- 上传本地文件到 OSS。
+- 根据 object_key 构造可访问 URL。
+- 删除 OSS 文件。
+- 从 URL 反推出 object_key。
+"""
+
 from pathlib import PurePosixPath
 from typing import Optional
 from urllib.parse import unquote, urlparse
@@ -6,14 +17,21 @@ from flask import current_app
 
 
 def oss_enabled() -> bool:
+    """读取配置，判断是否启用 OSS 上传。"""
     return bool(current_app.config.get('OSS_ENABLED'))
 
 
 def _clean_path_part(value: str) -> str:
+    """清理路径片段，去掉首尾空格和斜杠。"""
     return str(value or '').strip().strip('/\\')
 
 
 def get_oss_bucket():
+    """创建 OSS bucket 对象。
+
+    bucket 可以理解成一个云端存储桶。
+    上传和删除文件都要先拿到 bucket。
+    """
     try:
         import oss2
     except ImportError as exc:
@@ -41,6 +59,11 @@ def get_oss_bucket():
 
 
 def build_oss_object_key(folder: str, filename: str) -> str:
+    """拼出 OSS 中的文件路径。
+
+    例如 prefix=photo-manage-platform，folder=works，filename=a.jpg，
+    最终得到 photo-manage-platform/works/a.jpg。
+    """
     prefix = _clean_path_part(current_app.config.get('OSS_UPLOAD_PREFIX', ''))
     folder = _clean_path_part(folder)
     filename = _clean_path_part(filename)
@@ -49,6 +72,7 @@ def build_oss_object_key(folder: str, filename: str) -> str:
 
 
 def get_oss_base_url() -> str:
+    """获取 OSS 访问域名。"""
     domain = str(current_app.config.get('OSS_BUCKET_DOMAIN') or '').strip().rstrip('/')
     if domain:
         if domain.startswith('http://') or domain.startswith('https://'):
@@ -63,10 +87,12 @@ def get_oss_base_url() -> str:
 
 
 def build_oss_url(object_key: str) -> str:
+    """把 object_key 拼成浏览器可以访问的完整 URL。"""
     return f'{get_oss_base_url()}/{object_key.lstrip("/")}'
 
 
 def upload_file_to_oss(local_file_path, object_key: str) -> str:
+    """把本地文件上传到 OSS，并返回可访问 URL。"""
     try:
         bucket = get_oss_bucket()
         bucket.put_object_from_file(object_key, str(local_file_path))
@@ -76,6 +102,10 @@ def upload_file_to_oss(local_file_path, object_key: str) -> str:
 
 
 def delete_file_from_oss(object_key: Optional[str]) -> bool:
+    """删除 OSS 上的文件。
+
+    删除失败时返回 False，业务层可以据此提示“图片删除失败”。
+    """
     if not object_key or not oss_enabled():
         return True
     try:
@@ -87,6 +117,11 @@ def delete_file_from_oss(object_key: Optional[str]) -> bool:
 
 
 def extract_object_key_from_url(file_url: Optional[str]) -> Optional[str]:
+    """从 OSS URL 中提取 object_key。
+
+    例如 https://bucket.endpoint/photo-manage-platform/works/a.jpg
+    提取出 photo-manage-platform/works/a.jpg。
+    """
     if not file_url:
         return None
 
@@ -106,6 +141,10 @@ def extract_object_key_from_url(file_url: Optional[str]) -> Optional[str]:
 
 
 def object_key_to_upload_relative_path(object_key: Optional[str]) -> Optional[str]:
+    """把 OSS object_key 转成 static/uploads 下的本地相对路径。
+
+    用于删除 OSS 文件时同步删除本地保存的副本。
+    """
     if not object_key:
         return None
 

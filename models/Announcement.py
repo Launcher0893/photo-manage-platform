@@ -1,7 +1,13 @@
+"""公告模型，对应数据库表 announcement。
+
+公告由管理员发布，前台公告列表和首页公告弹窗都会读取这张表。
+"""
+
 from db import db
 from datetime import datetime
 
 class Announcement(db.Model):
+    """公告表。"""
     __tablename__ = 'announcement'
     
     announcement_id = db.Column(db.Integer, primary_key=True, autoincrement=True)

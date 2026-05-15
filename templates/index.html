@@ -1,8 +1,20 @@
 {% extends 'base.html' %}
+{#
+首页模板。
+实现效果：
+1. 顶部大幅 hero 背景图，叠加装饰图、品牌文字和作品署名。
+2. 三栏“我们与众不同”介绍。
+3. 精选作品区域使用自定义轮播图，不是 Bootstrap 默认 Carousel。
+4. 热门作品使用横向图片墙，鼠标悬停出现渐变遮罩和作品信息。
+5. 最新作品使用 Bootstrap 卡片网格。
+6. 推荐摄影师使用“头像 + 作品拼图”卡片。
+7. 首页公告用 Bootstrap modal 弹窗，并可用 localStorage 记住“不再弹出”。
+#}
 
 {% block title %}拾帧 - 摄影作品分享平台{% endblock %}
 
 {% block content %}
+    {# 顶部 hero：全屏宽度背景图 + 绝对定位文字层。margin-left 写法用于突破 base.html 的 container 宽度限制。 #}
     <div class="showcase-container position-relative" style="width: 100vw; margin-left: calc(-50vw + 50%);">
         <div class="position-relative" style="width: 100%; aspect-ratio: 16 / 9;">
             <img 
@@ -31,6 +43,7 @@
 
     <div style="margin-bottom: 80px;"></div>
 
+    {# 平台特点介绍：Bootstrap row/col-md-4 把三条特点分成三列。 #}
     <div class="py-16 bg-white mb-8">
         <div class="container">
             <h2 class="text-center text-4xl font-bold text-gray-800" style="margin-bottom: 75px;">是什么让我们与众不同</h2>
@@ -75,6 +88,11 @@
         </div>
     </div>
 
+    {#
+    精选作品轮播区域。
+    后端 app.py 把 carousels 传进来；这里遍历每条轮播图数据生成 .carousel-slide。
+    每张图的跳转地址写进 data-link，后面的 JavaScript 点击图片时会读取它并跳转。
+    #}
     {% if carousels %}
     <div class="custom-carousel-container mb-8" style="width: 100vw; margin-left: calc(-50vw + 50%);">
         <div class="custom-carousel" id="customCarousel">
@@ -86,6 +104,7 @@
             
             <div class="carousel-track" id="carouselTrack">
                 {% for carousel in carousels %}
+                    {# 根据后台配置的 link_type 生成点击跳转地址。 #}
                     {% set link_url = None %}
                     {% if carousel.link_type == 'work' and carousel.link_id %}
                         {% set link_url = '/work/detail/' ~ carousel.link_id %}
@@ -141,6 +160,13 @@
     <div style="margin-bottom: 60px;"></div>
     
     <style>
+        /*
+        自定义轮播图样式说明：
+        - .carousel-slide 默认隐藏在中间，缩小、透明并模糊。
+        - JS 会给当前图加 position-current，让它居中、放大、清晰。
+        - JS 会给前后图加 position-prev / position-next，让它们显示在左右两侧并轻微模糊。
+        - transition 让 class 改变时产生平滑移动、缩放和透明度动画。
+        */
         .custom-carousel-container {
             position: relative;
             padding: 60px 0;
@@ -309,6 +335,11 @@
             transform: scale(1.2);
         }
         
+        /*
+        热门作品图片墙：
+        图片默认只显示照片；hover 时图片轻微放大，同时 .hot-work-overlay 渐显，
+        用渐变黑色遮罩展示标题和摄影师。
+        */
         .hot-works-container {
             display: flex;
             flex-wrap: wrap;
@@ -386,6 +417,7 @@
             z-index: 15;
         }
     </style>
+    {# 热门作品图片墙：循环 hot_works，每个作品点击进入 /work/detail/<work_id>。 #}
     <div class="mb-8 container">
         <div class="hot-works-container">
             {% for work in hot_works %}
@@ -431,6 +463,7 @@
 
     <div style="margin-bottom: 80px;"></div>
 
+    {# 最新作品：Bootstrap row + col-md-3 实现四列卡片网格。 #}
     <div class="mb-8">
         <div class="row">
             {% for work in recent_works %}
@@ -467,7 +500,7 @@
 
     <div style="margin-bottom: 80px;"></div>
     
-        <!-- 索尼风格摄影师卡片（仅显示上架作品） -->
+        <!-- 推荐摄影师卡片：头像 + 城市 + 作品拼图，仅显示上架作品。 -->
     <style>
         .sony-card {
             border-radius: 16px;
@@ -563,6 +596,36 @@
         <a href="/photographer/list" class="btn btn-lg rounded-pill px-5 py-3" style="background: #333; color: #fff; border: none; font-weight: 500; letter-spacing: 1px; transition: all 0.3s ease;">查看全部></a>
     </div>
 
+    {# 首页底部加入我们区域：这是页面内容，必须放在 content 块中，不能放进 scripts 块。 #}
+    <div style="margin-bottom: 80px;"></div>
+
+    <div
+        class="position-relative text-center py-20"
+        style="
+            width: 100vw;
+            margin-left: calc(-50vw + 50%);
+            background-color: #4B4B8A;
+            padding-top: 80px;
+            padding-bottom: 80px;
+        "
+    >
+        <div class="container">
+            <h2
+                class="text-white font-weight-bold mb-4"
+                style="font-size: 5rem; text-shadow: 2px 2px 8px rgba(0,0,0,0.3);"
+            >
+                加入我们
+            </h2>
+            <p
+                class="text-white"
+                style="font-size: 2rem; opacity: 0.9;"
+            >
+                Everything is possible!
+            </p>
+        </div>
+    </div>
+
+    {# 首页公告弹窗：有 latest_announcement 时才生成 modal。 #}
     {% if latest_announcement %}
         <div class="modal fade" id="announcementModal" tabindex="-1" aria-labelledby="announcementModalLabel" aria-hidden="true" data-announcement-id="{{ latest_announcement.announcement_id }}">
             <div class="modal-dialog modal-dialog-centered modal-lg">
@@ -595,16 +658,25 @@
 {% block scripts %}
     {% if latest_announcement %}
         <script>
-            $(function() {
+            // 公告弹窗逻辑：如果 localStorage 里没有隐藏记录，就自动弹出最新公告。
+            document.addEventListener('DOMContentLoaded', function() {
                 var modalElement = document.getElementById('announcementModal');
-                if (!modalElement || !window.bootstrap) {
+                if (!modalElement) {
+                    return;
+                }
+                if (!window.bootstrap) {
+                    console.warn('Bootstrap 未加载，首页公告弹窗无法显示。');
                     return;
                 }
 
                 var announcementId = modalElement.getAttribute('data-announcement-id');
                 var storageKey = 'hiddenAnnouncement:' + announcementId;
-                if (localStorage.getItem(storageKey)) {
-                    return;
+                try {
+                    if (localStorage.getItem(storageKey)) {
+                        return;
+                    }
+                } catch (error) {
+                    console.warn('浏览器限制 localStorage，公告弹窗将按默认方式显示。', error);
                 }
 
                 var announcementModal = new bootstrap.Modal(modalElement);
@@ -613,7 +685,11 @@
                 modalElement.addEventListener('hidden.bs.modal', function() {
                     var skipCheckbox = document.getElementById('skip-announcement-modal');
                     if (skipCheckbox && skipCheckbox.checked) {
-                        localStorage.setItem(storageKey, '1');
+                        try {
+                            localStorage.setItem(storageKey, '1');
+                        } catch (error) {
+                            console.warn('无法保存公告弹窗隐藏状态。', error);
+                        }
                     }
                 });
             });
@@ -622,6 +698,14 @@
 
     {% if carousels %}
         <script>
+            /*
+            自定义轮播图核心 JS：
+            1. currentIndex 记录当前居中的图片下标。
+            2. updateSlides() 根据当前下标给每张图加不同位置 class。
+            3. 左右按钮、圆点点击会改变 currentIndex。
+            4. setInterval 每 5 秒自动切换下一张。
+            5. 鼠标移入暂停自动播放，移出继续自动播放。
+            */
             document.addEventListener('DOMContentLoaded', function() {
                 const slides = document.querySelectorAll('.carousel-slide');
                 const dots = document.querySelectorAll('.carousel-dot');
@@ -633,6 +717,7 @@
                 let isInitialized = false;
 
                 function updateSlides() {
+                    // 根据每张图和当前图的距离 diff，决定它显示在中间、左侧、右侧还是隐藏。
                     slides.forEach((slide, index) => {
                         slide.classList.remove('position-prev', 'position-current', 'position-next', 'position-hidden-left', 'position-hidden-right');
                         
@@ -663,6 +748,7 @@
                 }
 
                 function goToSlide(index) {
+                    // isAnimating 防止动画还没结束时连续点击造成状态混乱。
                     if (isAnimating || index === currentIndex) return;
                     isAnimating = true;
                     currentIndex = index;
@@ -689,6 +775,7 @@
                     dot.addEventListener('click', () => goToSlide(index));
                 });
 
+                // 点击轮播图时，如果 data-link 有值，就跳转到对应作品/摄影师/公告/外部链接。
                 slides.forEach(slide => {
                     slide.addEventListener('click', function() {
                         const link = this.getAttribute('data-link');
@@ -721,34 +808,4 @@
             });
         </script>
     {% endif %}
-
-    <div style="margin-bottom: 80px;"></div>
-
-    <div
-    class="position-relative text-center py-20"
-    style="
-        width: 100vw;
-        margin-left: calc(-50vw + 50%);
-        background-color: #4B4B8A;
-        padding-top: 80px;
-        padding-bottom: 80px;
-    "
-    >
-
-    <div class="container">
-        <h2
-            class="text-white font-weight-bold mb-4"
-            style="font-size: 5rem; text-shadow: 2px 2px 8px rgba(0,0,0,0.3);"
-        >
-            加入我们
-        </h2>
-        <p
-            class="text-white"
-            style="font-size: 2rem; opacity: 0.9;"
-        >
-            Everything is possible!
-        </p>
-    </div>
-</div>
-
 {% endblock %}

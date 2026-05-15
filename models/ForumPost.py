@@ -1,7 +1,14 @@
+"""论坛帖子模型，对应数据库表 forum_post。
+
+一条 ForumPost 表示用户发布的一篇帖子。
+它属于一个论坛板块 forum_board，也属于一个发帖用户 user。
+"""
+
 from db import db
 from datetime import datetime
 
 class ForumPost(db.Model):
+    """论坛帖子主表。"""
     __tablename__ = 'forum_post'
     
     post_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
@@ -25,6 +32,7 @@ class ForumPost(db.Model):
     create_time = db.Column(db.DateTime, default=datetime.now)
     update_time = db.Column(db.DateTime, default=datetime.now, onupdate=datetime.now)
     
+    # 关联发帖用户、帖子图片、评论和点赞记录。
     user = db.relationship('User', back_populates='forum_posts')
     images = db.relationship('ForumPostImage', backref='forum_post', lazy=True, passive_deletes='all')
     comments = db.relationship('ForumComment', backref='forum_post', lazy=True, passive_deletes='all')

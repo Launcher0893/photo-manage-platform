@@ -1,7 +1,13 @@
+"""轮播图模型，对应数据库表 carousel。
+
+后台维护轮播图记录，首页读取 status=1 的记录并用自定义轮播组件展示。
+"""
+
 from db import db
 from datetime import datetime
 
 class Carousel(db.Model):
+    """首页轮播图表。"""
     __tablename__ = 'carousel'
     
     carousel_id = db.Column(db.Integer, primary_key=True, autoincrement=True)

@@ -1,7 +1,13 @@
+"""论坛帖子图片模型，对应数据库表 forum_post_image。
+
+帖子可以上传多张图片，图片 URL 用于页面展示，oss_object_name 用于删除 OSS 文件。
+"""
+
 from db import db
 from datetime import datetime
 
 class ForumPostImage(db.Model):
+    """论坛帖子图片表。"""
     __tablename__ = 'forum_post_image'
     
     image_id = db.Column(db.Integer, primary_key=True, autoincrement=True)

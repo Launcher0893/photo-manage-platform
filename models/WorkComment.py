@@ -1,7 +1,14 @@
+"""作品评论模型，对应数据库表 work_comment。
+
+一条记录表示某个用户对某个作品发表了一条评论。
+audit_status 是审核状态，status 是显示/隐藏状态。
+"""
+
 from db import db
 from datetime import datetime
 
 class WorkComment(db.Model):
+    """作品评论表。"""
     __tablename__ = 'work_comment'
     
     comment_id = db.Column(db.Integer, primary_key=True, autoincrement=True)

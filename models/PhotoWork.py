@@ -1,7 +1,14 @@
+"""作品模型，对应数据库表 photo_work。
+
+一条 PhotoWork 表示一张摄影作品。
+它关联摄影师 photographer、分类 category、组图 images、点赞 likes 和评论 comments。
+"""
+
 from db import db
 from datetime import datetime
 
 class PhotoWork(db.Model):
+    """摄影作品主表。"""
     __tablename__ = 'photo_work'
     
     work_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
@@ -29,6 +36,7 @@ class PhotoWork(db.Model):
     create_time = db.Column(db.DateTime, default=datetime.now)
     update_time = db.Column(db.DateTime, default=datetime.now, onupdate=datetime.now)
 
+    # relationship 是 ORM 关系，不是数据库字段；用于在 Python 中访问关联对象。
     photographer = db.relationship('Photographer', back_populates='works')
     category = db.relationship('Category', back_populates='works')
     images = db.relationship('PhotoWorkImage', backref='photo_work', lazy=True, passive_deletes='all')
@@ -53,6 +61,7 @@ class PhotoWork(db.Model):
         return f'<PhotoWork {self.title}>'
     
     def update_hot_score(self):
+        """更新热度分：浏览量 + 点赞数*3 + 评论数*2。"""
         self.hot_score = (
             (self.view_count or 0)
             + (self.like_count or 0) * 3

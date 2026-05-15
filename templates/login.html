@@ -1,3 +1,7 @@
+{#
+登录页面：普通用户和管理员共用。
+表单提交到 /auth/login，后端会先查 user 表，再查 admin 表。
+#}
 {% extends 'base.html' %}
 
 {% block title %}登录{% endblock %}

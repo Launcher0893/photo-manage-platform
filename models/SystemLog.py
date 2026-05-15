@@ -1,7 +1,13 @@
+"""系统日志模型，对应数据库表 system_log。
+
+后台管理员执行关键操作时，utils/logger.py 会写入这张表。
+"""
+
 from db import db
 from datetime import datetime
 
 class SystemLog(db.Model):
+    """后台操作日志表。"""
     __tablename__ = 'system_log'
     
     log_id = db.Column(db.Integer, primary_key=True, autoincrement=True)

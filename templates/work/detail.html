@@ -1,3 +1,8 @@
+{#
+作品详情页面。
+页面效果：展示作品封面/组图、作者信息、浏览点赞评论数据、评论区。
+点赞和评论通过 JavaScript/Ajax 调用 /api/work/<work_id>/like 和 /api/work/<work_id>/comment。
+#}
 {% extends 'base.html' %}
 
 {% block title %}{{ work.title }}{% endblock %}

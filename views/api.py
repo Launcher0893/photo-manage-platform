@@ -1,3 +1,14 @@
+"""JSON API 接口模块。
+
+蓝图前缀：/api
+
+本文件中的路由通常不直接返回 HTML 页面，而是返回 JSON。
+主要用于：
+- 作品点赞。
+- 作品评论。
+- 后台控制台图表数据。
+"""
+
 from datetime import date, datetime, timedelta
 
 from flask import Blueprint, jsonify, request
@@ -14,6 +25,11 @@ bp = Blueprint('api', __name__, url_prefix='/api')
 
 @bp.route('/work/<int:work_id>/like', methods=['POST'])
 def like_work(work_id):
+    """作品点赞/取消点赞接口。
+
+    POST /api/work/<work_id>/like
+    前端 Ajax 调用，返回 JSON：是否成功、是否已点赞、最新点赞数。
+    """
     if not current_user.is_authenticated or getattr(current_user, 'is_admin', False):
         return jsonify({'success': False, 'message': '请先使用用户账号登录。'}), 401
 
@@ -53,6 +69,11 @@ def like_work(work_id):
 
 @bp.route('/work/<int:work_id>/comment', methods=['POST'])
 def add_comment(work_id):
+    """作品评论接口。
+
+    POST /api/work/<work_id>/comment
+    保存评论后重新统计作品评论数，并更新热度。
+    """
     if not current_user.is_authenticated or getattr(current_user, 'is_admin', False):
         return jsonify({'success': False, 'message': '请先使用用户账号登录。'}), 401
 
@@ -96,6 +117,7 @@ def add_comment(work_id):
 @bp.route('/dashboard/trends')
 @admin_required
 def dashboard_trends():
+    """后台趋势图接口：返回最近 7 天用户数和作品数。"""
     today = date.today()
     days = [today - timedelta(days=offset) for offset in range(6, -1, -1)]
     start_dt = datetime.combine(days[0], datetime.min.time())
@@ -125,6 +147,7 @@ def dashboard_trends():
 @bp.route('/dashboard/forum_activity')
 @admin_required
 def dashboard_forum_activity():
+    """后台论坛活跃图接口：返回最近 7 天帖子数和评论数。"""
     today = date.today()
     days = [today - timedelta(days=offset) for offset in range(6, -1, -1)]
     start_dt = datetime.combine(days[0], datetime.min.time())
@@ -154,6 +177,7 @@ def dashboard_forum_activity():
 @bp.route('/dashboard/category_stats')
 @admin_required
 def dashboard_category_stats():
+    """后台分类统计接口：返回每个分类下的作品数量。"""
     rows = db.session.execute(
         select(Category.category_name, func.count(PhotoWork.work_id))
         .outerjoin(PhotoWork, PhotoWork.category_id == Category.category_id)

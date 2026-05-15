@@ -1,3 +1,14 @@
+"""用户中心和后台用户管理模块。
+
+前台蓝图前缀：/user
+后台蓝图前缀：/admin/user
+
+本文件负责：
+- 个人中心 /user/profile。
+- 编辑个人资料、完善摄影师资料、修改密码。
+- 后台用户列表、用户详情、禁用/启用、软删除、恢复。
+"""
+
 from flask import Blueprint, abort, flash, redirect, render_template, request, url_for
 from flask_login import current_user
 from sqlalchemy import select
@@ -17,6 +28,11 @@ admin_bp = Blueprint('admin_user', __name__, url_prefix='/admin/user')
 @bp.route('/profile')
 @user_required
 def profile():
+    """个人中心：完整访问地址 /user/profile。
+
+    查询当前用户的摄影师资料、我的作品和我的帖子，
+    然后渲染 templates/user/profile.html。
+    """
     photographer = current_user.photographer if current_user.user_role == User.ROLE_PHOTOGRAPHER else None
     my_works = []
     if photographer is not None and photographer.cert_status == Photographer.STATUS_APPROVED:
@@ -38,6 +54,12 @@ def profile():
 @bp.route('/edit_photographer', methods=['GET', 'POST'])
 @user_required
 def edit_photographer():
+    """完善摄影师资料。
+
+    GET：打开独立编辑页。
+    POST：保存真实姓名和城市。
+    当前个人中心也用弹窗表单提交到这个地址。
+    """
     if current_user.user_role != User.ROLE_PHOTOGRAPHER:
         abort(403)
 
@@ -65,6 +87,11 @@ def edit_photographer():
 @bp.route('/edit_profile', methods=['GET', 'POST'])
 @user_required
 def edit_profile():
+    """编辑个人资料。
+
+    修改昵称、邮箱、手机号和头像。
+    头像上传调用 utils/file_upload.py 中的 save_image()。
+    """
     if request.method == 'POST':
         old_avatar_url = None
         current_user.nickname = request.form.get('nickname', '').strip() or current_user.username
@@ -88,6 +115,7 @@ def edit_profile():
 @bp.route('/change_password', methods=['GET', 'POST'])
 @user_required
 def change_password():
+    """修改密码：校验旧密码，再把新密码保存为 MD5。"""
     from utils.encryption import md5_encrypt
 
     if request.method == 'POST':
@@ -110,6 +138,11 @@ def change_password():
 @admin_bp.route('/list')
 @admin_required
 def admin_list():
+    """后台用户列表：完整访问地址 /admin/user/list。
+
+    支持按用户名、昵称、角色、状态筛选。
+    默认不显示 status=-1 的已删除用户。
+    """
     page = request.args.get('page', default=1, type=int)
     username = request.args.get('username', '').strip()
     nickname = request.args.get('nickname', '').strip()
@@ -135,6 +168,7 @@ def admin_list():
 @admin_bp.route('/detail/<int:user_id>')
 @admin_required
 def detail(user_id):
+    """后台用户详情：查看用户资料、摄影师资料、最近帖子和评论。"""
     user = db.session.execute(
         select(User)
         .options(joinedload(User.photographer))
@@ -171,6 +205,7 @@ def detail(user_id):
 @admin_bp.route('/status/<int:user_id>', methods=['POST'])
 @admin_required
 def toggle_status(user_id):
+    """后台启用/禁用用户。已删除用户不能直接启用或禁用。"""
     user = db.session.get(User, user_id)
     if user is not None:
         if user.status == -1:
@@ -186,6 +221,7 @@ def toggle_status(user_id):
 @admin_bp.route('/delete/<int:user_id>', methods=['POST'])
 @admin_required
 def soft_delete(user_id):
+    """后台软删除用户：把 user.status 改为 -1，不物理删除数据库记录。"""
     user = db.session.get(User, user_id)
     if user is not None:
         user.status = -1
@@ -198,6 +234,7 @@ def soft_delete(user_id):
 @admin_bp.route('/restore/<int:user_id>', methods=['POST'])
 @admin_required
 def restore(user_id):
+    """后台恢复已软删除用户：把 user.status 改回 1。"""
     user = db.session.get(User, user_id)
     if user is not None:
         user.status = 1

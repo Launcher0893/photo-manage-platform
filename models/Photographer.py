@@ -1,7 +1,14 @@
+"""摄影师认证资料模型，对应数据库表 photographer。
+
+user 表保存账号；photographer 表保存摄影师真实姓名、城市、认证状态等资料。
+一个 user 最多对应一条 photographer 记录。
+"""
+
 from db import db
 from datetime import datetime
 
 class Photographer(db.Model):
+    """摄影师资料表。"""
     __tablename__ = 'photographer'
     
     photographer_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
@@ -24,6 +31,7 @@ class Photographer(db.Model):
     create_time = db.Column(db.DateTime, default=datetime.now)
     update_time = db.Column(db.DateTime, default=datetime.now, onupdate=datetime.now)
     
+    # user 是摄影师对应的账号；works 是该摄影师发布的作品列表。
     user = db.relationship('User', back_populates='photographer')
     works = db.relationship(
         'PhotoWork',

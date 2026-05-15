@@ -1,3 +1,9 @@
+"""用户模型，对应数据库表 user。
+
+普通用户和摄影师账号都存在这张表里。
+user_role 区分普通用户和摄影师，status 控制正常/禁用/软删除。
+"""
+
 from datetime import datetime
 from flask_login import UserMixin
 
@@ -5,6 +11,11 @@ from db import db
 
 
 class User(db.Model, UserMixin):
+    """前台用户账号。
+
+    UserMixin 让它可以被 Flask-Login 登录系统使用。
+    get_id() 返回 user:<id>，用于和管理员 admin:<id> 区分。
+    """
     __tablename__ = 'user'
     
     user_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
@@ -19,12 +30,14 @@ class User(db.Model, UserMixin):
     create_time = db.Column(db.DateTime, default=datetime.now)
     update_time = db.Column(db.DateTime, default=datetime.now, onupdate=datetime.now)
     
+    # 一个用户最多有一条摄影师认证资料，对应 photographer 表。
     photographer = db.relationship(
         'Photographer',
         back_populates='user',
         uselist=False,
         passive_deletes='all',
     )
+    # 用户点赞、评论、发帖等关系，方便通过 current_user 反查相关数据。
     work_likes = db.relationship(
         'WorkLike',
         back_populates='user',

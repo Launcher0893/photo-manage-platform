@@ -1,3 +1,8 @@
+{#
+论坛帖子详情页面。
+页面效果：展示帖子标题、作者、图片、正文、点赞按钮和评论区。
+点赞按钮通过 jQuery POST 调用 /forum/post_like/<post_id> 并局部更新点赞数。
+#}
 {% extends 'base.html' %}
 
 {% block title %}{{ post.title }}{% endblock %}

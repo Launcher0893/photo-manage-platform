@@ -1,3 +1,9 @@
+"""后台作品分类管理模块。
+
+蓝图前缀：/admin/category
+分类用于作品发布/编辑时选择作品类型，也用于作品列表筛选。
+"""
+
 from flask import Blueprint, flash, redirect, render_template, request, url_for
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
@@ -14,6 +20,7 @@ bp = Blueprint('category', __name__, url_prefix='/admin/category')
 @bp.route('/list')
 @admin_required
 def list_page():
+    """分类列表：完整访问地址 /admin/category/list。"""
     page = request.args.get('page', default=1, type=int)
     category_name = request.args.get('category_name', '').strip()
     stmt = select(Category).order_by(Category.sort.asc(), Category.category_id.asc())
@@ -27,6 +34,7 @@ def list_page():
 @bp.route('/edit/<int:category_id>', methods=['GET', 'POST'])
 @admin_required
 def form(category_id=None):
+    """新增/编辑分类。"""
     category = db.session.get(Category, category_id) if category_id else Category(status=1)
     if category is None:
         flash('分类不存在。', 'error')
@@ -58,6 +66,7 @@ def form(category_id=None):
 @bp.route('/status/<int:category_id>', methods=['POST'])
 @admin_required
 def toggle_status(category_id):
+    """启用/停用分类。停用后前台发布作品时不再显示该分类。"""
     category = db.session.get(Category, category_id)
     if category is None:
         flash('分类不存在。', 'error')

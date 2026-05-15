@@ -1,3 +1,8 @@
+{#
+摄影师发布/编辑作品表单。
+页面效果：填写作品标题、分类、城市、描述，上传封面和组图。
+同一个模板同时服务 /work/add 和 /work/edit/<work_id>。
+#}
 {% extends 'base.html' %}
 
 {% block title %}{{ work and '编辑作品' or '发布作品' }}{% endblock %}

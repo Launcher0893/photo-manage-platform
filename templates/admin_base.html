@@ -1,8 +1,14 @@
 <!DOCTYPE html>
+{#
+后台公共基础模板。
+所有管理员页面继承这里，得到左侧固定侧边栏、后台统一表格/表单样式、消息提示和通用脚本。
+页面自己的内容填入 {% block content %}。
+#}
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    {# 后台 POST/Ajax 操作使用的 CSRF token。 #}
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>{% block title %}管理后台{% endblock %}</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -208,6 +214,7 @@
     </style>
 </head>
 <body>
+    {# current_path 用于判断当前访问路径，让侧边栏对应菜单高亮。 #}
     {% set current_path = request.path %}
     <div class="sidebar">
         <div class="sidebar-title">管理后台</div>
@@ -224,6 +231,7 @@
     </div>
     
     <div class="main-content">
+        {# 后台操作成功或失败后，后端 flash 的消息在这里显示。 #}
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
                 {% for category, message in messages %}
@@ -234,6 +242,7 @@
             {% endif %}
         {% endwith %}
         
+        {# 各后台页面的主体内容插入这里。 #}
         {% block content %}{% endblock %}
     </div>
     
@@ -241,12 +250,14 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
         $(function() {
+            // 后台 Ajax 请求统一带 CSRF token。
             var csrfToken = $('meta[name="csrf-token"]').attr('content');
             if (csrfToken) {
                 $.ajaxSetup({
                     headers: { 'X-CSRFToken': csrfToken }
                 });
             }
+            // 后台表单提交后禁用按钮，防止重复点击导致重复保存/删除。
             $('form[method="POST"], form[method="post"]').on('submit', function() {
                 var $form = $(this);
                 if ($form.data('submitting')) {

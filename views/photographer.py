@@ -1,3 +1,13 @@
+"""摄影师前台展示和后台审核模块。
+
+前台蓝图前缀：/photographer
+后台蓝图前缀：/admin/photographer
+
+本文件负责：
+- 摄影师列表和摄影师主页。
+- 管理员审核摄影师认证资料。
+"""
+
 from datetime import datetime
 
 from flask import Blueprint, abort, flash, redirect, render_template, request, url_for
@@ -17,6 +27,11 @@ admin_bp = Blueprint('admin_photographer', __name__, url_prefix='/admin/photogra
 
 @bp.route('/list')
 def list_page():
+    """摄影师列表：完整访问地址 /photographer/list。
+
+    只展示认证通过且用户状态正常的摄影师。
+    支持按城市和昵称搜索。
+    """
     page = request.args.get('page', default=1, type=int)
     city = request.args.get('city', '').strip()
     # 🔥 新增：获取昵称搜索参数
@@ -46,6 +61,10 @@ def list_page():
 
 @bp.route('/detail/<int:photographer_id>')
 def detail(photographer_id):
+    """摄影师主页：完整访问地址 /photographer/detail/<photographer_id>。
+
+    展示摄影师资料和该摄影师公开可见的作品。
+    """
     photographer = db.session.execute(
         select(Photographer)
         .options(joinedload(Photographer.user))
@@ -77,6 +96,7 @@ def detail(photographer_id):
 @admin_bp.route('/list')
 @admin_required
 def admin_list():
+    """后台摄影师审核列表：完整访问地址 /admin/photographer/list。"""
     page = request.args.get('page', default=1, type=int)
     status = request.args.get('status', type=int)
     stmt = (
@@ -93,6 +113,11 @@ def admin_list():
 @admin_bp.route('/audit/<int:photographer_id>', methods=['GET', 'POST'])
 @admin_required
 def admin_audit(photographer_id):
+    """后台摄影师审核。
+
+    GET：打开审核页面。
+    POST：保存审核通过/拒绝、审核备注、审核管理员和审核时间。
+    """
     photographer = db.session.execute(
         select(Photographer)
         .options(joinedload(Photographer.user))

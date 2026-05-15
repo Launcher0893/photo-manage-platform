@@ -1,8 +1,14 @@
 <!DOCTYPE html>
+{#
+前台公共基础模板。
+所有前台页面通过 {% extends 'base.html' %} 继承这里的导航栏、消息提示、Bootstrap/jQuery 引入和通用脚本。
+页面自己的主体内容会填入下面的 {% block content %}。
+#}
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    {# CSRF token 给 Ajax 请求使用；普通表单也会单独放隐藏 csrf_token 字段。 #}
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>{% block title %}摄影作品分享平台{% endblock %}</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -22,6 +28,7 @@
     </style>
 </head>
 <body>
+    {# 顶部固定导航栏：根据 current_user 判断游客、普通用户/摄影师、管理员分别显示不同入口。 #}
     <nav class="navbar navbar-expand-lg bg-white fixed-top">
         <div class="container">
             <a class="navbar-brand" href="/">
@@ -59,6 +66,7 @@
     </nav>
 
     <div class="container">
+        {# Flask flash 消息显示区：后端 flash('xxx','success/error') 后，这里会显示提示条。 #}
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
                 {% for category, message in messages %}
@@ -69,6 +77,7 @@
             {% endif %}
         {% endwith %}
 
+        {# 子页面的主要内容会插入这里。 #}
         {% block content %}{% endblock %}
     </div>
 
@@ -76,12 +85,14 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
         $(function() {
+            // 给所有 jQuery Ajax 请求自动带上 CSRF 请求头，避免 POST 请求被 CSRF 拦截。
             var csrfToken = $('meta[name="csrf-token"]').attr('content');
             if (csrfToken) {
                 $.ajaxSetup({
                     headers: { 'X-CSRFToken': csrfToken }
                 });
             }
+            // 通用重复提交防护：表单提交后禁用提交按钮，避免用户连续点击造成重复保存。
             $('form[method="POST"], form[method="post"]').on('submit', function() {
                 var $form = $(this);
                 if ($form.data('submitting')) {

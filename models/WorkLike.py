@@ -1,7 +1,14 @@
+"""作品点赞模型，对应数据库表 work_like。
+
+一条记录表示某个用户点赞了某个作品。
+UniqueConstraint 保证同一个用户不能重复点赞同一个作品。
+"""
+
 from db import db
 from datetime import datetime
 
 class WorkLike(db.Model):
+    """作品点赞关系表。"""
     __tablename__ = 'work_like'
     
     like_id = db.Column(db.Integer, primary_key=True, autoincrement=True)

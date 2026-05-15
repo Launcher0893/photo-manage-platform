@@ -1,3 +1,14 @@
+"""论坛模块。
+
+前台蓝图前缀：/forum
+后台蓝图前缀：/admin/forum
+
+本文件负责：
+- 论坛板块页、帖子列表、帖子详情。
+- 用户发帖、编辑自己的帖子、评论、点赞。
+- 管理员后台管理帖子、板块、评论。
+"""
+
 from flask import Blueprint, abort, flash, jsonify, redirect, render_template, request, url_for
 from flask_login import current_user
 from sqlalchemy import func, select
@@ -11,12 +22,20 @@ from utils.file_upload import delete_uploaded_file, save_image_result
 from utils.logger import log_admin_action
 
 
+# @bp.route('/board') 注册后完整地址是 /forum/board。
 bp = Blueprint('forum', __name__, url_prefix='/forum')
+
+# @admin_bp.route('/post_list') 注册后完整地址是 /admin/forum/post_list。
 admin_bp = Blueprint('admin_forum', __name__, url_prefix='/admin/forum')
 
 
 @bp.route('/board')
 def board():
+    """论坛板块页：完整访问地址 /forum/board。
+
+    查询启用的 forum_board 记录，并统计每个板块下 status=1 的帖子数。
+    渲染 templates/forum/board.html。
+    """
     boards = db.session.execute(
         select(ForumBoard)
         .where(ForumBoard.status == 1)
@@ -33,6 +52,11 @@ def board():
 
 @bp.route('/post_list/<int:board_id>')
 def post_list(board_id):
+    """某个板块下的帖子列表：完整访问地址 /forum/post_list/<board_id>。
+
+    支持按标题关键词搜索，支持按热度或时间排序。
+    只显示 status=1 的正常帖子。
+    """
     page = request.args.get('page', default=1, type=int)
     keyword = request.args.get('keyword', '').strip()
     sort_by = request.args.get('sort_by', 'hot').strip().lower()
@@ -40,6 +64,7 @@ def post_list(board_id):
     if board_item is None or board_item.status != 1:
         abort(404)
 
+    # 帖子热度临时计算：浏览 + 点赞*3 + 评论*2。
     hot_score = (
         func.coalesce(ForumPost.view_count, 0)
         + func.coalesce(ForumPost.like_count, 0) * 3
@@ -64,6 +89,11 @@ def post_list(board_id):
 
 @bp.route('/post_detail/<int:post_id>')
 def post_detail(post_id):
+    """帖子详情页：完整访问地址 /forum/post_detail/<post_id>。
+
+    查询正常帖子，进入详情页时增加浏览量，
+    同时查询评论列表和当前用户是否点赞过。
+    """
     post = db.session.execute(
         select(ForumPost)
         .options(
@@ -98,6 +128,11 @@ def post_detail(post_id):
 
 @bp.route('/post_like/<int:post_id>', methods=['POST'])
 def post_like(post_id):
+    """帖子点赞/取消点赞接口。
+
+    POST /forum/post_like/<post_id>
+    返回 JSON，通常由帖子详情页按钮通过 Ajax 调用。
+    """
     if not current_user.is_authenticated or getattr(current_user, 'is_admin', False):
         return jsonify({'success': False, 'message': '请先使用用户账号登录。'}), 401
 
@@ -133,6 +168,7 @@ def post_like(post_id):
 
 
 def _active_boards():
+    """查询启用的论坛板块，用于发帖和编辑帖子页面的下拉框。"""
     return db.session.execute(
         select(ForumBoard)
         .where(ForumBoard.status == 1)
@@ -144,6 +180,12 @@ def _active_boards():
 @bp.route('/post_add/<int:board_id>', methods=['GET', 'POST'])
 @user_required
 def post_add(board_id=None):
+    """发布帖子。
+
+    /forum/post_add：普通发帖入口。
+    /forum/post_add/<board_id>：从某个板块进入发帖，会默认选中该板块。
+    GET 打开 templates/forum/post_add.html；POST 保存帖子和帖子图片。
+    """
     boards = _active_boards()
     selected_board_id = board_id
 
@@ -160,6 +202,7 @@ def post_add(board_id=None):
             flash('标题和内容不能为空。', 'error')
             return render_template('forum/post_add.html', boards=boards, selected_board_id=selected_board_id)
 
+        # 创建帖子对象，flush 后可以拿到 post.post_id，用于保存帖子图片。
         post = ForumPost(
             board_id=selected_board_id,
             user_id=current_user.user_id,
@@ -202,6 +245,11 @@ def post_add(board_id=None):
 @bp.route('/post_edit/<int:post_id>', methods=['GET', 'POST'])
 @user_required
 def post_edit(post_id):
+    """编辑自己的帖子。
+
+    完整地址 /forum/post_edit/<post_id>。
+    只能编辑当前登录用户自己的帖子，否则返回 403。
+    """
     post = db.session.execute(
         select(ForumPost)
         .options(selectinload(ForumPost.images))
@@ -228,6 +276,7 @@ def post_edit(post_id):
             flash('标题和内容不能为空。', 'error')
             return render_template('forum/post_add.html', post=post, boards=boards, selected_board_id=selected_board_id)
 
+        # 编辑时可以勾选删除旧图片，提交的图片 id 会在 delete_image_ids 中。
         delete_image_ids = {
             int(image_id)
             for image_id in request.form.getlist('delete_image_ids')
@@ -272,6 +321,11 @@ def post_edit(post_id):
 @bp.route('/comment_add/<int:post_id>', methods=['POST'])
 @user_required
 def comment_add(post_id):
+    """新增帖子评论。
+
+    POST /forum/comment_add/<post_id>
+    保存评论后重新统计帖子可见评论数，再跳回帖子详情页。
+    """
     post = db.session.get(ForumPost, post_id)
     if post is None or post.status != 1:
         abort(404)
@@ -296,6 +350,7 @@ def comment_add(post_id):
 @admin_bp.route('/post_list')
 @admin_required
 def admin_post_list():
+    """后台帖子管理列表：完整访问地址 /admin/forum/post_list。"""
     page = request.args.get('page', default=1, type=int)
     title = request.args.get('title', '').strip()
     status = request.args.get('status', type=int)
@@ -315,6 +370,7 @@ def admin_post_list():
 @admin_bp.route('/board_list')
 @admin_required
 def admin_board_list():
+    """后台论坛板块列表：完整访问地址 /admin/forum/board_list。"""
     page = request.args.get('page', default=1, type=int)
     board_name = request.args.get('board_name', '').strip()
     stmt = select(ForumBoard).order_by(ForumBoard.sort.asc(), ForumBoard.board_id.asc())
@@ -328,6 +384,11 @@ def admin_board_list():
 @admin_bp.route('/board/edit/<int:board_id>', methods=['GET', 'POST'])
 @admin_required
 def admin_board_form(board_id=None):
+    """后台新增/编辑论坛板块。
+
+    /admin/forum/board/add：新增。
+    /admin/forum/board/edit/<board_id>：编辑。
+    """
     board_item = db.session.get(ForumBoard, board_id) if board_id else ForumBoard(status=1)
     if board_item is None:
         flash('论坛板块不存在。', 'error')
@@ -359,6 +420,7 @@ def admin_board_form(board_id=None):
 @admin_bp.route('/board/status/<int:board_id>', methods=['POST'])
 @admin_required
 def toggle_board_status(board_id):
+    """后台启用/停用论坛板块。"""
     board_item = db.session.get(ForumBoard, board_id)
     if board_item is not None:
         board_item.status = 0 if board_item.status == 1 else 1
@@ -371,6 +433,7 @@ def toggle_board_status(board_id):
 @admin_bp.route('/comment_list')
 @admin_required
 def admin_comment_list():
+    """后台论坛评论列表：完整访问地址 /admin/forum/comment_list。"""
     page = request.args.get('page', default=1, type=int)
     status = request.args.get('status', type=int)
     stmt = (
@@ -388,6 +451,7 @@ def admin_comment_list():
 @admin_bp.route('/post_delete/<int:post_id>', methods=['POST'])
 @admin_required
 def toggle_post_status(post_id):
+    """后台隐藏/恢复帖子。"""
     post = db.session.get(ForumPost, post_id)
     if post is not None:
         post.status = 0 if post.status == 1 else 1
@@ -401,6 +465,7 @@ def toggle_post_status(post_id):
 @admin_bp.route('/post_top/<int:post_id>', methods=['POST'])
 @admin_required
 def toggle_post_top(post_id):
+    """后台置顶/取消置顶帖子。"""
     post = db.session.get(ForumPost, post_id)
     if post is not None:
         post.is_top = 0 if post.is_top == 1 else 1
@@ -414,6 +479,7 @@ def toggle_post_top(post_id):
 @admin_bp.route('/comment_delete/<int:comment_id>', methods=['POST'])
 @admin_required
 def toggle_comment_status(comment_id):
+    """后台隐藏/恢复帖子评论，并同步更新帖子评论数。"""
     comment = db.session.get(ForumComment, comment_id)
     if comment is not None:
         comment.status = 0 if comment.status == 1 else 1

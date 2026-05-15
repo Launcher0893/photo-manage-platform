@@ -1,3 +1,10 @@
+"""后台轮播图管理模块。
+
+蓝图前缀：/admin/carousel
+首页轮播图的数据来自 carousel 表，后台在这里维护。
+前台展示逻辑在 templates/index.html 的自定义轮播组件中。
+"""
+
 from flask import Blueprint, flash, redirect, render_template, request, url_for
 from sqlalchemy import select
 
@@ -14,6 +21,7 @@ bp = Blueprint('carousel', __name__, url_prefix='/admin/carousel')
 @bp.route('/list')
 @admin_required
 def list_page():
+    """轮播图列表：完整访问地址 /admin/carousel/list。"""
     carousels = db.session.execute(
         select(Carousel).order_by(Carousel.sort.asc(), Carousel.carousel_id.desc())
     ).scalars().all()
@@ -24,6 +32,11 @@ def list_page():
 @bp.route('/edit/<int:carousel_id>', methods=['GET', 'POST'])
 @admin_required
 def form(carousel_id=None):
+    """新增/编辑轮播图。
+
+    可以填写图片 URL，也可以上传图片。
+    link_type/link_id/link_url 用于首页点击轮播图后跳转。
+    """
     carousel = db.session.get(Carousel, carousel_id) if carousel_id else Carousel(status=1)
     if carousel is None:
         flash('轮播图不存在。', 'error')
@@ -66,6 +79,7 @@ def form(carousel_id=None):
 @bp.route('/status/<int:carousel_id>', methods=['POST'])
 @admin_required
 def toggle_status(carousel_id):
+    """启用/停用轮播图。首页只显示 status=1 的轮播图。"""
     carousel = db.session.get(Carousel, carousel_id)
     if carousel is None:
         flash('轮播图不存在。', 'error')
@@ -80,6 +94,7 @@ def toggle_status(carousel_id):
 @bp.route('/delete/<int:carousel_id>', methods=['POST'])
 @admin_required
 def delete(carousel_id):
+    """删除轮播图记录，并尝试删除对应图片。"""
     carousel = db.session.get(Carousel, carousel_id)
     if carousel is not None:
         title = carousel.title or carousel_id

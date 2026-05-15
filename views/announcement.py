@@ -1,3 +1,11 @@
+"""公告前台展示和后台管理模块。
+
+前台蓝图前缀：/announcement
+后台蓝图前缀：/admin/announcement
+
+本文件负责公告列表、公告详情，以及管理员新增、编辑、上下架、删除公告。
+"""
+
 from flask import Blueprint, abort, flash, redirect, render_template, request, url_for
 from flask_login import current_user
 from sqlalchemy import select
@@ -15,6 +23,7 @@ admin_bp = Blueprint('admin_announcement', __name__, url_prefix='/admin/announce
 
 @bp.route('/list')
 def list_page():
+    """前台公告列表：完整访问地址 /announcement/list。"""
     page = request.args.get('page', default=1, type=int)
     stmt = (
         select(Announcement)
@@ -27,6 +36,7 @@ def list_page():
 
 @bp.route('/detail/<int:announcement_id>')
 def detail(announcement_id):
+    """前台公告详情：完整访问地址 /announcement/detail/<announcement_id>。"""
     announcement = db.session.execute(
         select(Announcement).where(
             Announcement.announcement_id == announcement_id,
@@ -41,6 +51,7 @@ def detail(announcement_id):
 @admin_bp.route('/list')
 @admin_required
 def admin_list():
+    """后台公告管理列表：完整访问地址 /admin/announcement/list。"""
     page = request.args.get('page', default=1, type=int)
     announcements = db.paginate(
         select(Announcement).order_by(Announcement.create_time.desc(), Announcement.announcement_id.desc()),
@@ -55,6 +66,10 @@ def admin_list():
 @admin_bp.route('/edit/<int:announcement_id>', methods=['GET', 'POST'])
 @admin_required
 def admin_form(announcement_id=None):
+    """后台新增/编辑公告。
+
+    保存时可以上传公告封面，封面上传调用 save_image()。
+    """
     announcement = db.session.get(Announcement, announcement_id) if announcement_id else Announcement(status=1)
     if announcement is None:
         flash('公告不存在。', 'error')
@@ -92,6 +107,7 @@ def admin_form(announcement_id=None):
 @admin_bp.route('/status/<int:announcement_id>', methods=['POST'])
 @admin_required
 def toggle_status(announcement_id):
+    """后台发布/下架公告。"""
     announcement = db.session.get(Announcement, announcement_id)
     if announcement is not None:
         announcement.status = 0 if announcement.status == 1 else 1
@@ -104,6 +120,7 @@ def toggle_status(announcement_id):
 @admin_bp.route('/delete/<int:announcement_id>', methods=['POST'])
 @admin_required
 def delete(announcement_id):
+    """后台删除公告，并尝试删除公告封面图片。"""
     announcement = db.session.get(Announcement, announcement_id)
     if announcement is None:
         flash('公告不存在。', 'error')

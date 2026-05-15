@@ -1,3 +1,13 @@
+"""管理员后台控制台模块。
+
+蓝图前缀：/admin/dashboard
+主要页面：
+- /admin/dashboard/
+- /admin/dashboard/index
+
+控制台展示平台统计数据、热门作品、待审核摄影师、最新用户、热门帖子等。
+"""
+
 from flask import Blueprint, render_template
 from sqlalchemy import func, select
 from sqlalchemy.orm import joinedload
@@ -14,6 +24,11 @@ bp = Blueprint('dashboard', __name__, url_prefix='/admin/dashboard')
 @bp.route('/index')
 @admin_required
 def index():
+    """后台控制台首页。
+
+    这里主要做聚合查询，例如 count() 统计数量、order_by() 排序取热门/最新数据。
+    最后渲染 templates/dashboard/index.html。
+    """
     total_works = db.session.scalar(select(func.count(PhotoWork.work_id))) or 0
     total_users = db.session.scalar(select(func.count(User.user_id))) or 0
     approved_photographers = db.session.scalar(
