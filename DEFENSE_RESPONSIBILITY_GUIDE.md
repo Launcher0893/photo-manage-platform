@@ -14,9 +14,9 @@
 
 | 成员 | 负责板块 | 重点页面/路由 | 核心代码文件 | 相关数据库表 |
 | --- | --- | --- | --- | --- |
-| 成员 A | 项目架构、登录注册、权限控制、基础配置 | `/`、`/auth/login`、`/auth/register` | `app.py`、`config.py`、`views/auth.py`、`utils/decorators.py`、`utils/encryption.py` | `user`、`admin`、`role` |
-| 成员 B | 作品展示、作品详情、点赞评论、摄影师作品管理 | `/work/list`、`/work/detail/<id>`、`/work/my`、`/work/add` | `views/work.py`、`views/api.py`、`models/PhotoWork.py` | `photo_work`、`photo_work_image`、`work_like`、`work_comment`、`category` |
-| 成员 C | 摄影师、个人中心、用户资料、摄影师认证资料 | `/photographer/list`、`/photographer/detail/<id>`、`/user/profile` | `views/photographer.py`、`views/user.py`、`models/Photographer.py`、`models/User.py` | `photographer`、`user`、`photo_work`、`forum_post` |
+| 肖卓 | 项目架构、登录注册、权限控制、基础配置 | `/`、`/auth/login`、`/auth/register` | `app.py`、`config.py`、`views/auth.py`、`utils/decorators.py`、`utils/encryption.py` | `user`、`admin`、`role` |
+| 王鹏睿 | 作品展示、作品详情、点赞评论、摄影师作品管理 | `/work/list`、`/work/detail/<id>`、`/work/my`、`/work/add` | `views/work.py`、`views/api.py`、`models/PhotoWork.py` | `photo_work`、`photo_work_image`、`work_like`、`work_comment`、`category` |
+| 李孟祥 | 摄影师、个人中心、用户资料、摄影师认证资料 | `/photographer/list`、`/photographer/detail/<id>`、`/user/profile` | `views/photographer.py`、`views/user.py`、`models/Photographer.py`、`models/User.py` | `photographer`、`user`、`photo_work`、`forum_post` |
 | 成员 D | 论坛、发帖、我的帖子、帖子评论点赞、论坛后台 | `/forum/board`、`/forum/post_list/<id>`、`/forum/post_add`、`/forum/my` | `views/forum.py`、`models/ForumPost.py`、`templates/forum/*.html` | `forum_board`、`forum_post`、`forum_post_image`、`forum_post_like`、`forum_comment` |
 | 成员 E | 管理员后台、公告、轮播、分类、系统日志、统计图表 | `/admin/dashboard/`、`/admin/announcement/list`、`/admin/carousel/list` | `views/dashboard.py`、`views/announcement.py`、`views/carousel.py`、`views/category.py`、`views/system.py` | `announcement`、`carousel`、`category`、`system_log`、`admin` |
 
