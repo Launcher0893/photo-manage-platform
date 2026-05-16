@@ -150,7 +150,7 @@ def index():
         .limit(3)
     ).scalars().all()
 
-    # 首页热门作品：审核通过、上架、摄影师账号正常，随机取 8 个展示。
+    # 首页热门作品：审核通过、上架、摄影师账号正常，按热度分取前 8 个展示。
     hot_works = db.session.execute(
         select(PhotoWork)
         .options(work_user_load, work_images_load)
@@ -161,7 +161,7 @@ def index():
             PhotoWork.status == 1,
             User.status == 1,
         )
-        .order_by(func.random())
+        .order_by(PhotoWork.hot_score.desc(), PhotoWork.create_time.desc(), PhotoWork.work_id.desc())
         .limit(8)
     ).scalars().unique().all()
 
