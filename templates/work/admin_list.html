@@ -10,7 +10,7 @@
 <div class="admin-page-header">
     <div>
         <h2 class="admin-page-title">作品管理</h2>
-        <p class="admin-page-desc">管理摄影作品、审核状态、精选状态和上下架状态。</p>
+        <p class="admin-page-desc">管理摄影作品、审核状态和上下架状态。</p>
     </div>
     <div class="admin-actions">
         <a href="/admin/work/add" class="btn btn-primary">新增作品</a>
@@ -39,13 +39,6 @@
             </select>
         </div>
         <div class="col-auto">
-            <select name="is_featured" class="form-select">
-                <option value="">全部精选状态</option>
-                <option value="1" {% if request.args.get('is_featured') == '1' %}selected{% endif %}>精选</option>
-                <option value="0" {% if request.args.get('is_featured') == '0' %}selected{% endif %}>非精选</option>
-            </select>
-        </div>
-        <div class="col-auto">
             <button type="submit" class="btn btn-primary px-4">筛选</button>
         </div>
     </form>
@@ -60,7 +53,6 @@
                     <th>摄影师</th>
                     <th>分类</th>
                     <th>审核状态</th>
-                    <th>精选</th>
                     <th>状态</th>
                     <th>操作</th>
                 </tr>
@@ -80,7 +72,6 @@
                                 <span class="badge bg-danger">已拒绝</span>
                             {% endif %}
                         </td>
-                        <td>{% if work.is_featured == 1 %}<span class="badge bg-primary">是</span>{% else %}<span class="badge bg-secondary">否</span>{% endif %}</td>
                         <td>{% if work.status == 1 %}<span class="badge bg-success">上架</span>{% else %}<span class="badge bg-secondary">下架</span>{% endif %}</td>
                         <td>
                             <a href="/admin/work/edit/{{ work.work_id }}" class="btn btn-sm btn-outline-primary">编辑</a>
@@ -95,7 +86,7 @@
                         </td>
                     </tr>
                 {% else %}
-                    <tr><td colspan="7" class="admin-empty">暂无作品</td></tr>
+                    <tr><td colspan="6" class="admin-empty">暂无作品</td></tr>
                 {% endfor %}
             </tbody>
         </table>
@@ -107,23 +98,22 @@
         {% set kw_title = request.args.get('title','')|urlencode %}
         {% set kw_audit = request.args.get('audit_status','')|urlencode %}
         {% set kw_status = request.args.get('status','')|urlencode %}
-        {% set kw_featured = request.args.get('is_featured','')|urlencode %}
         {% if works.has_prev %}
-            <li class="page-item"><a class="page-link" href="?page={{ works.prev_num }}&title={{ kw_title }}&audit_status={{ kw_audit }}&status={{ kw_status }}&is_featured={{ kw_featured }}">上一页</a></li>
+            <li class="page-item"><a class="page-link" href="?page={{ works.prev_num }}&title={{ kw_title }}&audit_status={{ kw_audit }}&status={{ kw_status }}">上一页</a></li>
         {% else %}
             <li class="page-item disabled"><span class="page-link">上一页</span></li>
         {% endif %}
         {% for page in works.iter_pages() %}
             {% if page %}
                 <li class="page-item {% if page == works.page %}active{% endif %}">
-                    <a class="page-link" href="?page={{ page }}&title={{ kw_title }}&audit_status={{ kw_audit }}&status={{ kw_status }}&is_featured={{ kw_featured }}">{{ page }}</a>
+                    <a class="page-link" href="?page={{ page }}&title={{ kw_title }}&audit_status={{ kw_audit }}&status={{ kw_status }}">{{ page }}</a>
                 </li>
             {% else %}
                 <li class="page-item disabled"><span class="page-link">...</span></li>
             {% endif %}
         {% endfor %}
         {% if works.has_next %}
-            <li class="page-item"><a class="page-link" href="?page={{ works.next_num }}&title={{ kw_title }}&audit_status={{ kw_audit }}&status={{ kw_status }}&is_featured={{ kw_featured }}">下一页</a></li>
+            <li class="page-item"><a class="page-link" href="?page={{ works.next_num }}&title={{ kw_title }}&audit_status={{ kw_audit }}&status={{ kw_status }}">下一页</a></li>
         {% else %}
             <li class="page-item disabled"><span class="page-link">下一页</span></li>
         {% endif %}
